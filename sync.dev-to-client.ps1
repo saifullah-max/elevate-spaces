@@ -36,12 +36,12 @@ if (Test-Path $frontendFolder) {
     Write-Host "No '$frontendFolder' folder found. Skipping move step."
 }
 
-# Step 6: Push the single commit to the client repository
-Write-Host "Pushing the single commit to the client repository..."
-git checkout $clientBranch
-git merge --squash temp-merge-branch
-git commit --author="$authorName <$authorEmail>" -m "$commitMessage"
-git push origin $clientBranch --force
+ # Step 6: Push the single commit to the client repository
+ Write-Host "Pushing the single commit to the client repository..."
+ git checkout $clientBranch
+ git merge --squash temp-merge-branch --allow-unrelated-histories
+ git commit --author="$authorName <$authorEmail>" -m "$commitMessage"
+ git push origin $clientBranch --force
 
 # Step 7: Clean up temporary branch
 git branch -D temp-merge-branch

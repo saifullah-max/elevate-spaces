@@ -5,27 +5,75 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import Link from "next/link";
+import { signIn } from "@/services/auth.service";
+import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { setAuth } from "@/store/slices/authSlice";
+import { saveAuthToStorage } from "@/lib/auth.storage";
 
 export default function SignInPage() {
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState({
     email: "",
     password: "",
+    rememberMe: false,
   });
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, type, value, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    setError(null);
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // sign-in api integration
-    setTimeout(() => setLoading(false), 2000);
+    setError(null);
+
+    try {
+      const response = await signIn({
+        email: form.email,
+        password: form.password,
+      });
+
+      dispatch(setAuth({
+        user: response.user,
+        token: response.token
+      }));
+
+      // Save to localStorage or sessionStorage based on rememberMe
+      if (form.rememberMe) {
+        saveAuthToStorage(response.user, response.token); // localStorage (persistent)
+      } else {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(
+            "auth",
+            JSON.stringify({ user: response.user, token: response.token })
+          );
+        }
+      }
+
+      if (response.token && response.user) {
+        setForm({ email: "", password: "", rememberMe: false });
+        // Redirect to home page after success
+        router.push('/');
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        typeof err === "object" && err !== null && "message" in err
+          ? (err as { message: string }).message
+          : "Sign in failed. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,6 +96,12 @@ export default function SignInPage() {
 
         {/* Form */}
         <form onSubmit={onSubmit} className="space-y-5">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -95,6 +149,9 @@ export default function SignInPage() {
             <label className="flex items-center gap-2 text-slate-600">
               <input
                 type="checkbox"
+                name="rememberMe"
+                checked={form.rememberMe}
+                onChange={handleChange}
                 className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
               />
               Remember me

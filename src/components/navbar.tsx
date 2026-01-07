@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Home,
   Menu,
@@ -8,11 +8,55 @@ import {
   PenTool,
   TrendingUp,
   Users,
+  LogIn,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuthUser, useIsAuthenticated, useAppDispatch } from "@/store/hooks";
+import { useRouter } from "next/navigation";
+import { logout } from "@/store/slices/authSlice";
+import { clearAuthFromStorage } from "@/lib/auth.storage";
 
 export default function Navbar() {
+  const user = useAuthUser();
+  const isLoggedIn = useIsAuthenticated();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  // Refs for dropdown and button
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const userMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!showDropdown) return;
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        userMenuButtonRef.current &&
+        !userMenuButtonRef.current.contains(target)
+      ) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  const handleLogout = () => {
+    clearAuthFromStorage();
+    dispatch(logout());
+    setShowDropdown(false);
+    router.push("/sign-in");
+  };
+
+  // Close dropdown on outside click
+  // (for simplicity, only closes on menu toggle or option click)
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -89,12 +133,54 @@ export default function Navbar() {
             Pricing
           </button>
 
-          <Link
-            href="/sign-in"
-            className="font-semibold text-indigo-600 px-5 py-2 rounded-full shadow-lg text-sm hover:text-white hover:bg-slate-500 transition-colors"
-          >
-            Log In
-          </Link>
+          {!isLoggedIn ? (
+            <div>
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center gap-2 h-11 px-5 font-semibold text-slate-600 bg-white border border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                style={{ verticalAlign: 'middle' }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <LogIn className="w-5 h-5" />
+                Log In
+              </Link>
+            </div>
+          ) : (
+            <div className="relative">
+              <button
+                ref={userMenuButtonRef}
+                className="flex items-center gap-2 font-semibold text-slate-800 hover:text-indigo-600 focus:outline-none"
+                id="user-menu-button"
+                aria-haspopup="true"
+                aria-expanded={showDropdown ? "true" : "false"}
+                onClick={() => setShowDropdown((prev) => !prev)}
+                type="button"
+              >
+                {user?.name}
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              {showDropdown && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-50"
+                >
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-t-lg"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-slate-100 rounded-b-lg"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -151,15 +237,55 @@ export default function Navbar() {
             Pricing
           </button>
 
-          <div className="pt-2">
-            <Link
-              href="/sign-in"
-              className="block w-full text-center py-3 px-5 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Log In
-            </Link>
-          </div>
+          {!isLoggedIn ? (
+            <div className="pt-2">
+              <Link
+                href="/sign-in"
+                className="block w-full text-center py-3 px-5 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <LogIn className="w-5 h-5" />
+                  Log In
+                </div>
+              </Link>
+            </div>
+          ) : (
+            <div className="relative">
+              <button
+                ref={userMenuButtonRef}
+                className="flex items-center gap-2 font-semibold text-slate-800 hover:text-indigo-600 focus:outline-none"
+                id="user-menu-button-mobile"
+                aria-haspopup="true"
+                aria-expanded={showDropdown ? "true" : "false"}
+                onClick={() => setShowDropdown((prev) => !prev)}
+                type="button"
+              >
+                {user?.name}
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              {showDropdown && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-50"
+                >
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-t-lg"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-slate-100 rounded-b-lg"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </nav>

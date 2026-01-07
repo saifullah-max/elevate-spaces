@@ -5,29 +5,71 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { signUp } from "@/services/auth.service";
+import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { setAuth } from "@/store/slices/authSlice";
+import { saveAuthToStorage } from "@/lib/auth.storage";
 
 export default function SignUp() {
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
   });
-
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
+    setError(null);
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // sign-up api integration
-    setTimeout(() => setLoading(false), 2000);
+    setError(null);
+
+    try {
+      const response = await signUp({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+
+      if (response.success && response.user && response.token) {
+        // Dispatch to Redux
+        dispatch(setAuth({
+          user: response.user,
+          token: response.token,
+        }));
+
+        // Save to localStorage for persistence
+        saveAuthToStorage(response.user, response.token);
+
+        setSuccess(true);
+        setForm({ name: "", email: "", password: "" });
+        // Redirect to home page (or onboarding based on role)
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        typeof err === "object" && err !== null && "message" in err
+          ? (err as { message: string }).message
+          : "Sign up failed. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,16 +101,29 @@ export default function SignUp() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-5">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+              Account created successfully! Redirecting to sign in...
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Username
+                Name
               </label>
               <Input
-                name="username"
-                placeholder="Choose a username"
-                value={form.username}
+                name="name"
+                placeholder="Enter your full name"
+                value={form.name}
                 onChange={handleChange}
+                required
                 className="h-11 border-slate-300 focus:border-indigo-600 focus:ring-indigo-600"
               />
             </div>
@@ -83,6 +138,7 @@ export default function SignUp() {
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={handleChange}
+                required
                 className="h-11 border-slate-300 focus:border-indigo-600 focus:ring-indigo-600"
               />
             </div>
@@ -98,6 +154,7 @@ export default function SignUp() {
                   placeholder="Create a strong password"
                   value={form.password}
                   onChange={handleChange}
+                  required
                   className="h-11 pr-10 border-slate-300 focus:border-indigo-600 focus:ring-indigo-600"
                 />
                 <button
