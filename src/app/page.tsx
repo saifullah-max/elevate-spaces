@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/navbar";
+<<<<<<< HEAD
 import {
   Sparkles,
   Monitor,
@@ -66,10 +67,19 @@ export default function Home() {
     }
   }, [isDragging]);
 
+=======
+import Footer from "@/components/footer";
+import Demo from "@/components/demo";
+import Services from "@/components/services";
+import Pricing from "@/components/pricing";
+
+export default function Home() {
+>>>>>>> temp-merge-branch
   return (
     <div className="bg-slate-100 min-h-screen">
       <Navbar />
 
+<<<<<<< HEAD
       {/* Added space below navbar */}
       <div className="pt-32 pb-12">
         <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
@@ -362,6 +372,15 @@ export default function Home() {
           animation-delay: 0.5s;
         }
       `}</style>
+=======
+      <Demo />
+
+      <Services />
+
+      <Pricing />
+
+      <Footer />
+>>>>>>> temp-merge-branch
     </div>
   );
 }
