@@ -17,6 +17,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
+import Demo from "@/components/demo";
+import Services from "@/components/services";
+import Pricing from "@/components/pricing";
+import Footer from "@/components/footer";
 
 export default function Home() {
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -362,6 +366,13 @@ export default function Home() {
           animation-delay: 0.5s;
         }
       `}</style>
+      <Demo />
+
+      <Services />
+
+      <Pricing />
+
+      <Footer />
     </div>
   );
 }
