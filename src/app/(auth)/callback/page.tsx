@@ -12,10 +12,12 @@ export default function OAuthCallbackPage() {
 
         if (token) {
             localStorage.setItem("token", token);
-            // optionally redirect to dashboard
+            // redirect to dashboard or homepage
             window.location.href = "/";
         } else {
             console.error("OAuth failed", error);
+            // optional: redirect to login page
+            window.location.href = "/login?error=" + error;
         }
     }, [searchParams]);
 
