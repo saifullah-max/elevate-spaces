@@ -1,5 +1,5 @@
-import axios from "axios";
 import type { User, UserRole } from "@/store/slices/authSlice";
+import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Home,
   Menu,
@@ -9,11 +9,45 @@ import {
   TrendingUp,
   Users,
   X,
+  LogOut,
+  User,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+interface UserData {
+  id: string | null;
+  email: string | null;
+  name: string | null;
+  avatarUrl?: string | null;
+}
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check for logged in user
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        setUser(null);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setDropdownOpen(false);
+    setMobileMenuOpen(false);
+    router.push("/");
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -101,13 +135,53 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Login Button */}
-            <Link
-              href="/sign-in"
-              className="font-semibold text-indigo-600 px-6 py-2.5 rounded-full shadow-lg text-sm hover:bg-indigo-600 hover:text-white transition-all border border-indigo-600"
-            >
-              Log In
-            </Link>
+            {/* Login Button / User Menu */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name || "User"}
+                      className="w-8 h-8 rounded-full object-cover border-2 border-indigo-600"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                      {user.name?.charAt(0).toUpperCase() || <User className="w-4 h-4" />}
+                    </div>
+                  )}
+                  <span className="font-medium text-slate-700 max-w-[120px] truncate">
+                    {user.name?.split(" ")[0] || "User"}
+                  </span>
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
+                    <div className="px-4 py-3 border-b border-slate-100">
+                      <p className="font-semibold text-slate-900 truncate">{user.name}</p>
+                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="font-semibold text-indigo-600 px-6 py-2.5 rounded-full shadow-lg text-sm hover:bg-indigo-600 hover:text-black transition-all border border-indigo-600"
+              >
+                Log In
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -154,13 +228,42 @@ export default function Navbar() {
             </div>
 
             <div className="pt-6">
-              <Link
-                href="/sign-in"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block w-full text-center py-4 px-6 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg transition-transform active:scale-95"
-              >
-                Log In
-              </Link>
+              {user ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-200 rounded-xl">
+                    {user.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.name || "User"}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-indigo-600"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
+                        {user.name?.charAt(0).toUpperCase() || <User className="w-5 h-5" />}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">{user.name}</p>
+                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-3 px-6 font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-center py-4 px-6 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg transition-transform active:scale-95"
+                >
+                  Log In
+                </Link>
+              )}
             </div>
           </div>
         </div>

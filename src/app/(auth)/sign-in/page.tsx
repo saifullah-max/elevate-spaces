@@ -76,6 +76,11 @@ export default function SignInPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API}/auth/google`;
+  };
+
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-slate-50 to-white">
       <div className="w-full max-w-md p-8 space-y-8 rounded-2xl bg-white shadow-lg border border-slate-200">
@@ -198,6 +203,7 @@ export default function SignInPage() {
               variant="outline"
               className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400"
               aria-label="Sign in with Google"
+              onClick={handleGoogleLogin}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
