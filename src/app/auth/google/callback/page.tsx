@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Runs on client after mount
   useEffect(() => {
     const params = Object.fromEntries(searchParams.entries());
 
-    // Example: store token from backend redirect
+    // Store token from backend if present
     if (params.token) {
       localStorage.setItem("token", params.token);
     }
 
-    // Redirect to main app page
+    // Redirect to main page
     router.replace("/");
   }, [searchParams, router]);
 
@@ -23,5 +24,13 @@ export default function GoogleCallbackPage() {
     <div className="flex items-center justify-center h-screen text-center">
       <p className="text-gray-700 text-lg">Logging you in…</p>
     </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense fallback={<p className="text-center p-6">Loading...</p>}>
+      <GoogleCallbackHandler />
+    </Suspense>
   );
 }
