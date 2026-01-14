@@ -2,18 +2,33 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { setAuth } from "@/store/slices/authSlice";
+import { saveAuthToStorage } from "@/lib/auth.storage";
 
 function GoogleCallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const params = Object.fromEntries(searchParams.entries());
 
-    // Store token from backend if present
-    if (params.token) {
-      localStorage.setItem("token", params.token);
-      console.log("params:", params);
+    // Check for user info and token from backend redirect
+    if (params.token && params.user) {
+      try {
+        const user = JSON.parse(params.user as string);
+
+        // Save to Redux store
+        dispatch(setAuth({ user, token: params.token as string }));
+
+        // Save persistently in localStorage
+        saveAuthToStorage(user, params.token as string);
+
+        console.log("Google OAuth success:", user);
+      } catch (err) {
+        console.error("Failed to parse user from Google callback:", err);
+      }
     }
 
     // Redirect to main page after 5 seconds
@@ -21,8 +36,8 @@ function GoogleCallbackHandler() {
       router.replace("/");
     }, 5000);
 
-    return () => clearTimeout(timeout); // cleanup
-  }, [searchParams, router]);
+    return () => clearTimeout(timeout);
+  }, [searchParams, router, dispatch]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen text-center gap-3">
