@@ -1,3 +1,5 @@
+"use client";
+
 import {
   UploadCloud,
   Monitor,
@@ -10,10 +12,17 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { stageImage } from "@/services/image.service"; // <- your API service
+import type { RoomType, StagingStyle } from "@/lib/errors";
 
 export default function Demo() {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [stagedImageUrl, setStagedImageUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleMove = (clientX: number) => {
     const rect = document
@@ -43,7 +52,6 @@ export default function Demo() {
     setIsDragging(false);
   };
 
-  // Add global listeners when dragging
   React.useEffect(() => {
     if (isDragging) {
       window.addEventListener("mousemove", handleDrag as any);
@@ -59,6 +67,7 @@ export default function Demo() {
     }
   }, [isDragging]);
 
+  // ---------- UploadArea ----------
   const UploadArea = () => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -69,11 +78,10 @@ export default function Demo() {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
       if (files && files[0]) {
-        const file = files[0];
-        console.log("Selected file:", file.name, file.type, file.size);
-
-        // Optional: Show filename or preview here later
-        // You can add state in parent if needed
+        const selectedFile = files[0];
+        setFile(selectedFile);
+        setStagedImageUrl(null); // reset previous result
+        setError(null);
       }
     };
 
@@ -101,6 +109,28 @@ export default function Demo() {
     );
   };
 
+  // ---------- Handle Staging ----------
+  const handleStageImage = async () => {
+    if (!file) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await stageImage({
+        file,
+        roomType: "living-room" as RoomType,
+        stagingStyle: "modern" as StagingStyle,
+      });
+
+      setStagedImageUrl(response.stagedImageUrl);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to stage image");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section id="try-it-free" className="pt-32 pb-12">
       <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
@@ -123,7 +153,6 @@ export default function Demo() {
       </div>
 
       <div className="mt-8 max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-fade-in delay-500">
-        {/* Header */}
         <div className="bg-slate-900 p-4 text-white flex justify-between items-center px-6">
           <span className="font-bold flex items-center gap-2">
             <Monitor className="w-4 h-4" />
@@ -176,10 +205,6 @@ export default function Demo() {
                     No Furniture (Empty)
                   </option>
                 </select>
-
-                {/* <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
-                    <ChevronDown className="w-4 h-4" />
-                  </div> */}
               </div>
 
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
@@ -192,23 +217,15 @@ export default function Demo() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm mb-2 focus:ring-2 focus:ring-indigo-500 outline-none"
               />
 
-              <Button className="w-full text-xs font-bold">
-                Update Preview
-              </Button>
-            </div>
-
-            <div
-              id="workspace-actions"
-              className="p-4 bg-slate-100 rounded-lg text-center space-y-2"
-            >
-              <p className="text-xs text-slate-500 mb-2">Preview Mode</p>
-
-              <button
-                disabled
-                className="w-full py-2 bg-slate-200 text-slate-400 text-xs font-bold rounded cursor-not-allowed"
+              <Button
+                className="w-full text-xs font-bold"
+                onClick={handleStageImage}
+                disabled={loading || !file}
               >
-                Select a Package Below
-              </button>
+                {loading ? "Processing..." : "Update Preview"}
+              </Button>
+
+              {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
             </div>
           </div>
 
@@ -219,26 +236,28 @@ export default function Demo() {
             onMouseDown={handleStart}
             onTouchStart={handleStart}
           >
-            {/* BEFORE Image (Empty) - Always full, on the bottom layer */}
+            {/* BEFORE Image (Empty) */}
             <div className="absolute inset-0">
               <img
-                src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1000&auto=format&fit=crop"
+                src={file ? URL.createObjectURL(file) : "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1000&auto=format&fit=crop"}
                 alt="Empty room before staging"
                 className="w-full h-full object-cover"
               />
             </div>
 
-            {/* AFTER Image (Staged) - Clipped to the right of the slider */}
-            <div
-              className="absolute inset-0 overflow-hidden"
-              style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
-            >
-              <img
-                src="https://media.houseandgarden.co.uk/photos/67dc464c0f2847aedf2da20b/16:9/w_2580,c_limit/Shot05117_RT-production_digital.jpg" // Beautifully staged modern living room
-                alt="Staged living room"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            {/* AFTER Image (Staged) */}
+            {stagedImageUrl && (
+              <div
+                className="absolute inset-0 overflow-hidden"
+                style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
+              >
+                <img
+                  src={stagedImageUrl}
+                  alt="Staged living room"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
 
             {/* Slider Line + Handle */}
             <div
@@ -250,7 +269,7 @@ export default function Demo() {
               </div>
             </div>
 
-            {/* Top Right Actions (unchanged) */}
+            {/* Top Right Actions */}
             <div className="absolute top-4 right-4 z-20 flex gap-2">
               <button className="bg-white/90 hover:bg-white p-2 rounded-lg border border-slate-200 shadow-md transition">
                 <Download className="w-4 h-4 text-slate-700 hover:text-indigo-600" />
