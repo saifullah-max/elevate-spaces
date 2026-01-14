@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { connection } from "next/server";
 
-export default function AuthCallback() {
+export default async function AuthCallback() {
+  await connection();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
