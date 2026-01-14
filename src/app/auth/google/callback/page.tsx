@@ -17,7 +17,7 @@ function GoogleCallbackHandler() {
     }
 
     // Redirect to main page
-    router.replace("/");
+    // router.replace("/");
   }, [searchParams, router]);
 
   return (
