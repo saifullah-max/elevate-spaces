@@ -1,7 +1,27 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      // Local dev
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3001",
+      },
 
-const nextConfig: NextConfig = {
-  /* config options here */
+      // Your API
+      {
+        protocol: "https",
+        hostname: "api.pwrplant.ca",
+      },
+
+      // ✅ Supabase Storage (IMPORTANT)
+      {
+        protocol: "https",
+        hostname: "znpugwyzbyqtserluhqv.supabase.co",
+      },
+    ],
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
