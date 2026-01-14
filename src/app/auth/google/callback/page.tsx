@@ -1,25 +1,27 @@
 "use client";
+
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { connection } from "next/server";
 
-export default async function GoogleCallbackPage() {
+export default function GoogleCallbackPage() {
   const router = useRouter();
-  await connection();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Extract query params (code, state, token, whatever you passed)
     const params = Object.fromEntries(searchParams.entries());
 
-    // Here you can store token in localStorage/cookie if needed
+    // Example: store token from backend redirect
     if (params.token) {
       localStorage.setItem("token", params.token);
     }
 
-    // Redirect to the page you actually want users to land
-    router.replace("/"); // or "/"
-  }, [router, searchParams]);
+    // Redirect to main app page
+    router.replace("/");
+  }, [searchParams, router]);
 
-  return <div className="p-6 text-center">Logging you in…</div>;
+  return (
+    <div className="flex items-center justify-center h-screen text-center">
+      <p className="text-gray-700 text-lg">Logging you in…</p>
+    </div>
+  );
 }
