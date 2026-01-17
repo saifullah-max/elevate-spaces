@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getAuthFromStorage, clearAuthFromStorage } from "@/lib/auth.storage";
+import type { User as UserType } from "@/store/slices/authSlice";
 
 interface UserData {
   id: string | null;
@@ -29,20 +31,40 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for logged in user
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
+    // Function to load user from localStorage
+    const loadUserFromStorage = () => {
+      const authData = getAuthFromStorage();
+      if (authData && authData.user) {
+        setUser({
+          id: authData.user.id,
+          email: authData.user.email,
+          name: authData.user.name,
+          avatarUrl: authData.user.avatarUrl || null,
+        });
+      } else {
         setUser(null);
       }
-    }
+    };
+
+    // Load user on mount
+    loadUserFromStorage();
+
+    // Listen for storage changes (e.g., from other tabs or after login)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "elevate_spaces_auth" || e.key === null) {
+        loadUserFromStorage();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuthFromStorage();
     setUser(null);
     setDropdownOpen(false);
     setMobileMenuOpen(false);

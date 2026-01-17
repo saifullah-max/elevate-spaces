@@ -15,9 +15,16 @@ function GoogleCallbackHandler() {
     const params = Object.fromEntries(searchParams.entries());
 
     // Check for user info and token from backend redirect
-    if (params.token && params.user) {
+    // Backend sends: token, userId, email, name, provider, isNewUser, avatarUrl (optional)
+    if (params.token && params.userId && params.email) {
       try {
-        const user = JSON.parse(params.user as string);
+        const user = {
+          id: params.userId,
+          email: params.email,
+          name: params.name || "",
+          role: "USER" as const, // Default role, can be updated if needed
+          avatarUrl: params.avatarUrl || null,
+        };
 
         // Save to Redux store
         dispatch(setAuth({ user, token: params.token as string }));
@@ -26,17 +33,18 @@ function GoogleCallbackHandler() {
         saveAuthToStorage(user, params.token as string);
 
         console.log("Google OAuth success:", user);
+        
+        // Redirect immediately after saving
+        router.replace("/");
       } catch (err) {
         console.error("Failed to parse user from Google callback:", err);
+        router.replace("/sign-in?error=oauth_failed");
       }
+    } else if (params.error) {
+      // Handle error case
+      console.error("OAuth error:", params.error);
+      router.replace(`/sign-in?error=${params.error}`);
     }
-
-    // Redirect to main page after 5 seconds
-    const timeout = setTimeout(() => {
-      router.replace("/");
-    }, 5000);
-
-    return () => clearTimeout(timeout);
   }, [searchParams, router, dispatch]);
 
   return (

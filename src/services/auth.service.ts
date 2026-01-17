@@ -34,6 +34,7 @@ interface AuthAPIResponse {
     email: string;
     name: string;
     role: string; // Backend returns string
+    avatar_url?: string | null; // Backend uses snake_case
   };
 }
 
@@ -60,8 +61,11 @@ export const signUp = async (data: SignUpData): Promise<SignUpResponse> => {
     }
 
     const user: User = {
-      ...apiUser,
+      id: apiUser.id,
+      email: apiUser.email,
+      name: apiUser.name,
       role: apiUser.role, // Now guaranteed to be UserRole type
+      avatarUrl: apiUser.avatar_url || null, // Map snake_case to camelCase
     };
 
     return {
@@ -106,8 +110,11 @@ export const signIn = async (data: SignInData): Promise<SignInResponse> => {
     }
 
     const user: User = {
-      ...apiUser,
+      id: apiUser.id,
+      email: apiUser.email,
+      name: apiUser.name,
       role: apiUser.role, // Now guaranteed to be UserRole type
+      avatarUrl: apiUser.avatar_url || null, // Map snake_case to camelCase
     };
 
     return {
