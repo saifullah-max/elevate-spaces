@@ -3,7 +3,8 @@ export async function stageImage({
   prompt,
   roomType = "living-room",
   stagingStyle = "modern",
-}: StageImageParams): Promise<StageImageResponse> {
+  deviceId,
+}: StageImageParams & { deviceId?: string }): Promise<StageImageResponse> {
   if (!file) {
     throw new ImageProcessingError(
       ImageErrorCode.NO_FILE_PROVIDED,
@@ -21,7 +22,12 @@ export async function stageImage({
     const response = await axios.post(
       `${API_BASE_URL}/images/generate`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
+        },
+      }
     );
 
     if (response.data?.success) return response.data.data;
@@ -58,7 +64,8 @@ export async function restageImage({
   prompt,
   roomType = "living-room",
   stagingStyle = "modern",
-}: RestageImageParams): Promise<RestageImageResponse> {
+  deviceId,
+}: RestageImageParams & { deviceId?: string }): Promise<RestageImageResponse> {
   if (!stagedId) {
     throw new ImageProcessingError(
       ImageErrorCode.NO_FILE_PROVIDED,
@@ -74,7 +81,12 @@ export async function restageImage({
     };
     const response = await axios.post(
       `${API_BASE_URL}/images/restage`,
-      payload
+      payload,
+      {
+        headers: {
+          ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
+        },
+      }
     );
     if (response.data?.success) return response.data.data;
     throw new ImageProcessingError(

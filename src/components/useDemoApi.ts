@@ -2,8 +2,20 @@ import { stageImage, restageImage } from "@/services/image.service";
 import { useState } from "react";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { showError } from "./toastUtils";
+import { v4 as uuidv4 } from 'uuid';
 
 export function useDemoApi() {
+    // Ensure device ID is generated and stored
+    function getOrCreateDeviceId() {
+      if (typeof window === 'undefined') return '';
+      let deviceId = localStorage.getItem('device_id');
+      if (!deviceId || typeof deviceId !== 'string') {
+        deviceId = uuidv4();
+        localStorage.setItem('device_id', deviceId);
+      }
+      return deviceId || '';
+    }
+    const deviceId = typeof window !== 'undefined' ? getOrCreateDeviceId() : '';
   const [loading, setLoading] = useState(false);
   const [restageLoading, setRestageLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +38,7 @@ export function useDemoApi() {
         roomType: areaType === "interior" ? roomType : exteriorType,
         stagingStyle,
         prompt,
+        deviceId,
       });
       setStagedImageUrl(response.stagedImageUrl);
       setStagedId(response.stagedId || null);
@@ -67,6 +80,7 @@ export function useDemoApi() {
         prompt: restagePrompt,
         roomType: areaType === "interior" ? roomType : exteriorType,
         stagingStyle,
+        deviceId,
       });
       setStagedImageUrl(restaged.stagedImageUrl);
       setStagedId(restaged.stagedId || stagedId);

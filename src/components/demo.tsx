@@ -47,13 +47,13 @@ export default function Demo() {
 
   // Show info toast on mount
   useEffect(() => {
-    showInfo("You can stage up to 10 demo images for free. After that, you'll need to sign up to continue. The demo limit resets every 30 days. Abuse may result in a block.");
+    showInfo("You can stage up to 10 demo images per device for free. After that, you'll need to sign up to continue. The demo limit resets every 30 days for each device. Abuse may result in a block.");
   }, []);
 
   // Show error toast if blocked
   useEffect(() => {
     if (isBlocked) {
-      showError('Demo access has been blocked due to repeated use. Please sign up or contact support for help.');
+      showError('Demo access has been blocked for this device due to repeated use. Please sign up or contact support for help.');
     }
   }, [isBlocked]);
 
