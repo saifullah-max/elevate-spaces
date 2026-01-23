@@ -1,3 +1,70 @@
+// SSE streaming for image generation
+export function stageImageSSE({
+  file,
+  prompt,
+  roomType = "living-room",
+  stagingStyle = "modern",
+  deviceId,
+  onImage,
+  onError,
+  onDone
+}: StageImageParams & {
+  deviceId?: string,
+  onImage: (data: any) => void,
+  onError?: (err: any) => void,
+  onDone?: () => void
+}) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("roomType", roomType);
+  formData.append("stagingStyle", stagingStyle);
+  if (prompt) formData.append("prompt", prompt);
+
+  // First, upload the file and get a token or temp id (or use a presigned URL approach)
+  // For simplicity, we'll POST to a special /images/generate/stream endpoint (must match backend route)
+  fetch(`${API_BASE_URL}/images/generate`, {
+    method: "POST",
+    headers: {
+      ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
+    },
+    body: formData,
+  })
+    .then(async (response) => {
+      if (!response.body) throw new Error("No response body for SSE");
+      const reader = response.body.getReader();
+      let buffer = '';
+      const decoder = new TextDecoder();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let eventIdx;
+        while ((eventIdx = buffer.indexOf('\n\n')) !== -1) {
+          const eventBlock = buffer.slice(0, eventIdx);
+          buffer = buffer.slice(eventIdx + 2);
+          if (eventBlock.startsWith('event: image')) {
+            const dataLine = eventBlock.split('\n').find(l => l.startsWith('data: '));
+            if (dataLine) {
+              const data = JSON.parse(dataLine.slice(6));
+              onImage(data);
+            }
+          } else if (eventBlock.startsWith('event: error')) {
+            const dataLine = eventBlock.split('\n').find(l => l.startsWith('data: '));
+            if (dataLine && onError) {
+              const data = JSON.parse(dataLine.slice(6));
+              onError(data);
+            }
+          } else if (eventBlock.startsWith('event: done')) {
+            if (onDone) onDone();
+          }
+        }
+      }
+      if (onDone) onDone();
+    })
+    .catch((err) => {
+      if (onError) onError(err);
+    });
+}
 export async function stageImage({
   file,
   prompt,
@@ -121,8 +188,8 @@ export interface StageImageParams {
 
 export interface StageImageResponse {
   originalImageUrl?: string;
-  stagedImageUrl: string;
-  stagedId?: string;
+  stagedImageUrls: string[];
+  stagedIds?: string[];
   roomType: string;
   stagingStyle: string;
   prompt: string | null;

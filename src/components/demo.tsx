@@ -9,23 +9,30 @@ import {
   Sparkles,
   Settings,
 } from "lucide-react";
+
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useDemoApi } from "./useDemoApi";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { showInfo, showError } from './toastUtils';
-import { VALID_ROOM_TYPES, VALID_STAGING_STYLES, type RoomType, type StagingStyle } from "@/lib/errors";
+import { DemoDropdown } from "./DemoDropdown";
+import { UploadArea } from "./UploadArea";
+import { RoomType, StagingStyle } from "@/lib/errors";
+import { exteriorOptions, interiorOptions, stagingStyles } from "./data/dropdown";
+
 
 export default function Demo() {
+  // Move selectedImageIdx state to Demo
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
 
-  // Use modularized API logic
+
   const {
     loading,
     restageLoading,
     error,
-    stagedImageUrl,
-    stagedId,
+    stagedImageUrls,
+    stagedIds,
     demoCount,
     demoLimit,
     isDemo,
@@ -33,8 +40,8 @@ export default function Demo() {
     isBlocked,
     limitReached,
     setError,
-    setStagedImageUrl,
-    setStagedId,
+    setStagedImageUrls,
+    setStagedIds,
     setDemoCount,
     setDemoLimit,
     setIsDemo,
@@ -43,12 +50,20 @@ export default function Demo() {
     setLimitReached,
     handleStageImage,
     handleRestageImage,
-  } = useDemoApi();
+  } = useDemoApi({ selectedImageIdx, setSelectedImageIdx });
 
   // Show info toast on mount
   useEffect(() => {
     showInfo("You can stage up to 10 demo images per device for free. After that, you'll need to sign up to continue. The demo limit resets every 30 days for each device. Abuse may result in a block.");
   }, []);
+
+  // Always reset selectedImageIdx to 0 when stagedImageUrls or stagedIds change and are non-empty
+  useEffect(() => {
+    if ((stagedImageUrls && stagedImageUrls.length > 0) || (stagedIds && stagedIds.length > 0)) {
+      setSelectedImageIdx(0);
+    }
+  }, [stagedImageUrls, stagedIds]);
+
 
   // Show error toast if blocked
   useEffect(() => {
@@ -71,8 +86,8 @@ export default function Demo() {
     window.addEventListener('resize', updateHeight);
     return () => window.removeEventListener('resize', updateHeight);
   }, []);
-  // For restage feature
-  const [restagePrompt, setRestagePrompt] = useState("");
+  // Toggle for generate vs restage
+  const [mode, setMode] = useState<'generate' | 'restage'>('generate');
   const stagedImgRef = useRef<HTMLImageElement | null>(null);
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -83,63 +98,8 @@ export default function Demo() {
   const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
   const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
 
-  // Dropdown options (label-value pairs)
-  const interiorOptions: { label: string; value: RoomType }[] = [
-    { label: "Living Room", value: "living-room" },
-    { label: "Bedroom", value: "bedroom" },
-    { label: "Kitchen", value: "kitchen" },
-    { label: "Bathroom", value: "bathroom" },
-    { label: "Dining Room", value: "dining-room" },
-    { label: "Office", value: "office" },
-    { label: "Basement", value: "basement" },
-    { label: "Attic", value: "attic" },
-    { label: "Hallway", value: "hallway" },
-    { label: "Other", value: "other" },
-  ];
-  const exteriorOptions: { label: string; value: RoomType }[] = [
-    { label: "Outdoor", value: "outdoor" },
-    { label: "Garage", value: "garage" },
-    { label: "Other", value: "other" },
-  ];
-  const stagingStyles: { label: string; value: StagingStyle }[] = [
-    { label: "Modern", value: "modern" },
-    { label: "Contemporary", value: "contemporary" },
-    { label: "Minimalist", value: "minimalist" },
-    { label: "Scandinavian", value: "scandinavian" },
-    { label: "Industrial", value: "industrial" },
-    { label: "Traditional", value: "traditional" },
-    { label: "Transitional", value: "transitional" },
-    { label: "Farmhouse", value: "farmhouse" },
-    { label: "Coastal", value: "coastal" },
-    { label: "Bohemian", value: "bohemian" },
-    { label: "Mid-century", value: "mid-century" },
-    { label: "Luxury", value: "luxury" },
-  ];
 
-  // Modularized Dropdown
-  function Dropdown<T extends string>({ label, value, options, onChange, placeholder }: {
-    label: string;
-    value: T | undefined;
-    options: { label: string; value: T }[];
-    onChange: (v: T) => void;
-    placeholder?: string;
-  }) {
-    return (
-      <div>
-        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{label}</label>
-        <select
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none mb-3"
-          value={value || ""}
-          onChange={e => onChange(e.target.value as T)}
-        >
-          <option value="">{placeholder || `Select ${label}`}</option>
-          {options.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
-    );
-  }
+
 
   const handleMove = (clientX: number) => {
     const rect = document
@@ -184,51 +144,6 @@ export default function Demo() {
     }
   }, [isDragging]);
 
-  // ---------- UploadArea ----------
-  const UploadArea = () => {
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-    const handleDivClick = () => {
-      fileInputRef.current?.click();
-    };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (files && files[0]) {
-        const selectedFile = files[0];
-        setFile(selectedFile);
-        setStagedImageUrl(null); // reset previous result
-        setError(null);
-      }
-    };
-
-    return (
-      <div
-        onClick={limitReached ? undefined : handleDivClick}
-        className={`border-2 border-dashed border-slate-300 rounded-lg p-6 text-center ${limitReached
-          ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:border-indigo-500"
-          } bg-white transition-colors group`}
-      >
-        <UploadCloud className="w-8 h-8 mx-auto text-slate-400 mb-2 group-hover:text-indigo-500 transition-colors" />
-        <span className="text-xs text-slate-600 font-medium block">
-          {limitReached ? "Demo Limit Reached" : "Click to Upload"}
-        </span>
-        <span className="text-[10px] text-slate-400 block mt-1">
-          Single JPG/PNG
-        </span>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/jpeg,image/png"
-          onChange={handleFileChange}
-          disabled={limitReached}
-        />
-      </div>
-    );
-  };
 
   // ...existing code...
 
@@ -298,13 +213,25 @@ export default function Demo() {
             </span>
           </div>
 
-          <div className="grid lg:grid-cols-3">
+          <div className="grid lg:grid-cols-3 relative">
             {/* Controls */}
             <div
               ref={leftPanelRef}
               className="p-4 border-r border-slate-200 bg-linear-to-b from-slate-50 to-white flex flex-col gap-4 overflow-y-auto custom-scrollbar relative"
               style={imageAreaHeight ? { height: imageAreaHeight } : {}}
             >
+              {/* Down arrow indicator for small screens */}
+              {(
+                // Show if there is a file or staged images (i.e., something to see below)
+                (file || (stagedImageUrls && stagedImageUrls.length > 0))
+              ) && (
+                  <div className="flex lg:hidden w-full  justify-center mt-2 animate-bounce" aria-hidden="true">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-down">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <polyline points="19 12 12 19 5 12"></polyline>
+                    </svg>
+                  </div>
+                )}
               {/* Demo usage progress */}
               <div className="mb-1">
                 <div className="flex items-center justify-between mb-1">
@@ -328,7 +255,7 @@ export default function Demo() {
                   <span className="text-sm font-bold text-slate-700">1. Upload Photo</span>
                 </div>
                 <span className="text-xs text-slate-500 mb-1">JPG/PNG, 1 image only</span>
-                <UploadArea />
+                <UploadArea limitReached={limitReached} setFile={setFile} setStagedImageUrls={setStagedImageUrls} setError={setError} />
               </div>
 
               {/* Divider */}
@@ -362,9 +289,9 @@ export default function Demo() {
                     Exterior
                   </button>
                 </div>
-                {areaType === "interior"
-                  ? (
-                    <Dropdown<RoomType>
+                {areaType === "interior" 
+                  ? ( 
+                    <DemoDropdown<RoomType> 
                       label="Interior Type"
                       value={roomType}
                       options={interiorOptions}
@@ -372,44 +299,107 @@ export default function Demo() {
                       placeholder="Select Interior Type"
                     />
                   )
-                  : (
-                    <Dropdown<RoomType>
-                      label="Exterior Type"
+                  : ( 
+                    <DemoDropdown<RoomType> 
+                      label="Exterior Type (optional)"
                       value={exteriorType}
                       options={exteriorOptions}
                       onChange={setExteriorType}
                       placeholder="Select Exterior Type"
                     />
                   )}
-                <Dropdown<StagingStyle>
-                  label="Staging Style"
+                <DemoDropdown<StagingStyle>
+                  label="Staging Style" 
                   value={selectedStagingStyle}
                   options={stagingStyles}
                   onChange={setSelectedStagingStyle}
-                  placeholder="Select Staging Style"
+                  placeholder={areaType === 'exterior' ? '(Optional) Select Staging Style' : 'Select Staging Style'}
                 />
               </div>
 
               {/* Divider */}
               <div className="border-t border-slate-200 my-1" />
 
-              {/* Prompt & Action */}
+              {/* Prompt & Action with mode toggle */}
               <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">3. Refine (Optional)</span>
+                  <span className="text-sm font-bold text-slate-700">3. Refine</span>
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${mode === 'generate' ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}`}
+                    onClick={() => setMode('generate')}
+                  >
+                    Generate New Image
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${mode === 'restage' ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}`}
+                    onClick={() => setMode('restage')}
+                    disabled={!stagedImageUrls.length}
+                  >
+                    Restage Image
+                  </button>
                 </div>
                 <input
                   type="text"
-                  placeholder="e.g. kid friendly, bright colors"
+                  placeholder={mode === 'restage' ? "Enter prompt to restage (required)" : "e.g. kid friendly, bright colors (optional)"}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
+                  required={mode === 'restage'}
+                  disabled={mode === 'restage' && !stagedImageUrls.length}
                 />
                 <Button
                   className="w-full text-xs font-bold mt-2"
-                  onClick={() => {
-                    handleStageImage(file, roomType, exteriorType, selectedStagingStyle, prompt, areaType);
+                  onClick={async () => {
+                    if (mode === 'restage') {
+                      let finalPrompt = prompt;
+                      if (areaType === 'exterior' && !prompt) {
+                        finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+                      }
+                      if (areaType !== 'exterior' && !prompt) {
+                        setError('Prompt is required for restaging.');
+                        return;
+                      }
+                      if (!stagedIds || stagedIds.length === 0) {
+                        setError('No staged image available for restaging.');
+                        return;
+                      }
+                      let stagedIdToUse = stagedIds[selectedImageIdx];
+                      // Fallback: if index is out of bounds, use first available
+                      if (!stagedIdToUse) {
+                        stagedIdToUse = stagedIds[0];
+                        setSelectedImageIdx(0);
+                      }
+                      if (!stagedIdToUse) {
+                        setError('No staged image available for restaging.');
+                        return;
+                      }
+                      await handleRestageImage(
+                        stagedIdToUse,
+                        finalPrompt,
+                        roomType,
+                        areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+                        areaType === 'exterior' ? undefined : selectedStagingStyle,
+                        areaType
+                      );
+                    } else {
+                      let finalPrompt = prompt;
+                      if (areaType === 'exterior' && !prompt) {
+                        finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+                      }
+                      await handleStageImage(
+                        file,
+                        roomType,
+                        areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+                        areaType === 'exterior' ? undefined : selectedStagingStyle,
+                        finalPrompt,
+                        areaType
+                      );
+                    }
                     if (limitReached) {
                       showError('Demo limit reached. Please sign up and continue to buying a plan for further image staging.');
                     }
@@ -417,12 +407,14 @@ export default function Demo() {
                   disabled={
                     loading ||
                     !file ||
-                    (areaType === "interior" ? !roomType : !exteriorType) ||
-                    !selectedStagingStyle
+                    (areaType === "interior" ? !roomType : false) ||
+                    (areaType !== 'exterior' && !selectedStagingStyle) ||
+                    (mode === 'restage' && (!stagedImageUrls.length && areaType !== 'exterior' && !prompt))
                   }
                 >
-                  {loading ? "Processing..." : "Update Preview"}
+                  {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : "Generate Image")}
                 </Button>
+
                 {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
               </div>
             </div>
@@ -431,7 +423,7 @@ export default function Demo() {
             <div
               ref={imageAreaRef}
               id="slider-container"
-              className="lg:col-span-2 relative aspect-video bg-slate-100 overflow-hidden select-none min-h-80"
+              className="border-t-4 border-blue-600 md:border-t-white lg:col-span-2 relative aspect-video bg-slate-100 overflow-hidden select-none min-h-80"
               style={{ minWidth: 0 }}
             >
               {/* BEFORE Image (Empty) */}
@@ -447,11 +439,11 @@ export default function Demo() {
               />
 
               {/* AFTER Image (Staged) */}
-              {stagedImageUrl ? (
+              {stagedImageUrls && stagedImageUrls.length > 0 ? (
                 <>
                   <img
                     ref={stagedImgRef}
-                    src={stagedImageUrl}
+                    src={stagedImageUrls[selectedImageIdx]}
                     alt="Staged living room"
                     className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
                     draggable={false}
@@ -499,42 +491,23 @@ export default function Demo() {
                   <MoveHorizontal className="w-5 h-5 text-indigo-600" />
                 </div>
               </div>
-
-              {/* Top Right Actions */}
-              <div className="absolute top-4 right-4 z-20 flex gap-2">
-                {!isDemo && (
-                  <button className="bg-white/90 hover:bg-white p-2 rounded-lg border border-slate-200 shadow-md transition">
-                    <Download className="w-4 h-4 text-slate-700 hover:text-indigo-600" />
-                  </button>
-                )}
-                <button className="bg-white/90 hover:bg-white p-2 rounded-lg border border-slate-200 shadow-md transition">
-                  <Share2 className="w-4 h-4 text-slate-700 hover:text-indigo-600" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </section>
-      {/* Restage with new prompt UI - always visible below the image/canvas area */}
-      {stagedImageUrl && (
-        <div className="max-w-2xl mx-auto mt-8 animate-fade-in">
-          <div className="bg-white rounded-xl shadow border border-slate-100 p-4 flex flex-col sm:flex-row gap-2 items-center">
-            <input
-              type="text"
-              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="Update prompt & restage..."
-              value={restagePrompt}
-              onChange={e => setRestagePrompt(e.target.value)}
-              disabled={restageLoading}
+      {/* Thumbnails for alternate images */}
+      {stagedImageUrls && stagedImageUrls.length > 0 && (
+        <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
+          {stagedImageUrls.map((url, idx) => (
+            <img
+              key={url}
+              src={url}
+              alt={`Alternate ${idx + 1}`}
+              className={`w-20 h-14 object-cover rounded border-2 cursor-pointer transition-all ${selectedImageIdx === idx ? 'border-indigo-600 shadow-lg' : 'border-slate-200'}`}
+              onClick={() => setSelectedImageIdx(idx)}
+              style={{ opacity: selectedImageIdx === idx ? 1 : 0.7 }}
             />
-            <Button
-              className="text-xs font-bold"
-              disabled={restageLoading || !restagePrompt}
-              onClick={() => handleRestageImage(stagedId, restagePrompt, roomType, exteriorType, selectedStagingStyle, areaType)}
-            >
-              {restageLoading ? "Restaging..." : "Restage with Prompt"}
-            </Button>
-          </div>
+          ))}
         </div>
       )}
     </>
