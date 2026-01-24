@@ -22,8 +22,29 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
     const [error, setError] = useState<string | null>(null);
     const [stagedImageUrls, setStagedImageUrls] = useState<string[]>([]);
     const [stagedIds, setStagedIds] = useState<string[]>([]);
-    const [demoCount, setDemoCount] = useState<number>(0);
-    const [demoLimit, setDemoLimit] = useState<number>(10);
+    // Load demoCount and demoLimit from localStorage if available
+    const getStoredDemoCount = () => {
+        if (typeof window === 'undefined') return 0;
+        const val = localStorage.getItem('demo_count');
+        return val ? parseInt(val, 10) : 0;
+    };
+    const getStoredDemoLimit = () => {
+        if (typeof window === 'undefined') return 10;
+        const val = localStorage.getItem('demo_limit');
+        return val ? parseInt(val, 10) : 10;
+    };
+    const [demoCount, setDemoCountState] = useState<number>(getStoredDemoCount());
+    const [demoLimit, setDemoLimitState] = useState<number>(getStoredDemoLimit());
+
+    // Update localStorage whenever demoCount or demoLimit changes
+    const setDemoCount = (val: number) => {
+        setDemoCountState(val);
+        if (typeof window !== 'undefined') localStorage.setItem('demo_count', val.toString());
+    };
+    const setDemoLimit = (val: number) => {
+        setDemoLimitState(val);
+        if (typeof window !== 'undefined') localStorage.setItem('demo_limit', val.toString());
+    };
     const [isDemo, setIsDemo] = useState<boolean>(false);
     const [isRepeatDemoUser, setIsRepeatDemoUser] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
