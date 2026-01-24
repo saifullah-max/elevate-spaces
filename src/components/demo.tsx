@@ -496,20 +496,26 @@ export default function Demo() {
         </div>
       </section>
       {/* Thumbnails for alternate images */}
-      {stagedImageUrls && stagedImageUrls.length > 0 && (
-        <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
-          {stagedImageUrls.map((url, idx) => (
-            <img
-              key={url}
-              src={url}
-              alt={`Alternate ${idx + 1}`}
-              className={`w-20 h-14 object-cover rounded border-2 cursor-pointer transition-all ${selectedImageIdx === idx ? 'border-indigo-600 shadow-lg' : 'border-slate-200'}`}
-              onClick={() => setSelectedImageIdx(idx)}
-              style={{ opacity: selectedImageIdx === idx ? 1 : 0.7 }}
-            />
-          ))}
-        </div>
-      )}
+      {/* Always show 5 boxes for image generation, fill as images arrive */}
+      <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
+        {[0,1,2,3,4].map((idx) => (
+          <div key={idx} className="w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 cursor-pointer transition-all"
+            style={{ borderColor: selectedImageIdx === idx ? '#6366f1' : '#e5e7eb', boxShadow: selectedImageIdx === idx ? '0 0 0 2px #6366f1' : undefined, opacity: stagedImageUrls[idx] ? 1 : 0.7 }}
+            onClick={() => stagedImageUrls[idx] && setSelectedImageIdx(idx)}
+          >
+            {stagedImageUrls[idx] ? (
+              <img
+                src={stagedImageUrls[idx]}
+                alt={`Alternate ${idx + 1}`}
+                className="w-full h-full object-cover rounded"
+                style={{ pointerEvents: 'none' }}
+              />
+            ) : (
+              <span className="text-xs text-slate-400">{loading ? '...' : ''}</span>
+            )}
+          </div>
+        ))}
+      </div>
     </>
   )
 }
