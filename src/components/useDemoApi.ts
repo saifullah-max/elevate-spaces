@@ -37,6 +37,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         if (!file) return;
         setLoading(true);
         setError(null);
+        // Only clear images for new generation, not for restage
         setStagedImageUrls([]);
         setStagedIds([]);
         let demoCountValue = 0;
@@ -97,16 +98,13 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                 stagingStyle,
                 deviceId,
             });
-
-            // Ensure new arrays
-            const newUrls = restaged.stagedImageUrl ? [restaged.stagedImageUrl] : [];
-            const newIds = restaged.stagedId ? [restaged.stagedId] : [];
-
-            setStagedImageUrls(newUrls);
-            setStagedIds(newIds);
-
-            // Auto-select the only image
-            setSelectedImageIdx(0);
+            // Append the new restaged image and select it atomically
+            setStagedImageUrls(prev => {
+                const updated = restaged.stagedImageUrl ? [...prev, restaged.stagedImageUrl] : prev;
+                if (restaged.stagedImageUrl) setSelectedImageIdx(updated.length - 1);
+                return updated;
+            });
+            setStagedIds(prev => restaged.stagedId ? [...prev, restaged.stagedId] : prev);
         } catch (err: any) {
             setError(err?.message || "Failed to restage image");
         } finally {

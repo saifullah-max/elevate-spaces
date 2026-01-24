@@ -57,12 +57,20 @@ export default function Demo() {
     showInfo("You can stage up to 10 demo images per device for free. After that, you'll need to sign up to continue. The demo limit resets every 30 days for each device. Abuse may result in a block.");
   }, []);
 
-  // Always reset selectedImageIdx to 0 when stagedImageUrls or stagedIds change and are non-empty
+  // Only reset selectedImageIdx to 0 when a new generation occurs (when array is cleared and refilled)
+  const prevUrlsRef = useRef<string[]>([]);
   useEffect(() => {
-    if ((stagedImageUrls && stagedImageUrls.length > 0) || (stagedIds && stagedIds.length > 0)) {
+    // If the array was just cleared and refilled (new generation), reset index to 0
+    if (
+      prevUrlsRef.current.length > 1 &&
+      stagedImageUrls.length > 0 &&
+      stagedImageUrls.length < prevUrlsRef.current.length
+    ) {
       setSelectedImageIdx(0);
     }
-  }, [stagedImageUrls, stagedIds]);
+    // Update ref for next render
+    prevUrlsRef.current = stagedImageUrls;
+  }, [stagedImageUrls]);
 
 
   // Show error toast if blocked
@@ -454,6 +462,18 @@ export default function Demo() {
                       clipPath: `inset(0 0 0 ${sliderPosition}%)`,
                     }}
                   />
+                  {/* Download icon overlay */}
+                  <button
+                    className="absolute top-4 right-4 z-20 bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
+                    title="Open image in new tab"
+                    onClick={() => {
+                      const url = stagedImageUrls[selectedImageIdx];
+                      if (!url) return;
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }}
+                  >
+                    <Download className="w-6 h-6 text-indigo-600" />
+                  </button>
                   {/* Overlay to block interaction for demo images */}
                   {isDemo && (
                     <div
