@@ -18,11 +18,13 @@ function GoogleCallbackHandler() {
     // Backend sends: token, userId, email, name, provider, isNewUser, avatarUrl (optional)
     if (params.token && params.userId && params.email) {
       try {
+        // Use role from backend if present, fallback to 'USER'
+        const role = params.role || "USER";
         const user = {
           id: params.userId,
           email: params.email,
           name: params.name || "",
-          role: "USER" as const, // Default role, can be updated if needed
+          role: role,
           avatarUrl: params.avatarUrl || null,
         };
 

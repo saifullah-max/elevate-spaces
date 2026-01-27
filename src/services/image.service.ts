@@ -22,9 +22,31 @@ export function stageImageSSE({
 
   // First, upload the file and get a token or temp id (or use a presigned URL approach)
   // For simplicity, we'll POST to a special /images/generate/stream endpoint (must match backend route)
+  // Try to get token from localStorage (persisted) or sessionStorage (fallback)
+  let token: string | null = null;
+  if (typeof window !== 'undefined') {
+    const authRaw = localStorage.getItem('elevate_spaces_auth');
+    if (authRaw) {
+      try {
+        const auth = JSON.parse(authRaw);
+        token = auth.token || null;
+      } catch {}
+    }
+    if (!token) {
+      // Fallback to sessionStorage if needed
+      const sessionRaw = sessionStorage.getItem('auth');
+      if (sessionRaw) {
+        try {
+          const auth = JSON.parse(sessionRaw);
+          token = auth.token || null;
+        } catch {}
+      }
+    }
+  }
   fetch(`${API_BASE_URL}/images/generate`, {
     method: "POST",
     headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
     },
     body: formData,
@@ -86,12 +108,34 @@ export async function stageImage({
     formData.append("stagingStyle", stagingStyle);
     if (prompt) formData.append("prompt", prompt);
 
+    // Try to get token from localStorage (persisted) or sessionStorage (fallback)
+    let token: string | null = null;
+    if (typeof window !== 'undefined') {
+      const authRaw = localStorage.getItem('elevate_spaces_auth');
+      if (authRaw) {
+        try {
+          const auth = JSON.parse(authRaw);
+          token = auth.token || null;
+        } catch {}
+      }
+      if (!token) {
+        // Fallback to sessionStorage if needed
+        const sessionRaw = sessionStorage.getItem('auth');
+        if (sessionRaw) {
+          try {
+            const auth = JSON.parse(sessionRaw);
+            token = auth.token || null;
+          } catch {}
+        }
+      }
+    }
     const response = await axios.post(
       `${API_BASE_URL}/images/generate`,
       formData,
       {
         headers: {
           "Content-Type": "multipart/form-data",
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
         },
       }
@@ -146,11 +190,33 @@ export async function restageImage({
       stagingStyle,
       ...(prompt ? { prompt } : {}),
     };
+    // Try to get token from localStorage (persisted) or sessionStorage (fallback)
+    let token: string | null = null;
+    if (typeof window !== 'undefined') {
+      const authRaw = localStorage.getItem('elevate_spaces_auth');
+      if (authRaw) {
+        try {
+          const auth = JSON.parse(authRaw);
+          token = auth.token || null;
+        } catch {}
+      }
+      if (!token) {
+        // Fallback to sessionStorage if needed
+        const sessionRaw = sessionStorage.getItem('auth');
+        if (sessionRaw) {
+          try {
+            const auth = JSON.parse(sessionRaw);
+            token = auth.token || null;
+          } catch {}
+        }
+      }
+    }
     const response = await axios.post(
       `${API_BASE_URL}/images/restage`,
       payload,
       {
         headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
         },
       }
