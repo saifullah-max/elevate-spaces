@@ -113,6 +113,38 @@ export default function Navbar() {
     },
   ];
 
+  // Helper to compute initials
+  const getInitials = (name?: string | null) => {
+    if (!name) return '';
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length === 1) {
+      // Only first name: use first two letters
+      return parts[0].slice(0, 2).toUpperCase();
+    } else if (parts.length >= 2) {
+      // Two or more names: first letter of first and last
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return '';
+  };
+
+  // Listen for Redux store changes (manual login)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const authData = getAuthFromStorage();
+      if (authData && authData.user) {
+        setUser({
+          id: authData.user.id,
+          email: authData.user.email,
+          name: authData.user.name,
+          avatarUrl: authData.user.avatarUrl || null,
+        });
+      } else {
+        setUser(null);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <nav className="fixed w-full z-50 transition-all duration-300 py-6 bg-white/90 backdrop-blur-md shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -172,10 +204,10 @@ export default function Navbar() {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
-                      {user.name?.charAt(0).toUpperCase() || <User className="w-4 h-4" />}
+                      {getInitials(user.name) || <User className="w-4 h-4" />}
                     </div>
                   )}
-                  <span className="font-medium text-slate-700 max-w-[120px] truncate">
+                  <span className="font-medium text-slate-700 max-w-30 truncate">
                     {user.name?.split(" ")[0] || "User"}
                   </span>
                 </button>
@@ -221,7 +253,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu - Improved Design */}
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white shadow-xl border-t border-slate-100 animate-in slide-in-from-top duration-300">
           <div className="px-6 py-6 space-y-1">
@@ -253,7 +284,7 @@ export default function Navbar() {
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-4 py-3 bg-slate-200 rounded-xl">
-                    {user.avatarUrl ? (
+                    {user.avatarUrl && typeof user.avatarUrl === 'string' ? (
                       <img
                         src={user.avatarUrl}
                         alt={user.name || "User"}
@@ -261,12 +292,12 @@ export default function Navbar() {
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-                        {user.name?.charAt(0).toUpperCase() || <User className="w-5 h-5" />}
+                        {getInitials(user?.name) || <User className="w-5 h-5" />}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-slate-900 truncate">{user.name}</p>
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      <p className="font-semibold text-slate-900 truncate">{user?.name || ''}</p>
+                      <p className="text-xs text-slate-500 truncate">{user?.email || ''}</p>
                     </div>
                   </div>
                   <button

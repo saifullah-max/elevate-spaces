@@ -22,7 +22,7 @@ export function stageImageSSE({
 
   // First, upload the file and get a token or temp id (or use a presigned URL approach)
   // For simplicity, we'll POST to a special /images/generate/stream endpoint (must match backend route)
-  // Try to get token from localStorage (persisted) or sessionStorage (fallback)
+  // Get token from localStorage only
   let token: string | null = null;
   if (typeof window !== 'undefined') {
     const authRaw = localStorage.getItem('elevate_spaces_auth');
@@ -31,16 +31,6 @@ export function stageImageSSE({
         const auth = JSON.parse(authRaw);
         token = auth.token || null;
       } catch {}
-    }
-    if (!token) {
-      // Fallback to sessionStorage if needed
-      const sessionRaw = sessionStorage.getItem('auth');
-      if (sessionRaw) {
-        try {
-          const auth = JSON.parse(sessionRaw);
-          token = auth.token || null;
-        } catch {}
-      }
     }
   }
   fetch(`${API_BASE_URL}/images/generate`, {
@@ -108,7 +98,7 @@ export async function stageImage({
     formData.append("stagingStyle", stagingStyle);
     if (prompt) formData.append("prompt", prompt);
 
-    // Try to get token from localStorage (persisted) or sessionStorage (fallback)
+    // Get token from localStorage only
     let token: string | null = null;
     if (typeof window !== 'undefined') {
       const authRaw = localStorage.getItem('elevate_spaces_auth');
@@ -117,16 +107,6 @@ export async function stageImage({
           const auth = JSON.parse(authRaw);
           token = auth.token || null;
         } catch {}
-      }
-      if (!token) {
-        // Fallback to sessionStorage if needed
-        const sessionRaw = sessionStorage.getItem('auth');
-        if (sessionRaw) {
-          try {
-            const auth = JSON.parse(sessionRaw);
-            token = auth.token || null;
-          } catch {}
-        }
       }
     }
     const response = await axios.post(
@@ -190,7 +170,7 @@ export async function restageImage({
       stagingStyle,
       ...(prompt ? { prompt } : {}),
     };
-    // Try to get token from localStorage (persisted) or sessionStorage (fallback)
+    // Get token from localStorage only
     let token: string | null = null;
     if (typeof window !== 'undefined') {
       const authRaw = localStorage.getItem('elevate_spaces_auth');
@@ -199,16 +179,6 @@ export async function restageImage({
           const auth = JSON.parse(authRaw);
           token = auth.token || null;
         } catch {}
-      }
-      if (!token) {
-        // Fallback to sessionStorage if needed
-        const sessionRaw = sessionStorage.getItem('auth');
-        if (sessionRaw) {
-          try {
-            const auth = JSON.parse(sessionRaw);
-            token = auth.token || null;
-          } catch {}
-        }
       }
     }
     const response = await axios.post(

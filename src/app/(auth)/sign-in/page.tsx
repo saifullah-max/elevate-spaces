@@ -48,17 +48,8 @@ export default function SignInPage() {
         token: response.token
       }));
 
-      // Save to localStorage or sessionStorage based on rememberMe
-      if (form.rememberMe) {
-        saveAuthToStorage(response.user, response.token); // localStorage (persistent)
-      } else {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.setItem(
-            "auth",
-            JSON.stringify({ user: response.user, token: response.token })
-          );
-        }
-      }
+      // Always save to localStorage for consistency
+      saveAuthToStorage(response.user, response.token);
 
       if (response.token && response.user) {
         setForm({ email: "", password: "", rememberMe: false });
