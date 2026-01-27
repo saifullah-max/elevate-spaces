@@ -66,7 +66,7 @@ export default function RecentUploads() {
               "
             >
               {/* Image */}
-              <div className="aspect-[4/3] md:aspect-video bg-slate-100 overflow-hidden rounded-t-xl">
+              <div className="aspect-4/3 md:aspect-video bg-slate-100 overflow-hidden rounded-t-xl">
                 <Image
                   src={pair.original.url}
                   alt={pair.original.filename}
@@ -112,7 +112,7 @@ export default function RecentUploads() {
                 <h3 className="text-sm md:text-base font-semibold">
                   Image Preview
                 </h3>
-                <p className="text-[11px] md:text-xs text-slate-500 truncate max-w-[220px]">
+                <p className="text-[11px] md:text-xs text-slate-500 truncate max-w-55">
                   {activeImage.filename}
                 </p>
               </div>

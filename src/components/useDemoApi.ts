@@ -54,7 +54,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
     const selectedImageIdx = props?.selectedImageIdx ?? 0;
     const setSelectedImageIdx = props?.setSelectedImageIdx ?? (() => { });
 
-    const handleStageImage = (file: File | null, roomType: RoomType | undefined, exteriorType: RoomType | undefined, stagingStyle: StagingStyle | undefined, prompt: string, areaType: "interior" | "exterior") => {
+    const handleStageImage = (file: File | null, roomType: RoomType | undefined, exteriorType: RoomType | undefined, stagingStyle: StagingStyle | undefined, prompt: string, areaType: "interior" | "exterior", removeFurniture?: boolean) => {
         if (!file) return;
         setLoading(true);
         setError(null);
@@ -71,6 +71,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             stagingStyle,
             prompt,
             deviceId,
+            removeFurniture,
             onImage: (data) => {
                 setStagedImageUrls(prev => [...prev, data.stagedImageUrl]);
                 setStagedIds(prev => [...prev, data.stagedId]);
@@ -103,7 +104,8 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         roomType: RoomType | undefined,
         exteriorType: RoomType | undefined,
         stagingStyle: StagingStyle | undefined,
-        areaType: "interior" | "exterior"
+        areaType: "interior" | "exterior",
+        removeFurniture?: boolean
     ) => {
         if (!stagedId) {
             setError("No staged image available for restaging.");
@@ -118,14 +120,23 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                 roomType: areaType === "interior" ? roomType : exteriorType,
                 stagingStyle,
                 deviceId,
+                removeFurniture,
             });
             // Append the new restaged image and select it atomically
             setStagedImageUrls(prev => {
-                const updated = restaged.stagedImageUrl ? [...prev, restaged.stagedImageUrl] : prev;
-                if (restaged.stagedImageUrl) setSelectedImageIdx(updated.length - 1);
+                if (!restaged.stagedImageUrl) return prev;
+                // Replace the selected image with the new restaged image
+                const updated = [...prev];
+                updated[props?.selectedImageIdx ?? 0] = restaged.stagedImageUrl;
+                setSelectedImageIdx(props?.selectedImageIdx ?? 0);
                 return updated;
             });
-            setStagedIds(prev => restaged.stagedId ? [...prev, restaged.stagedId] : prev);
+            setStagedIds(prev => {
+                if (!restaged.stagedId) return prev;
+                const updated = [...prev];
+                updated[props?.selectedImageIdx ?? 0] = restaged.stagedId;
+                return updated;
+            });
         } catch (err: any) {
             setError(err?.message || "Failed to restage image");
         } finally {

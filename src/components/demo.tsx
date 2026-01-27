@@ -1,3 +1,4 @@
+// Remove Furniture toggle state
 "use client";
 
 import {
@@ -105,9 +106,7 @@ export default function Demo() {
   const [roomType, setRoomType] = useState<RoomType | undefined>(undefined);
   const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
   const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
-
-
-
+  const [removeFurniture, setRemoveFurniture] = useState(false);
 
   const handleMove = (clientX: number) => {
     const rect = document
@@ -297,31 +296,30 @@ export default function Demo() {
                     Exterior
                   </button>
                 </div>
-                {areaType === "interior" 
-                  ? ( 
-                    <DemoDropdown<RoomType> 
-                      label="Interior Type"
-                      value={roomType}
-                      options={interiorOptions}
-                      onChange={setRoomType}
-                      placeholder="Select Interior Type"
-                    />
-                  )
-                  : ( 
-                    <DemoDropdown<RoomType> 
-                      label="Exterior Type (optional)"
-                      value={exteriorType}
-                      options={exteriorOptions}
-                      onChange={setExteriorType}
-                      placeholder="Select Exterior Type"
-                    />
-                  )}
+                {areaType === "interior" && (
+                  <DemoDropdown<RoomType>
+                    label="Interior Type"
+                    value={roomType}
+                    options={interiorOptions}
+                    onChange={setRoomType}
+                    placeholder={removeFurniture ? "Select Interior Type (optional)" : "Select Interior Type (required)"}
+                  />
+                )}
+                {areaType === "exterior" && (
+                  <DemoDropdown<RoomType>
+                    label="Exterior Type (optional)"
+                    value={exteriorType}
+                    options={exteriorOptions}
+                    onChange={setExteriorType}
+                    placeholder="Select Exterior Type"
+                  />
+                )}
                 <DemoDropdown<StagingStyle>
-                  label="Staging Style" 
+                  label="Staging Style"
                   value={selectedStagingStyle}
                   options={stagingStyles}
                   onChange={setSelectedStagingStyle}
-                  placeholder={areaType === 'exterior' ? '(Optional) Select Staging Style' : 'Select Staging Style'}
+                  placeholder={removeFurniture ? "Select Staging Style (optional)" : (areaType === 'exterior' ? '(Optional) Select Staging Style' : 'Select Staging Style (required)')}
                 />
               </div>
 
@@ -360,6 +358,14 @@ export default function Demo() {
                   required={mode === 'restage'}
                   disabled={mode === 'restage' && !stagedImageUrls.length}
                 />
+                <label className="flex items-center gap-2 mt-2 select-none">
+                  <input
+                    type="checkbox"
+                    checked={removeFurniture}
+                    onChange={e => setRemoveFurniture(e.target.checked)}
+                  />
+                  <span className="text-xs text-slate-700">Remove all furniture (empty room)</span>
+                </label>
                 <Button
                   className="w-full text-xs font-bold mt-2"
                   onClick={async () => {
@@ -392,7 +398,8 @@ export default function Demo() {
                         roomType,
                         areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
-                        areaType
+                        areaType,
+                        removeFurniture
                       );
                     } else {
                       let finalPrompt = prompt;
@@ -405,7 +412,8 @@ export default function Demo() {
                         areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
                         finalPrompt,
-                        areaType
+                        areaType,
+                        removeFurniture
                       );
                     }
                     if (limitReached) {
@@ -415,8 +423,8 @@ export default function Demo() {
                   disabled={
                     loading ||
                     !file ||
-                    (areaType === "interior" ? !roomType : false) ||
-                    (areaType !== 'exterior' && !selectedStagingStyle) ||
+                    (!removeFurniture && areaType === "interior" && !roomType) ||
+                    (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||
                     (mode === 'restage' && (!stagedImageUrls.length && areaType !== 'exterior' && !prompt))
                   }
                 >
@@ -518,7 +526,7 @@ export default function Demo() {
       {/* Thumbnails for alternate images */}
       {/* Always show 5 boxes for image generation, fill as images arrive */}
       <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
-        {[0,1,2,3,4].map((idx) => (
+        {[0, 1, 2, 3, 4].map((idx) => (
           <div key={idx} className="w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 cursor-pointer transition-all"
             style={{ borderColor: selectedImageIdx === idx ? '#6366f1' : '#e5e7eb', boxShadow: selectedImageIdx === idx ? '0 0 0 2px #6366f1' : undefined, opacity: stagedImageUrls[idx] ? 1 : 0.7 }}
             onClick={() => stagedImageUrls[idx] && setSelectedImageIdx(idx)}

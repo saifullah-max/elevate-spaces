@@ -7,18 +7,21 @@ export function stageImageSSE({
   deviceId,
   onImage,
   onError,
-  onDone
+  onDone,
+  removeFurniture
 }: StageImageParams & {
   deviceId?: string,
   onImage: (data: any) => void,
   onError?: (err: any) => void,
-  onDone?: () => void
+  onDone?: () => void,
+  removeFurniture?: boolean
 }) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("roomType", roomType);
   formData.append("stagingStyle", stagingStyle);
   if (prompt) formData.append("prompt", prompt);
+  if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
 
   // First, upload the file and get a token or temp id (or use a presigned URL approach)
   // For simplicity, we'll POST to a special /images/generate/stream endpoint (must match backend route)
@@ -82,6 +85,7 @@ export async function stageImage({
   prompt,
   roomType = "living-room",
   stagingStyle = "modern",
+  removeFurniture,
   deviceId,
 }: StageImageParams & { deviceId?: string }): Promise<StageImageResponse> {
   if (!file) {
@@ -97,6 +101,7 @@ export async function stageImage({
     formData.append("roomType", roomType);
     formData.append("stagingStyle", stagingStyle);
     if (prompt) formData.append("prompt", prompt);
+    if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
 
     // Get token from localStorage only
     let token: string | null = null;
@@ -139,6 +144,7 @@ export interface RestageImageParams {
   prompt?: string;
   roomType?: RoomType;
   stagingStyle?: StagingStyle;
+  removeFurniture?: boolean;
 }
 
 export interface RestageImageResponse {
@@ -155,6 +161,7 @@ export async function restageImage({
   prompt,
   roomType = "living-room",
   stagingStyle = "modern",
+  removeFurniture,
   deviceId,
 }: RestageImageParams & { deviceId?: string }): Promise<RestageImageResponse> {
   if (!stagedId) {
@@ -169,6 +176,7 @@ export async function restageImage({
       roomType,
       stagingStyle,
       ...(prompt ? { prompt } : {}),
+      ...(removeFurniture !== undefined ? { removeFurniture } : {}),
     };
     // Get token from localStorage only
     let token: string | null = null;
@@ -220,6 +228,7 @@ export interface StageImageParams {
   prompt?: string;
   roomType?: RoomType;
   stagingStyle?: StagingStyle;
+  removeFurniture?: boolean;
 }
 
 export interface StageImageResponse {
@@ -252,7 +261,8 @@ export async function stageMultipleImages({
   prompt,
   roomType = "living-room",
   stagingStyle = "modern",
-}: StageMultipleImagesParams): Promise<StageMultipleImagesResponse> {
+  removeFurniture,
+}: StageMultipleImagesParams & { removeFurniture?: boolean }): Promise<StageMultipleImagesResponse> {
   if (!files || files.length === 0) {
     throw new ImageProcessingError(
       ImageErrorCode.NO_FILE_PROVIDED,
@@ -266,6 +276,7 @@ export async function stageMultipleImages({
     formData.append("roomType", roomType);
     formData.append("stagingStyle", stagingStyle);
     if (prompt) formData.append("prompt", prompt);
+    if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
 
     const response = await axios.post(
       `${API_BASE_URL}/images/multiple-generate`,
@@ -306,22 +317,17 @@ export interface RecentUploadsResponse {
   limit: number;
 }
 
-export async function getRecentUploads(
-  limit = 10
-): Promise<RecentUploadsResponse> {
+export async function getRecentUploads(limit = 10): Promise<RecentUploadsResponse> {
   try {
     const response = await axios.get(`${API_BASE_URL}/images/recent`, {
       params: { limit },
     });
-
     if (response.data && response.data.success) {
       return response.data.data;
     }
-
     throw new ImageProcessingError(
       response.data?.error?.code || ImageErrorCode.UNKNOWN_ERROR,
-      response.data?.error?.message ||
-        ErrorMessages[ImageErrorCode.UNKNOWN_ERROR],
+      response.data?.error?.message || ErrorMessages[ImageErrorCode.UNKNOWN_ERROR],
       response.data?.error?.details
     );
   } catch (error) {
