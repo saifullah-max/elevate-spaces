@@ -106,7 +106,7 @@ export default function Demo() {
   const [roomType, setRoomType] = useState<RoomType | undefined>(undefined);
   const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
   const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
-  const [removeFurniture, setRemoveFurniture] = useState(false);
+  // const [removeFurniture, setRemoveFurniture] = useState(false);
 
   const handleMove = (clientX: number) => {
     const rect = document
@@ -302,7 +302,7 @@ export default function Demo() {
                     value={roomType}
                     options={interiorOptions}
                     onChange={setRoomType}
-                    placeholder={removeFurniture ? "Select Interior Type (optional)" : "Select Interior Type (required)"}
+                    // placeholder={removeFurniture ? "Select Interior Type (optional)" : "Select Interior Type (required)"}
                   />
                 )}
                 {areaType === "exterior" && (
@@ -319,7 +319,7 @@ export default function Demo() {
                   value={selectedStagingStyle}
                   options={stagingStyles}
                   onChange={setSelectedStagingStyle}
-                  placeholder={removeFurniture ? "Select Staging Style (optional)" : (areaType === 'exterior' ? '(Optional) Select Staging Style' : 'Select Staging Style (required)')}
+                  // placeholder={removeFurniture ? "Select Staging Style (optional)" : (areaType === 'exterior' ? '(Optional) Select Staging Style' : 'Select Staging Style (required)')}
                 />
               </div>
 
@@ -361,8 +361,8 @@ export default function Demo() {
                 <label className="flex items-center gap-2 mt-2 select-none">
                   <input
                     type="checkbox"
-                    checked={removeFurniture}
-                    onChange={e => setRemoveFurniture(e.target.checked)}
+                    // checked={removeFurniture}
+                    // onChange={e => setRemoveFurniture(e.target.checked)}
                   />
                   <span className="text-xs text-slate-700">Remove all furniture (empty room)</span>
                 </label>
@@ -399,7 +399,7 @@ export default function Demo() {
                         areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
                         areaType,
-                        removeFurniture
+                        // removeFurniture
                       );
                     } else {
                       let finalPrompt = prompt;
@@ -413,7 +413,7 @@ export default function Demo() {
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
                         finalPrompt,
                         areaType,
-                        removeFurniture
+                        // removeFurniture
                       );
                     }
                     if (limitReached) {
@@ -423,8 +423,8 @@ export default function Demo() {
                   disabled={
                     loading ||
                     !file ||
-                    (!removeFurniture && areaType === "interior" && !roomType) ||
-                    (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||
+                    // (!removeFurniture && areaType === "interior" && !roomType) ||
+                    // (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||
                     (mode === 'restage' && (!stagedImageUrls.length && areaType !== 'exterior' && !prompt))
                   }
                 >
