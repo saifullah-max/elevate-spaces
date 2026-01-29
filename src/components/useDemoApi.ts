@@ -71,7 +71,6 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             stagingStyle,
             prompt,
             deviceId,
-            removeFurniture,
             onImage: (data) => {
                 setStagedImageUrls(prev => [...prev, data.stagedImageUrl]);
                 setStagedIds(prev => [...prev, data.stagedId]);
