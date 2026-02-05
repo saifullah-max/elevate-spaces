@@ -1,0 +1,126 @@
+'use client'
+import { Users, Check, Clock, X } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Team } from "@/types/teams.types";
+import { AcceptedMemberCard, PendingInviteCard } from "./MemberCard";
+
+interface ViewAllMembersDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    team: Team | null;
+    getStatusBadgeColor: (status: string) => string;
+    getStatusIcon: (status: string) => React.ReactNode;
+}
+
+export function ViewAllMembersDialog({
+    open,
+    onOpenChange,
+    team,
+    getStatusBadgeColor,
+    getStatusIcon,
+}: ViewAllMembersDialogProps) {
+    if (!team) return null;
+
+    const acceptedMembers = team.teamInvites.filter(inv => inv.status === "ACCEPTED");
+    const pendingInvites = team.teamInvites.filter(inv => inv.status === "PENDING");
+    const failedInvites = team.teamInvites.filter(inv => inv.status === "FAILED");
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[750px] max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader className="border-b border-slate-200 pb-4">
+                    <DialogTitle className="text-2xl font-bold text-slate-900">Team Members</DialogTitle>
+                    <DialogDescription className="text-slate-600">
+                        {team?.name} • Manage team members and invitations
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="overflow-y-auto flex-1 pr-4">
+                    {team && team.teamInvites.length > 0 ? (
+                        <div className="space-y-6 py-4">
+                            {/* Accepted Members */}
+                            {acceptedMembers.length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+                                        <div className="bg-green-100 p-2 rounded-lg">
+                                            <Check className="w-5 h-5 text-green-700" />
+                                        </div>
+                                        <h3 className="font-bold text-slate-900 text-lg">
+                                            Active Members ({acceptedMembers.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {acceptedMembers.map((invite) => (
+                                            <AcceptedMemberCard
+                                                key={invite.id}
+                                                email={invite.email}
+                                                joinDate={new Date(invite.accepted_at || invite.invited_at).toLocaleDateString()}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Pending Invitations */}
+                            {pendingInvites.length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+                                        <div className="bg-amber-100 p-2 rounded-lg">
+                                            <Clock className="w-5 h-5 text-amber-700" />
+                                        </div>
+                                        <h3 className="font-bold text-slate-900 text-lg">
+                                            Pending Invitations ({pendingInvites.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {pendingInvites.map((invite) => (
+                                            <PendingInviteCard
+                                                key={invite.id}
+                                                email={invite.email}
+                                                expiryDate={new Date(invite.expires_at).toLocaleDateString()}
+                                                status="PENDING"
+                                                getStatusBadgeColor={getStatusBadgeColor}
+                                                getStatusIcon={getStatusIcon}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Failed Invitations */}
+                            {failedInvites.length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+                                        <div className="bg-red-100 p-2 rounded-lg">
+                                            <X className="w-5 h-5 text-red-700" />
+                                        </div>
+                                        <h3 className="font-bold text-slate-900 text-lg">
+                                            Failed Invitations ({failedInvites.length})
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {failedInvites.map((invite) => (
+                                            <PendingInviteCard
+                                                key={invite.id}
+                                                email={invite.email}
+                                                expiryDate={new Date(invite.invited_at).toLocaleDateString()}
+                                                status="FAILED"
+                                                getStatusBadgeColor={getStatusBadgeColor}
+                                                getStatusIcon={getStatusIcon}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 text-slate-500">
+                            <Users className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                            <p className="font-medium">No members or invitations</p>
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
