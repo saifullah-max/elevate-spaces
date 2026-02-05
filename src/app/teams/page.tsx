@@ -453,13 +453,12 @@ export default function Teams() {
                                                                                     <div className="flex items-center gap-2 mb-2">
                                                                                         <Mail className="w-4 h-4 text-slate-400" />
                                                                                         <span className="font-medium text-slate-900">{invite.email}</span>
-                                                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                                                                            invite.status === "ACCEPTED" 
-                                                                                                ? "bg-green-100 text-green-800" 
-                                                                                                : invite.status === "PENDING" 
+                                                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${invite.status === "ACCEPTED"
+                                                                                            ? "bg-green-100 text-green-800"
+                                                                                            : invite.status === "PENDING"
                                                                                                 ? "bg-amber-100 text-amber-800"
                                                                                                 : "bg-red-100 text-red-800"
-                                                                                        }`}>
+                                                                                            }`}>
                                                                                             {invite.status === "ACCEPTED" && <Check className="w-3 h-3 mr-1" />}
                                                                                             {invite.status === "PENDING" && <Clock className="w-3 h-3 mr-1" />}
                                                                                             {invite.status === "FAILED" && <X className="w-3 h-3 mr-1" />}
