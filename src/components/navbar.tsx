@@ -86,16 +86,17 @@ export default function Navbar() {
 
   // Navigation items for desktop & mobile reuse
   const navItems = [
-    { label: "Try Demo", section: "try-it-free" },
-    { label: "Services", section: "services" },
+    { label: "Try Demo", section: "try-it-free", href: null },
+    { label: "Services", section: "services", href: null },
     {
       label: "Projects",
       icon: <FolderOpen className="w-4 h-4" />,
       section: null,
       id: "nav-projects",
+      href: null,
     },
-    { label: "Team", icon: <Users className="w-4 h-4" />, section: null },
-    { label: "Pricing", section: "pricing" },
+    { label: "Team", icon: <Users className="w-4 h-4" />, section: null, href: "/teams" },
+    { label: "Pricing", section: "pricing", href: null },
   ];
 
   const toolLinks = [
@@ -165,15 +166,26 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
-              <button
-                key={item.label}
-                id={item.id || undefined}
-                onClick={() => item.section && scrollToSection(item.section)}
-                className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
-              >
-                {item.icon}
-                {item.label}
-              </button>
+              item.href ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
+                >
+                  {item.icon}
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  id={item.id || undefined}
+                  onClick={() => item.section && scrollToSection(item.section)}
+                  className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              )
             ))}
 
             {/* Tool Links */}
@@ -257,15 +269,27 @@ export default function Navbar() {
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white shadow-xl border-t border-slate-100 animate-in slide-in-from-top duration-300">
           <div className="px-6 py-6 space-y-1">
             {navItems.map((item) => (
-              <button
-                key={item.label}
-                id={item.id ? `mobile-${item.id}` : undefined}
-                onClick={() => item.section && scrollToSection(item.section)}
-                className="w-full text-left py-3.5 px-4 rounded-lg text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center gap-3"
-              >
-                {item.icon}
-                {item.label}
-              </button>
+              item.href ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-left py-3.5 px-4 rounded-lg text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center gap-3"
+                >
+                  {item.icon}
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  id={item.id ? `mobile-${item.id}` : undefined}
+                  onClick={() => item.section && scrollToSection(item.section)}
+                  className="w-full text-left py-3.5 px-4 rounded-lg text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center gap-3"
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              )
             ))}
 
             <div className="pt-4 space-y-1">

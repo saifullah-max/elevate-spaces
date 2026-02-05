@@ -1,4 +1,3 @@
-import Navbar from "@/components/navbar";
 import {
   Sparkles,
   Monitor,
@@ -16,15 +15,6 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   return (
     <div className="bg-slate-100">
-      <Navbar />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
       <div className="text-center max-w-3xl mx-auto mb-12 ">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold mb-6 border border-indigo-100">
           <div className="flex items-center justify-center w-4 h-4 rounded-full ">

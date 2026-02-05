@@ -1,3 +1,15 @@
+import axios from "axios";
+import {
+  parseApiError,
+  ImageProcessingError,
+  ImageErrorCode,
+  ErrorMessages,
+  type RoomType,
+  type StagingStyle,
+} from "@/lib/errors";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
+
 // SSE streaming for image generation
 export function stageImageSSE({
   file,
@@ -210,17 +222,6 @@ export async function restageImage({
     throw parseApiError(err);
   }
 }
-import axios from "axios";
-import {
-  parseApiError,
-  ImageProcessingError,
-  ImageErrorCode,
-  ErrorMessages,
-  type RoomType,
-  type StagingStyle,
-} from "@/lib/errors";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 
 // ---------- Single Image ----------
 export interface StageImageParams {

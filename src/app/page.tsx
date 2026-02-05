@@ -1,5 +1,4 @@
 "use client";
-import Navbar from "@/components/navbar";
 import {
   Sparkles,
   TrendingUp,
@@ -65,7 +64,6 @@ export default function Home() {
     <>
       <AdminAutoRedirect />
       <div className="bg-slate-100 min-h-screen">
-        <Navbar />
 
         {/* Added space below navbar */}
 
