@@ -1,16 +1,13 @@
 'use client'
-
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { acceptInvite } from "@/services/teams.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users, CheckCircle, AlertTriangle } from "lucide-react";
-import { connection } from "next/server";
 
-export default async function AcceptInvitePage() {
-    await connection();
+function AcceptInvitePage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = useMemo(() => searchParams.get("token"), [searchParams]);
@@ -192,5 +189,13 @@ export default async function AcceptInvitePage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function AcceptInviteWrapper() {
+    return (
+        <Suspense fallback={<div>Processing...</div>}>
+            <AcceptInvitePage />
+        </Suspense>
     );
 }
