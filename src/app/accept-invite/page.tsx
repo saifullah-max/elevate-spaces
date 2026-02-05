@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users, CheckCircle, AlertTriangle } from "lucide-react";
+import { connection } from "next/server";
 
-export default function AcceptInvitePage() {
+export default async function AcceptInvitePage() {
+    await connection();
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = useMemo(() => searchParams.get("token"), [searchParams]);
