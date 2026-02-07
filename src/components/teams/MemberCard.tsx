@@ -6,9 +6,12 @@ interface MemberCardProps {
     email: string;
     joinDate: string;
     status?: never;
+    onRemove?: () => void;
+    canRemove?: boolean;
+    removing?: boolean;
 }
 
-export function AcceptedMemberCard({ email, joinDate }: MemberCardProps) {
+export function AcceptedMemberCard({ email, joinDate, onRemove, canRemove, removing }: MemberCardProps) {
     return (
         <div className="p-4 border border-green-200 rounded-lg hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
@@ -21,13 +24,18 @@ export function AcceptedMemberCard({ email, joinDate }: MemberCardProps) {
                         <p className="text-xs text-green-700 mt-0.5">Joined {joinDate}</p>
                     </div>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                    <Ban className="w-4 h-4" />
-                </Button>
+                {canRemove ? (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={onRemove}
+                        disabled={removing}
+                        aria-busy={removing}
+                    >
+                        <Ban className="w-4 h-4" />
+                    </Button>
+                ) : null}
             </div>
         </div>
     );

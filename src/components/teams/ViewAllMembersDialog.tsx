@@ -10,6 +10,9 @@ interface ViewAllMembersDialogProps {
     team: Team | null;
     getStatusBadgeColor: (status: string) => string;
     getStatusIcon: (status: string) => React.ReactNode;
+    currentUserId?: string | null;
+    onRemoveMember: (inviteId: string, teamId: string, ownerId: string) => void;
+    removingMemberId?: string | null;
 }
 
 export function ViewAllMembersDialog({
@@ -18,6 +21,9 @@ export function ViewAllMembersDialog({
     team,
     getStatusBadgeColor,
     getStatusIcon,
+    currentUserId,
+    onRemoveMember,
+    removingMemberId,
 }: ViewAllMembersDialogProps) {
     if (!team) return null;
 
@@ -55,6 +61,12 @@ export function ViewAllMembersDialog({
                                                 key={invite.id}
                                                 email={invite.email}
                                                 joinDate={new Date(invite.accepted_at || invite.invited_at).toLocaleDateString()}
+                                                canRemove={
+                                                    !!currentUserId &&
+                                                    (invite.accepted_by_user_id === currentUserId || team.owner_id === currentUserId)
+                                                }
+                                                removing={removingMemberId === invite.id}
+                                                onRemove={() => onRemoveMember(invite.id, team.id, team.owner_id)}
                                             />
                                         ))}
                                     </div>

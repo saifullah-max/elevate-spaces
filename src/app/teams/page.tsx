@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from "react";
-import { createTeam, getTeams, inviteTeamMember } from "@/services/teams.service";
+import { createTeam, getTeams, inviteTeamMember, removeTeamMember } from "@/services/teams.service";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { Get_Teams_Response, Team } from "@/types/teams.types";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
@@ -30,16 +30,23 @@ export default function Teams() {
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
     const [viewAllMembersOpen, setViewAllMembersOpen] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
 
     useEffect(() => {
         const authData = getAuthFromStorage();
         setIsAuthenticated(!!authData?.user);
+        setCurrentUserId(authData?.user?.id || null);
     }, []);
 
     const getAllTeams = async () => {
         try {
             const res = await getTeams();
             setTeams(res);
+            if (selectedTeam) {
+                const refreshed = res.teams.find((team) => team.id === selectedTeam.id) || null;
+                setSelectedTeam(refreshed);
+            }
         } catch (error) {
             console.error("Failed to fetch teams", error);
         }
@@ -123,6 +130,22 @@ export default function Teams() {
         }
     };
 
+    const handleRemoveMember = async (inviteId: string, teamId: string, ownerId: string) => {
+        try {
+            setRemovingMemberId(inviteId);
+            await removeTeamMember({
+                id: inviteId,
+                team_id: teamId,
+                owner_id: ownerId,
+            });
+            await getAllTeams();
+        } catch (err: any) {
+            console.error("Failed to remove member", err?.message || err);
+        } finally {
+            setRemovingMemberId(null);
+        }
+    };
+
     // Show loading state while checking authentication
     if (isAuthenticated === null) {
         return null;
@@ -171,6 +194,9 @@ export default function Teams() {
                     team={selectedTeam}
                     getStatusBadgeColor={getStatusBadgeColor}
                     getStatusIcon={getStatusIcon}
+                    currentUserId={currentUserId}
+                    onRemoveMember={handleRemoveMember}
+                    removingMemberId={removingMemberId}
                 />
 
                 <InviteMemberDialog

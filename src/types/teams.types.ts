@@ -50,6 +50,17 @@ export interface acceptInviteResponse {
     userId?: string;
 }
 
+export interface removeTeamMemberData {
+    id: string;
+    team_id: string;
+    owner_id?: string;
+}
+
+export interface removeTeamMemberResponse {
+    success: boolean;
+    message: string;
+}
+
 export interface User {
     id: string;
     email: string;

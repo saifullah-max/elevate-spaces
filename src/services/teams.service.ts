@@ -7,6 +7,8 @@ import {
     Get_Teams_Response,
     inviteTeamData,
     inviteTeamResponse,
+    removeTeamMemberData,
+    removeTeamMemberResponse,
 } from "@/types/teams.types";
 import axios from "axios";
 
@@ -132,6 +134,45 @@ export const acceptInvite = async (
                     error.response?.data?.message ||
                     error.message ||
                     "Failed to accept invitation. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const removeTeamMember = async (
+    data: removeTeamMemberData
+): Promise<removeTeamMemberResponse> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.delete<removeTeamMemberResponse>(
+            `${API_BASE_URL}/teams/remove-member/${data.id}`,
+            {
+                headers: getAuthHeaders(),
+                data: {
+                    team_id: data.team_id,
+                    owner_id: data.owner_id,
+                },
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to remove member. Please try again.",
             };
         }
 
