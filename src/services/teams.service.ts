@@ -2,6 +2,8 @@ import { getAuthHeaders } from "@/helpers/auth.helpers";
 import {
     acceptInviteData,
     acceptInviteResponse,
+    allocateCreditsData,
+    allocateCreditsResponse,
     createTeamData,
     createTeamResponse,
     Get_Teams_Response,
@@ -173,6 +175,43 @@ export const removeTeamMember = async (
                     error.response?.data?.message ||
                     error.message ||
                     "Failed to remove member. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const allocateCreditsToMember = async (
+    data: allocateCreditsData
+): Promise<allocateCreditsResponse> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.patch<allocateCreditsResponse>(
+            `${API_BASE_URL}/teams/credits/allocate-credit/member/${data.id}`,
+            {
+                team_id: data.team_id,
+                credits: data.credits,
+            },
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to allocate credits. Please try again.",
             };
         }
 

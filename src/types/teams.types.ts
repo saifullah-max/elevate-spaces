@@ -61,6 +61,20 @@ export interface removeTeamMemberResponse {
     message: string;
 }
 
+export interface allocateCreditsData {
+    id: string;
+    team_id: string;
+    credits: number;
+}
+
+export interface allocateCreditsResponse {
+    success: boolean;
+    message: string;
+    data?: {
+        member: unknown;
+    };
+}
+
 export interface User {
     id: string;
     email: string;

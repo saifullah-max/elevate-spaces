@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from "react";
-import { createTeam, getTeams, inviteTeamMember, removeTeamMember } from "@/services/teams.service";
+import { allocateCreditsToMember, createTeam, getTeams, inviteTeamMember, removeTeamMember } from "@/services/teams.service";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { Get_Teams_Response, Team } from "@/types/teams.types";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
@@ -9,6 +9,7 @@ import { CreateTeamDialog } from "@/components/teams/CreateTeamDialog";
 import { TeamsTable } from "@/components/teams/TeamsTable";
 import { ViewAllMembersDialog } from "@/components/teams/ViewAllMembersDialog";
 import { InviteMemberDialog } from "@/components/teams/InviteMemberDialog";
+import { AllocateCreditsDialog } from "@/components/teams/AllocateCreditsDialog";
 import { getStatusBadgeColor, getStatusIcon } from "@/components/teams/utils";
 
 export default function Teams() {
@@ -32,6 +33,12 @@ export default function Teams() {
     const [viewAllMembersOpen, setViewAllMembersOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+    const [allocateDialogOpen, setAllocateDialogOpen] = useState(false);
+    const [allocateMemberId, setAllocateMemberId] = useState("");
+    const [allocateCredits, setAllocateCredits] = useState("");
+    const [allocateLoading, setAllocateLoading] = useState(false);
+    const [allocateError, setAllocateError] = useState<string | null>(null);
+    const [allocateMessage, setAllocateMessage] = useState<string | null>(null);
 
     useEffect(() => {
         const authData = getAuthFromStorage();
@@ -146,6 +153,45 @@ export default function Teams() {
         }
     };
 
+    const handleAllocateCredits = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAllocateError(null);
+        setAllocateMessage(null);
+
+        if (!selectedTeam?.id) {
+            setAllocateError("Team is required");
+            return;
+        }
+
+        if (!allocateMemberId) {
+            setAllocateError("Member is required");
+            return;
+        }
+
+        const creditsValue = Number(allocateCredits);
+        if (!Number.isFinite(creditsValue) || creditsValue <= 0) {
+            setAllocateError("Credits must be a positive number");
+            return;
+        }
+
+        try {
+            setAllocateLoading(true);
+            const res = await allocateCreditsToMember({
+                id: allocateMemberId,
+                team_id: selectedTeam.id,
+                credits: creditsValue,
+            });
+            setAllocateMessage(res.message || "Credits allocated successfully");
+            setAllocateCredits("");
+            setAllocateMemberId("");
+            await getAllTeams();
+        } catch (err: any) {
+            setAllocateError(err.message || "Failed to allocate credits");
+        } finally {
+            setAllocateLoading(false);
+        }
+    };
+
     // Show loading state while checking authentication
     if (isAuthenticated === null) {
         return null;
@@ -182,6 +228,10 @@ export default function Teams() {
                         setTeamId(team.id);
                         setInviteDialogOpen(true);
                     }}
+                    onAllocateCreditsClick={(team) => {
+                        setSelectedTeam(team);
+                        setAllocateDialogOpen(true);
+                    }}
                     onViewAllClick={(team) => {
                         setSelectedTeam(team);
                         setViewAllMembersOpen(true);
@@ -215,6 +265,20 @@ export default function Teams() {
                     onSubmit={handleInviteSubmit}
                     getStatusBadgeColor={getStatusBadgeColor}
                     getStatusIcon={getStatusIcon}
+                />
+
+                <AllocateCreditsDialog
+                    open={allocateDialogOpen}
+                    onOpenChange={setAllocateDialogOpen}
+                    team={selectedTeam}
+                    selectedMemberId={allocateMemberId}
+                    onMemberChange={setAllocateMemberId}
+                    credits={allocateCredits}
+                    onCreditsChange={setAllocateCredits}
+                    onSubmit={handleAllocateCredits}
+                    loading={allocateLoading}
+                    error={allocateError}
+                    successMessage={allocateMessage}
                 />
             </div>
         </div>

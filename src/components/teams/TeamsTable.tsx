@@ -1,5 +1,5 @@
 'use client'
-import { Users, Plus, MoreVertical, UserPlus } from "lucide-react";
+import { Users, Plus, MoreVertical, UserPlus, Coins } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -17,6 +17,7 @@ interface TeamsTableProps {
     onEmptyStateClick: () => void;
     onInviteClick: (team: Team) => void;
     onViewAllClick: (team: Team) => void;
+    onAllocateCreditsClick: (team: Team) => void;
 }
 
 export function TeamsTable({
@@ -24,6 +25,7 @@ export function TeamsTable({
     onEmptyStateClick,
     onInviteClick,
     onViewAllClick,
+    onAllocateCreditsClick,
 }: TeamsTableProps) {
     if (!teams || teams.teams.length === 0) {
         return (
@@ -55,6 +57,7 @@ export function TeamsTable({
                         <TableHead className="font-semibold text-left">Members</TableHead>
                         <TableHead className="font-semibold text-left">Invitations</TableHead>
                         <TableHead className="font-semibold text-left">Created</TableHead>
+                        <TableHead className="font-semibold text-left">Credits Available</TableHead>
                         <TableHead className="font-semibold text-left">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -91,6 +94,9 @@ export function TeamsTable({
                             <TableCell className="text-sm text-slate-600">
                                 {new Date(team.created_at).toLocaleDateString()}
                             </TableCell>
+                            <TableCell className="text-sm text-slate-600">
+                                {team.wallet}
+                            </TableCell>
                             <TableCell className="text-left">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -102,6 +108,10 @@ export function TeamsTable({
                                         <DropdownMenuItem onClick={() => onInviteClick(team)}>
                                             <UserPlus className="w-4 h-4 mr-2" />
                                             Invite
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => onAllocateCreditsClick(team)}>
+                                            <Coins className="w-4 h-4 mr-2" />
+                                            Allocate Credits
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => onViewAllClick(team)}>
                                             <Users className="w-4 h-4 mr-2" />
