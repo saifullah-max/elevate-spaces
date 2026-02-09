@@ -223,3 +223,37 @@ export const allocateCreditsToMember = async (
         };
     }
 };
+
+export const reinviteTeamMember = async (
+    data: inviteTeamData
+): Promise<inviteTeamResponse> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.post<inviteTeamResponse>(
+            `${API_BASE_URL}/teams/reinvite`,
+            data,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Reinvite failed. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from "react";
-import { allocateCreditsToMember, createTeam, getTeams, inviteTeamMember, removeTeamMember } from "@/services/teams.service";
+import { allocateCreditsToMember, createTeam, getTeams, inviteTeamMember, reinviteTeamMember, removeTeamMember } from "@/services/teams.service";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { Get_Teams_Response, Team } from "@/types/teams.types";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
@@ -33,6 +33,9 @@ export default function Teams() {
     const [viewAllMembersOpen, setViewAllMembersOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+    const [reinvitingInviteId, setReinvitingInviteId] = useState<string | null>(null);
+    const [reinviteMessage, setReinviteMessage] = useState<string | null>(null);
+    const [reinviteError, setReinviteError] = useState<string | null>(null);
     const [allocateDialogOpen, setAllocateDialogOpen] = useState(false);
     const [allocateMemberId, setAllocateMemberId] = useState("");
     const [allocateCredits, setAllocateCredits] = useState("");
@@ -64,6 +67,13 @@ export default function Teams() {
             getAllTeams();
         }
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (!viewAllMembersOpen) {
+            setReinviteMessage(null);
+            setReinviteError(null);
+        }
+    }, [viewAllMembersOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -150,6 +160,28 @@ export default function Teams() {
             console.error("Failed to remove member", err?.message || err);
         } finally {
             setRemovingMemberId(null);
+        }
+    };
+
+    const handleReinvite = async (inviteId: string, inviteEmail: string, teamId: string) => {
+        try {
+            setReinviteError(null);
+            setReinviteMessage(null);
+            setReinvitingInviteId(inviteId);
+
+            const res = await reinviteTeamMember({
+                email: inviteEmail.trim(),
+                subject: inviteSubject.trim() || undefined,
+                text: inviteText.trim() || undefined,
+                teamId: teamId.trim(),
+            });
+
+            setReinviteMessage(res.message || "Invitation re-sent successfully");
+            await getAllTeams();
+        } catch (err: any) {
+            setReinviteError(err.message || "Reinvite failed");
+        } finally {
+            setReinvitingInviteId(null);
         }
     };
 
@@ -247,6 +279,10 @@ export default function Teams() {
                     currentUserId={currentUserId}
                     onRemoveMember={handleRemoveMember}
                     removingMemberId={removingMemberId}
+                    onReinvite={handleReinvite}
+                    reinvitingInviteId={reinvitingInviteId}
+                    reinviteMessage={reinviteMessage}
+                    reinviteError={reinviteError}
                 />
 
                 <InviteMemberDialog

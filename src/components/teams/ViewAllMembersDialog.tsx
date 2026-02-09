@@ -13,6 +13,10 @@ interface ViewAllMembersDialogProps {
     currentUserId?: string | null;
     onRemoveMember: (inviteId: string, teamId: string, ownerId: string) => void;
     removingMemberId?: string | null;
+    onReinvite?: (inviteId: string, inviteEmail: string, teamId: string) => void;
+    reinvitingInviteId?: string | null;
+    reinviteMessage?: string | null;
+    reinviteError?: string | null;
 }
 
 export function ViewAllMembersDialog({
@@ -24,12 +28,17 @@ export function ViewAllMembersDialog({
     currentUserId,
     onRemoveMember,
     removingMemberId,
+    onReinvite,
+    reinvitingInviteId,
+    reinviteMessage,
+    reinviteError,
 }: ViewAllMembersDialogProps) {
     if (!team) return null;
 
     const acceptedMembers = team.teamInvites.filter(inv => inv.status === "ACCEPTED");
     const pendingInvites = team.teamInvites.filter(inv => inv.status === "PENDING");
     const failedInvites = team.teamInvites.filter(inv => inv.status === "FAILED");
+    const canReinvite = !!currentUserId && team.owner_id === currentUserId;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -42,6 +51,16 @@ export function ViewAllMembersDialog({
                 </DialogHeader>
 
                 <div className="overflow-y-auto flex-1 pr-4">
+                    {reinviteMessage ? (
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <p className="text-green-700 text-sm font-medium">{reinviteMessage}</p>
+                        </div>
+                    ) : null}
+                    {reinviteError ? (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-700 text-sm font-medium">{reinviteError}</p>
+                        </div>
+                    ) : null}
                     {team && team.teamInvites.length > 0 ? (
                         <div className="space-y-6 py-4">
                             {/* Accepted Members */}
@@ -93,6 +112,13 @@ export function ViewAllMembersDialog({
                                                 status="PENDING"
                                                 getStatusBadgeColor={getStatusBadgeColor}
                                                 getStatusIcon={getStatusIcon}
+                                                showReinvite={canReinvite}
+                                                reinviting={reinvitingInviteId === invite.id}
+                                                onReinvite={
+                                                    onReinvite
+                                                        ? () => onReinvite(invite.id, invite.email, team.id)
+                                                        : undefined
+                                                }
                                             />
                                         ))}
                                     </div>
@@ -119,6 +145,13 @@ export function ViewAllMembersDialog({
                                                 status="FAILED"
                                                 getStatusBadgeColor={getStatusBadgeColor}
                                                 getStatusIcon={getStatusIcon}
+                                                showReinvite={canReinvite}
+                                                reinviting={reinvitingInviteId === invite.id}
+                                                onReinvite={
+                                                    onReinvite
+                                                        ? () => onReinvite(invite.id, invite.email, team.id)
+                                                        : undefined
+                                                }
                                             />
                                         ))}
                                     </div>

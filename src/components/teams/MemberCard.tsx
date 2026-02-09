@@ -1,5 +1,5 @@
 'use client'
-import { Check, Clock, X, Ban } from "lucide-react";
+import { Check, Clock, X, Ban, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MemberCardProps {
@@ -47,6 +47,9 @@ interface PendingInviteCardProps {
     status: "PENDING" | "FAILED";
     getStatusBadgeColor: (status: string) => string;
     getStatusIcon: (status: string) => React.ReactNode;
+    showReinvite?: boolean;
+    reinviting?: boolean;
+    onReinvite?: () => void;
 }
 
 export function PendingInviteCard({
@@ -55,13 +58,16 @@ export function PendingInviteCard({
     status,
     getStatusBadgeColor,
     getStatusIcon,
+    showReinvite,
+    reinviting,
+    onReinvite,
 }: PendingInviteCardProps) {
     const bgColor = status === "PENDING" ? "bg-amber-200 text-amber-700" : "bg-red-200 text-red-700";
     const borderColor = status === "PENDING" ? "border-amber-200" : "border-red-200";
 
     return (
         <div className={`p-4 border ${borderColor} rounded-lg hover:shadow-md transition-shadow`}>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-1">
                     <div className={`w-10 h-10 rounded-full ${bgColor} flex items-center justify-center font-semibold`}>
                         {email[0].toUpperCase()}
@@ -73,10 +79,34 @@ export function PendingInviteCard({
                         </p>
                     </div>
                 </div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(status)}`}>
-                    {getStatusIcon(status)}
-                    {status}
-                </span>
+                <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(status)}`}>
+                        {getStatusIcon(status)}
+                        {status}
+                    </span>
+                    {showReinvite ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={onReinvite}
+                            disabled={reinviting}
+                            aria-busy={reinviting}
+                        >
+                            {reinviting ? (
+                                <>
+                                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                    Reinviting...
+                                </>
+                            ) : (
+                                <>
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                    Reinvite
+                                </>
+                            )}
+                        </Button>
+                    ) : null}
+                </div>
             </div>
         </div>
     );
