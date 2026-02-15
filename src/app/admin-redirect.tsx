@@ -7,17 +7,21 @@ import { getAuthFromStorage } from "@/lib/auth.storage";
 export default function AdminAutoRedirect() {
   const router = useRouter();
   useEffect(() => {
-    // Prevent redirect if coming from admin or if session flag is set
-    const fromAdmin = document.referrer.includes("/admin");
-    const skipAdminRedirect = sessionStorage.getItem("skipAdminRedirect");
     const auth = getAuthFromStorage();
-    if (auth && auth.user && auth.user.role === "ADMIN" && !fromAdmin && !skipAdminRedirect) {
-      router.replace("/admin/dashboard");
-    }
-    // Always clear the flag after landing on /
-    if (skipAdminRedirect) {
-      sessionStorage.removeItem("skipAdminRedirect");
+    
+    // Only redirect admin on first load after login
+    if (auth && auth.user && auth.user.role === "ADMIN") {
+      // Check if admin has already been redirected in this session
+      const hasBeenRedirected = sessionStorage.getItem("adminInitialRedirect");
+      
+      if (!hasBeenRedirected) {
+        // First time visiting after login - redirect to dashboard
+        sessionStorage.setItem("adminInitialRedirect", "true");
+        router.replace("/admin/dashboard");
+      }
+      // If hasBeenRedirected is true, allow admin to stay on home page
     }
   }, [router]);
+  
   return null;
 }

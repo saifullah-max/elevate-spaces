@@ -17,12 +17,15 @@ interface InviteMemberDialogProps {
     onSubjectChange: (value: string) => void;
     message: string;
     onMessageChange: (value: string) => void;
+    roleName: string;
+    onRoleNameChange: (value: string) => void;
     loading: boolean;
     successMessage: string | null;
     error: string | null;
     onSubmit: (e: React.FormEvent) => void;
     getStatusBadgeColor: (status: string) => string;
     getStatusIcon: (status: string) => React.ReactNode;
+    currentUserId?: string | null;
 }
 
 export function InviteMemberDialog({
@@ -35,18 +38,47 @@ export function InviteMemberDialog({
     onSubjectChange,
     message,
     onMessageChange,
+    roleName,
+    onRoleNameChange,
     loading,
     successMessage,
     error,
     onSubmit,
     getStatusBadgeColor,
     getStatusIcon,
+    currentUserId,
 }: InviteMemberDialogProps) {
     if (!team) return null;
 
+    // Calculate current user's role in the team
+    const membershipByUserId = new Map(team.members?.map((member) => [member.user_id, member]));
+    const currentMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
+    const currentRoleName = team.owner_id === currentUserId ? "TEAM_OWNER" : currentMembership?.role?.name;
+
+    // Determine available roles based on current user's role
+    const roleOptions = currentRoleName === "TEAM_OWNER"
+        ? [
+            { value: "TEAM_MEMBER", label: "Team Member" },
+            { value: "TEAM_AGENT", label: "Real Estate Agent" },
+            { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
+            { value: "TEAM_ADMIN", label: "Admin" },
+        ]
+        : currentRoleName === "TEAM_ADMIN"
+            ? [
+                { value: "TEAM_MEMBER", label: "Team Member" },
+                { value: "TEAM_AGENT", label: "Real Estate Agent" },
+                { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
+            ]
+            : currentRoleName === "TEAM_AGENT"
+                ? [
+                    { value: "TEAM_MEMBER", label: "Team Member" },
+                    { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
+                ]
+                : [];
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-150">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Team Details: {team?.name}</DialogTitle>
                     <DialogDescription>
@@ -102,6 +134,30 @@ export function InviteMemberDialog({
                                     className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
                                     rows={3}
                                 />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="invite-role">
+                                    Role <span className="text-slate-400 text-sm">(optional)</span>
+                                </Label>
+                                {roleOptions.length > 0 ? (
+                                    <select
+                                        id="invite-role"
+                                        value={roleName}
+                                        onChange={(e) => onRoleNameChange(e.target.value)}
+                                        className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white"
+                                    >
+                                        {roleOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <div className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-500 text-sm">
+                                        You don't have permission to invite members
+                                    </div>
+                                )}
                             </div>
 
                             {successMessage && (

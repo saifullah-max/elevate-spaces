@@ -53,6 +53,8 @@ export const clearAuthFromStorage = (): void => {
   try {
     localStorage.removeItem(AUTH_STORAGE_KEY);
     localStorage.removeItem(TOKEN_STORAGE_KEY);
+    // Clear admin redirect flag so they get redirected again on next login
+    sessionStorage.removeItem("adminInitialRedirect");
   } catch (error) {
     console.error("Failed to clear auth from localStorage:", error);
   }

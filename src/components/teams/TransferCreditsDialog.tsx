@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Team } from "@/types/teams.types";
 
-interface AllocateCreditsDialogProps {
+interface TransferCreditsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     team: Team | null;
@@ -20,7 +20,7 @@ interface AllocateCreditsDialogProps {
     currentUserId?: string | null;
 }
 
-export function AllocateCreditsDialog({
+export function TransferCreditsDialog({
     open,
     onOpenChange,
     team,
@@ -33,74 +33,70 @@ export function AllocateCreditsDialog({
     error,
     successMessage,
     currentUserId,
-}: AllocateCreditsDialogProps) {
+}: TransferCreditsDialogProps) {
     if (!team) return null;
 
     const acceptedMembers = team.teamInvites.filter((invite) => invite.status === "ACCEPTED");
     
-    // Calculate current user's role
+    // Calculate current user's available credits
     const membershipByUserId = new Map(team.members?.map((member) => [member.user_id, member]));
     const currentMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
-    const currentRoleName = team.owner_id === currentUserId ? "TEAM_OWNER" : currentMembership?.role?.name;
-    
-    // Get current user's available credits for TEAM_AGENT
-    const allocatorMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
-    const availableCredits = allocatorMembership 
-        ? Math.max(Number(allocatorMembership.allocated) - Number(allocatorMembership.used), 0)
+    const availableCredits = currentMembership 
+        ? Math.max(Number(currentMembership.allocated) - Number(currentMembership.used), 0)
         : 0;
     
-    // Filter members based on role
-    const filterableMembers = currentRoleName === "TEAM_AGENT"
-        ? acceptedMembers.filter((invite) => {
-            const memberId = invite.accepted_by_user_id || "";
-            const member = memberId ? membershipByUserId.get(memberId) : undefined;
-            const roleName = member?.role?.name || "TEAM_MEMBER";
-            return roleName === "TEAM_PHOTOGRAPHER";
-        })
-        : acceptedMembers;
+    // Filter to show only photographers (excluding self)
+    const transferableMembers = acceptedMembers.filter((invite) => {
+        const memberId = invite.accepted_by_user_id || "";
+        const member = memberId ? membershipByUserId.get(memberId) : undefined;
+        const roleName = member?.role?.name || "TEAM_MEMBER";
+        return roleName === "TEAM_PHOTOGRAPHER" && memberId !== currentUserId;
+    });
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-130">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl">Allocate Credits</DialogTitle>
+                    <DialogTitle className="text-2xl">Transfer Credits</DialogTitle>
                     <DialogDescription>
-                        {team.name} • Allocate credits to a member
+                        {team.name} • Transfer your credits to a photographer
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={onSubmit} className="space-y-5">
-                    {currentRoleName === "TEAM_AGENT" && (
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-sm text-blue-900">
-                                <span className="font-semibold">Available Credits:</span> {availableCredits}
-                            </p>
-                        </div>
-                    )}
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-900">
+                            <span className="font-semibold">Available Credits:</span> {availableCredits}
+                        </p>
+                    </div>
                     
                     <div className="space-y-2">
-                        <Label htmlFor="member">Member</Label>
+                        <Label htmlFor="transfer-member">Photographer</Label>
                         <select
-                            id="member"
+                            id="transfer-member"
                             className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
                             value={selectedMemberId}
                             onChange={(e) => onMemberChange(e.target.value)}
                         >
-                            <option value="">Select a member</option>
-                            {filterableMembers.map((invite) => (
+                            <option value="">Select a photographer</option>
+                            {transferableMembers.map((invite) => (
                                 <option key={invite.id} value={invite.accepted_by_user_id || ""}>
                                     {invite.email}
                                 </option>
                             ))}
                         </select>
+                        {transferableMembers.length === 0 && (
+                            <p className="text-xs text-slate-500">No photographers available in this team</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="credits">Credits</Label>
+                        <Label htmlFor="transfer-credits">Credits</Label>
                         <Input
-                            id="credits"
+                            id="transfer-credits"
                             type="number"
                             min="1"
+                            max={availableCredits}
                             placeholder="e.g. 100"
                             value={credits}
                             onChange={(e) => onCreditsChange(e.target.value)}
@@ -118,8 +114,12 @@ export function AllocateCreditsDialog({
                         <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                             Cancel
                         </Button>
-                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700" disabled={loading}>
-                            {loading ? "Allocating..." : "Allocate"}
+                        <Button 
+                            type="submit" 
+                            className="bg-indigo-600 hover:bg-indigo-700" 
+                            disabled={loading || availableCredits === 0 || transferableMembers.length === 0}
+                        >
+                            {loading ? "Transferring..." : "Transfer"}
                         </Button>
                     </div>
                 </form>

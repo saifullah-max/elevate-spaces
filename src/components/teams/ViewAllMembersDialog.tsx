@@ -17,6 +17,10 @@ interface ViewAllMembersDialogProps {
     reinvitingInviteId?: string | null;
     reinviteMessage?: string | null;
     reinviteError?: string | null;
+    onUpdateMemberRole?: (teamId: string, memberId: string, roleName: string) => void;
+    updatingRoleMemberId?: string | null;
+    roleUpdateMessage?: string | null;
+    roleUpdateError?: string | null;
 }
 
 export function ViewAllMembersDialog({
@@ -32,6 +36,10 @@ export function ViewAllMembersDialog({
     reinvitingInviteId,
     reinviteMessage,
     reinviteError,
+    onUpdateMemberRole,
+    updatingRoleMemberId,
+    roleUpdateMessage,
+    roleUpdateError,
 }: ViewAllMembersDialogProps) {
     if (!team) return null;
 
@@ -39,10 +47,28 @@ export function ViewAllMembersDialog({
     const pendingInvites = team.teamInvites.filter(inv => inv.status === "PENDING");
     const failedInvites = team.teamInvites.filter(inv => inv.status === "FAILED");
     const canReinvite = !!currentUserId && team.owner_id === currentUserId;
+    const membershipByUserId = new Map(team.members?.map((member) => [member.user_id, member]));
+    const currentMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
+    const currentRoleName = team.owner_id === currentUserId ? "TEAM_OWNER" : currentMembership?.role?.name;
+
+    const roleOptions = currentRoleName === "TEAM_OWNER"
+        ? [
+            { value: "TEAM_ADMIN", label: "Admin" },
+            { value: "TEAM_AGENT", label: "Agent" },
+            { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
+            { value: "TEAM_MEMBER", label: "Team Member" },
+        ]
+        : currentRoleName === "TEAM_ADMIN"
+            ? [
+                { value: "TEAM_AGENT", label: "Agent" },
+                { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
+                { value: "TEAM_MEMBER", label: "Team Member" },
+            ]
+            : [];
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[750px] max-h-[85vh] overflow-hidden flex flex-col">
+            <DialogContent className="sm:max-w-187.5 max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader className="border-b border-slate-200 pb-4">
                     <DialogTitle className="text-2xl font-bold text-slate-900">Team Members</DialogTitle>
                     <DialogDescription className="text-slate-600">
@@ -61,6 +87,16 @@ export function ViewAllMembersDialog({
                             <p className="text-red-700 text-sm font-medium">{reinviteError}</p>
                         </div>
                     ) : null}
+                    {roleUpdateMessage ? (
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <p className="text-green-700 text-sm font-medium">{roleUpdateMessage}</p>
+                        </div>
+                    ) : null}
+                    {roleUpdateError ? (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-700 text-sm font-medium">{roleUpdateError}</p>
+                        </div>
+                    ) : null}
                     {team && team.teamInvites.length > 0 ? (
                         <div className="space-y-6 py-4">
                             {/* Accepted Members */}
@@ -76,17 +112,34 @@ export function ViewAllMembersDialog({
                                     </div>
                                     <div className="space-y-2">
                                         {acceptedMembers.map((invite) => (
-                                            <AcceptedMemberCard
-                                                key={invite.id}
-                                                email={invite.email}
-                                                joinDate={new Date(invite.accepted_at || invite.invited_at).toLocaleDateString()}
-                                                canRemove={
-                                                    !!currentUserId &&
-                                                    (invite.accepted_by_user_id === currentUserId || team.owner_id === currentUserId)
-                                                }
-                                                removing={removingMemberId === invite.id}
-                                                onRemove={() => onRemoveMember(invite.id, team.id, team.owner_id)}
-                                            />
+                                            (() => {
+                                                const memberId = invite.accepted_by_user_id || "";
+                                                const member = memberId ? membershipByUserId.get(memberId) : undefined;
+                                                const roleName = member?.role?.name || "TEAM_MEMBER";
+                                                const canEditRole = roleOptions.length > 0 && memberId && memberId !== team.owner_id;
+
+                                                return (
+                                                    <AcceptedMemberCard
+                                                        key={invite.id}
+                                                        email={invite.email}
+                                                        joinDate={new Date(invite.accepted_at || invite.invited_at).toLocaleDateString()}
+                                                        roleName={roleName}
+                                                        roleOptions={canEditRole ? roleOptions : undefined}
+                                                        updatingRole={updatingRoleMemberId === memberId}
+                                                        onRoleChange={(newRole) =>
+                                                            onUpdateMemberRole
+                                                                ? onUpdateMemberRole(team.id, memberId, newRole)
+                                                                : undefined
+                                                        }
+                                                        canRemove={
+                                                            !!currentUserId &&
+                                                            (invite.accepted_by_user_id === currentUserId || team.owner_id === currentUserId)
+                                                        }
+                                                        removing={removingMemberId === invite.id}
+                                                        onRemove={() => onRemoveMember(invite.id, team.id, team.owner_id)}
+                                                    />
+                                                );
+                                            })()
                                         ))}
                                     </div>
                                 </div>

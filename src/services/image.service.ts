@@ -17,12 +17,14 @@ export function stageImageSSE({
   roomType = "living-room",
   stagingStyle = "modern",
   deviceId,
+  teamId,
   onImage,
   onError,
   onDone,
   removeFurniture
 }: StageImageParams & {
   deviceId?: string,
+  teamId?: string,
   onImage: (data: any) => void,
   onError?: (err: any) => void,
   onDone?: () => void,
@@ -34,6 +36,7 @@ export function stageImageSSE({
   formData.append("stagingStyle", stagingStyle);
   if (prompt) formData.append("prompt", prompt);
   if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
+  if (teamId) formData.append("teamId", teamId);
 
   // First, upload the file and get a token or temp id (or use a presigned URL approach)
   // For simplicity, we'll POST to a special /images/generate/stream endpoint (must match backend route)
@@ -99,7 +102,8 @@ export async function stageImage({
   stagingStyle = "modern",
   removeFurniture,
   deviceId,
-}: StageImageParams & { deviceId?: string }): Promise<StageImageResponse> {
+  teamId,
+}: StageImageParams & { deviceId?: string; teamId?: string }): Promise<StageImageResponse> {
   if (!file) {
     throw new ImageProcessingError(
       ImageErrorCode.NO_FILE_PROVIDED,
@@ -114,6 +118,7 @@ export async function stageImage({
     formData.append("stagingStyle", stagingStyle);
     if (prompt) formData.append("prompt", prompt);
     if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
+    if (teamId) formData.append("teamId", teamId);
 
     // Get token from localStorage only
     let token: string | null = null;

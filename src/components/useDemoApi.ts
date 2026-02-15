@@ -54,7 +54,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
     const selectedImageIdx = props?.selectedImageIdx ?? 0;
     const setSelectedImageIdx = props?.setSelectedImageIdx ?? (() => { });
 
-    const handleStageImage = (file: File | null, roomType: RoomType | undefined, exteriorType: RoomType | undefined, stagingStyle: StagingStyle | undefined, prompt: string, areaType: "interior" | "exterior", removeFurniture?: boolean) => {
+    const handleStageImage = (file: File | null, roomType: RoomType | undefined, exteriorType: RoomType | undefined, stagingStyle: StagingStyle | undefined, prompt: string, areaType: "interior" | "exterior", removeFurniture?: boolean, teamId?: string, onSuccess?: () => void) => {
         if (!file) return;
         setLoading(true);
         setError(null);
@@ -71,6 +71,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             stagingStyle,
             prompt,
             deviceId,
+            teamId,
             onImage: (data) => {
                 setStagedImageUrls(prev => [...prev, data.stagedImageUrl]);
                 setStagedIds(prev => [...prev, data.stagedId]);
@@ -93,6 +94,10 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             onDone: () => {
                 setLoading(false);
                 done = true;
+                // Call success callback if provided (for credit refresh)
+                if (onSuccess) {
+                    onSuccess();
+                }
             }
         });
     };

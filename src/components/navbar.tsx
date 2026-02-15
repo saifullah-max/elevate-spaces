@@ -80,8 +80,12 @@ export default function Navbar() {
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setMobileMenuOpen(false);
+    if (window.location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setMobileMenuOpen(false);
+    } else {
+      router.push("/");
+    }
   };
 
   // Navigation items for desktop & mobile reuse
@@ -93,7 +97,7 @@ export default function Navbar() {
       icon: <FolderOpen className="w-4 h-4" />,
       section: null,
       id: "nav-projects",
-      href: null,
+      href: "/projects",
     },
     { label: "Team", icon: <Users className="w-4 h-4" />, section: null, href: "/teams" },
     { label: "Pricing", section: "pricing", href: null },

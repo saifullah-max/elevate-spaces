@@ -11,6 +11,7 @@ import {
     inviteTeamResponse,
     removeTeamMemberData,
     removeTeamMemberResponse,
+    TeamMember,
 } from "@/types/teams.types";
 import axios from "axios";
 
@@ -246,6 +247,77 @@ export const reinviteTeamMember = async (
                     error.response?.data?.message ||
                     error.message ||
                     "Reinvite failed. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const getTeamsByUserId = async (userId: string): Promise<Get_Teams_Response> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.get<Get_Teams_Response>(
+            `${API_BASE_URL}/teams/my/${userId}`,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to fetch member teams. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const updateTeamMemberRole = async ({
+    teamId,
+    memberId,
+    roleName,
+}: {
+    teamId: string;
+    memberId: string;
+    roleName: string;
+}): Promise<{ success: boolean; message: string; membership?: TeamMember }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.patch<{ success: boolean; message: string; membership?: TeamMember }>(
+            `${API_BASE_URL}/teams/member-role`,
+            { teamId, memberId, roleName },
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to update member role. Please try again.",
             };
         }
 

@@ -19,6 +19,7 @@ export interface inviteTeamData {
     subject?: string;
     text?: string;
     teamId: string;
+    roleName?: string;
 }
 
 export interface inviteTeamResponse {
@@ -83,6 +84,25 @@ export interface User {
     created_at: string;
 }
 
+export interface TeamRole {
+    id: string;
+    name: string;
+    description?: string | null;
+}
+
+export interface TeamMember {
+    id: string;
+    team_id: string;
+    user_id: string;
+    team_role_id: string;
+    allocated: number;
+    used: number;
+    joined_at: string;
+    updated_at: string;
+    user: User;
+    role: TeamRole;
+}
+
 export interface TeamInvite {
     id: string;
     team_id: string;
@@ -110,6 +130,7 @@ export interface Team {
     updated_at: string;
     deleted_at: string | null;
     teamInvites: TeamInvite[];
+    members: TeamMember[];
     owner: User;
 }
 

@@ -11,7 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useDemoApi } from "./useDemoApi";
 import { ToastContainer } from 'react-toastify';
@@ -21,6 +21,7 @@ import { DemoDropdown } from "./DemoDropdown";
 import { UploadArea } from "./UploadArea";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { exteriorOptions, interiorOptions, stagingStyles } from "./data/dropdown";
+import { TeamCreditsSelector } from "./TeamCreditsSelector";
 
 
 export default function Demo() {
@@ -107,6 +108,29 @@ export default function Demo() {
   const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
   const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
   // const [removeFurniture, setRemoveFurniture] = useState(false);
+
+  // Team selection state
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [remainingCredits, setRemainingCredits] = useState<number>(0);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [refreshTeamCredits, setRefreshTeamCredits] = useState<(() => Promise<void>) | null>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const authRaw = localStorage.getItem('elevate_spaces_auth');
+      setIsLoggedIn(!!authRaw);
+    }
+  }, []);
+
+  const handleTeamSelect = (teamId: string | null, remaining: number) => {
+    setSelectedTeamId(teamId);
+    setRemainingCredits(remaining);
+  };
+
+  const handleRefreshReady = useCallback((refreshFn: () => Promise<void>) => {
+    setRefreshTeamCredits(() => refreshFn);
+  }, []);
 
   const handleMove = (clientX: number) => {
     const rect = document
@@ -265,6 +289,21 @@ export default function Demo() {
                 <UploadArea limitReached={limitReached} setFile={setFile} setStagedImageUrls={setStagedImageUrls} setError={setError} />
               </div>
 
+              {/* Team Credits Selector - Only show for logged-in users */}
+              {isLoggedIn && (
+                <>
+                  <div className="border-t border-slate-200 my-1" />
+                  <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
+                    <TeamCreditsSelector 
+                      onTeamSelect={handleTeamSelect}
+                      selectedTeamId={selectedTeamId}
+                      disabled={loading || restageLoading}
+                      onRefreshReady={handleRefreshReady}
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Divider */}
               <div className="border-t border-slate-200 my-1" />
 
@@ -369,6 +408,16 @@ export default function Demo() {
                 <Button
                   className="w-full text-xs font-bold mt-2"
                   onClick={async () => {
+                    // Frontend validation for logged-in users
+                    if (isLoggedIn && !selectedTeamId) {
+                      setError('Please select a team to use credits from.');
+                      return;
+                    }
+                    if (isLoggedIn && remainingCredits <= 0) {
+                      setError('You have no remaining credits in the selected team.');
+                      return;
+                    }
+
                     if (mode === 'restage') {
                       let finalPrompt = prompt;
                       if (areaType === 'exterior' && !prompt) {
@@ -413,7 +462,14 @@ export default function Demo() {
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
                         finalPrompt,
                         areaType,
-                        // removeFurniture
+                        undefined, // removeFurniture
+                        isLoggedIn ? selectedTeamId || undefined : undefined, // Pass teamId only if logged in
+                        async () => {
+                          // Refresh team credits after successful generation
+                          if (isLoggedIn && refreshTeamCredits) {
+                            await refreshTeamCredits();
+                          }
+                        }
                       );
                     }
                     if (limitReached) {
