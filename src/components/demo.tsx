@@ -11,7 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useDemoApi } from "./useDemoApi";
 import { ToastContainer } from 'react-toastify';
@@ -128,9 +128,9 @@ export default function Demo() {
     setRemainingCredits(remaining);
   };
 
-  const handleRefreshReady = useCallback((refreshFn: () => Promise<void>) => {
+  const handleRefreshReady = (refreshFn: () => Promise<void>) => {
     setRefreshTeamCredits(() => refreshFn);
-  }, []);
+  };
 
   const handleMove = (clientX: number) => {
     const rect = document
