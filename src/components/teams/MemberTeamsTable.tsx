@@ -36,7 +36,7 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
         const membershipByUserId = new Map(team.members?.map((member) => [member.user_id, member]));
         const currentMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
         const currentRoleName = team.owner_id === currentUserId ? "TEAM_OWNER" : currentMembership?.role?.name;
-        
+
         // Can invite if OWNER, ADMIN, or AGENT
         return ["TEAM_OWNER", "TEAM_ADMIN", "TEAM_AGENT"].includes(currentRoleName || "");
     };
@@ -45,7 +45,7 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
         const membershipByUserId = new Map(team.members?.map((member) => [member.user_id, member]));
         const currentMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
         const currentRoleName = team.owner_id === currentUserId ? "TEAM_OWNER" : currentMembership?.role?.name;
-        
+
         // Only AGENT can transfer (not OWNER or ADMIN)
         return currentRoleName === "TEAM_AGENT";
     };
@@ -90,29 +90,34 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                                 {new Date(team.created_at).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-left">
-                                {(canInviteInTeam(team) || isTeamAgentInTeam(team)) && (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start">
-                                            {canInviteInTeam(team) && (
-                                                <DropdownMenuItem onClick={() => onInviteClick && onInviteClick(team)}>
-                                                    <UserPlus className="w-4 h-4 mr-2" />
-                                                    Invite
-                                                </DropdownMenuItem>
-                                            )}
-                                            {isTeamAgentInTeam(team) && (
-                                                <DropdownMenuItem onClick={() => onTransferClick && onTransferClick(team)}>
-                                                    <Send className="w-4 h-4 mr-2" />
-                                                    Transfer Credits
-                                                </DropdownMenuItem>
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                )}
+                                {/* {(canInviteInTeam(team) || isTeamAgentInTeam(team)) && (
+
+                                )} */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start">
+                                        {canInviteInTeam(team) && (
+                                            <DropdownMenuItem onClick={() => onInviteClick && onInviteClick(team)}>
+                                                <UserPlus className="w-4 h-4 mr-2" />
+                                                Invite
+                                            </DropdownMenuItem>
+                                        )}
+                                        {isTeamAgentInTeam(team) && (
+                                            <DropdownMenuItem onClick={() => onTransferClick && onTransferClick(team)}>
+                                                <Send className="w-4 h-4 mr-2" />
+                                                Transfer Credits
+                                            </DropdownMenuItem>
+                                        )}
+                                            <DropdownMenuItem onClick={() => onTransferClick && onTransferClick(team)}>
+                                                <Send className="w-4 h-4 mr-2" />
+                                                Leave Team
+                                            </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </TableCell>
                         </TableRow>
                     ))}
