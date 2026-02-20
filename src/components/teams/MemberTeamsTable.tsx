@@ -59,7 +59,10 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
     };
 
     const isTeamAgentInTeam = (team: Team) => {
-        const currentRoleName = getCurrentRoleName(team);
+        const membershipByUserId = new Map(team.members?.map((member) => [member.user_id, member]));
+        const currentMembership = currentUserId ? membershipByUserId.get(currentUserId) : undefined;
+        const currentRoleName = team.owner_id === currentUserId ? "TEAM_OWNER" : currentMembership?.role?.name;
+        
         // Only AGENT can transfer (not OWNER or ADMIN)
         return currentRoleName === "TEAM_AGENT";
     };
