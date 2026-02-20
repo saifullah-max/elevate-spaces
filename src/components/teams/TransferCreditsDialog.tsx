@@ -49,7 +49,7 @@ export function TransferCreditsDialog({
     const transferableMembers = acceptedMembers.filter((invite) => {
         const memberId = invite.accepted_by_user_id || "";
         const member = memberId ? membershipByUserId.get(memberId) : undefined;
-        const roleName = member?.role?.name || "TEAM_MEMBER";
+        const roleName = member?.role?.name || "TEAM_AGENT";
         return roleName === "TEAM_PHOTOGRAPHER" && memberId !== currentUserId;
     });
 

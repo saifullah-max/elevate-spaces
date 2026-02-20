@@ -51,6 +51,38 @@ export const createTeam = async (
     }
 };
 
+export const updateTeamName = async (
+    teamId: string,
+    name: string
+): Promise<{ message: string }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+        const response = await axios.patch(
+            `${API_BASE_URL}/teams/update-name`,
+            { teamId, name },
+            { headers: getAuthHeaders() }
+        );
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Update team name failed. Please try again.",
+            };
+        }
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
 export const inviteTeamMember = async (
     data: inviteTeamData
 ): Promise<inviteTeamResponse> => {
@@ -148,6 +180,37 @@ export const acceptInvite = async (
         };
     }
 };
+
+// Cancel invitation API
+export async function cancelInvitation({ id }: { id: string }) {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.delete<{ message: string }>(
+            `${API_BASE_URL}/teams/cancel-invite/${id}`,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to cancel invitation",
+            };
+        }
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+}
 
 export const removeTeamMember = async (
     data: removeTeamMemberData
@@ -318,6 +381,142 @@ export const updateTeamMemberRole = async ({
                     error.response?.data?.message ||
                     error.message ||
                     "Failed to update member role. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const leaveTeam = async (teamId: string): Promise<{ success: boolean; message: string; requiresCreditsTransfer?: boolean; availableCredits?: number }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.post<{ success: boolean; message: string; requiresCreditsTransfer?: boolean; availableCredits?: number }>(
+            `${API_BASE_URL}/teams/leave`,
+            { teamId },
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to leave the team. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const transferCreditsBeforeLeaving = async ({
+    teamId,
+    transferToUserId,
+    credits,
+}: {
+    teamId: string;
+    transferToUserId?: string;
+    credits: number;
+}): Promise<{ success: boolean; message: string }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.post<{ success: boolean; message: string }>(
+            `${API_BASE_URL}/teams/transfer-credits-before-leave`,
+            { teamId, transferToUserId, credits },
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to transfer credits. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const completeLeaveTeam = async (teamId: string): Promise<{ success: boolean; message: string }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.post<{ success: boolean; message: string }>(
+            `${API_BASE_URL}/teams/complete-leave`,
+            { teamId },
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to complete leave. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const deleteTeam = async (teamId: string): Promise<{ success: boolean; message: string }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.post<{ success: boolean; message: string }>(
+            `${API_BASE_URL}/teams/delete`,
+            { teamId },
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to delete team. Please try again.",
             };
         }
 

@@ -58,20 +58,17 @@ export function InviteMemberDialog({
     // Determine available roles based on current user's role
     const roleOptions = currentRoleName === "TEAM_OWNER"
         ? [
-            { value: "TEAM_MEMBER", label: "Team Member" },
             { value: "TEAM_AGENT", label: "Real Estate Agent" },
             { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
             { value: "TEAM_ADMIN", label: "Admin" },
         ]
         : currentRoleName === "TEAM_ADMIN"
             ? [
-                { value: "TEAM_MEMBER", label: "Team Member" },
                 { value: "TEAM_AGENT", label: "Real Estate Agent" },
                 { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
             ]
             : currentRoleName === "TEAM_AGENT"
                 ? [
-                    { value: "TEAM_MEMBER", label: "Team Member" },
                     { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
                 ]
                 : [];

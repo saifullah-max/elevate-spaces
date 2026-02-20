@@ -12,11 +12,14 @@ interface ViewAllMembersDialogProps {
     getStatusIcon: (status: string) => React.ReactNode;
     currentUserId?: string | null;
     onRemoveMember: (inviteId: string, teamId: string, ownerId: string) => void;
+    onCancelInvitation?: (inviteId: string, teamId: string, ownerId: string) => void;
     removingMemberId?: string | null;
     onReinvite?: (inviteId: string, inviteEmail: string, teamId: string) => void;
     reinvitingInviteId?: string | null;
     reinviteMessage?: string | null;
     reinviteError?: string | null;
+    cancelMessage?: string | null;
+    cancelError?: string | null;
     onUpdateMemberRole?: (teamId: string, memberId: string, roleName: string) => void;
     updatingRoleMemberId?: string | null;
     roleUpdateMessage?: string | null;
@@ -31,11 +34,14 @@ export function ViewAllMembersDialog({
     getStatusIcon,
     currentUserId,
     onRemoveMember,
+    onCancelInvitation,
     removingMemberId,
     onReinvite,
     reinvitingInviteId,
     reinviteMessage,
     reinviteError,
+    cancelMessage,
+    cancelError,
     onUpdateMemberRole,
     updatingRoleMemberId,
     roleUpdateMessage,
@@ -56,13 +62,11 @@ export function ViewAllMembersDialog({
             { value: "TEAM_ADMIN", label: "Admin" },
             { value: "TEAM_AGENT", label: "Agent" },
             { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
-            { value: "TEAM_MEMBER", label: "Team Member" },
         ]
         : currentRoleName === "TEAM_ADMIN"
             ? [
                 { value: "TEAM_AGENT", label: "Agent" },
                 { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
-                { value: "TEAM_MEMBER", label: "Team Member" },
             ]
             : [];
 
@@ -97,6 +101,16 @@ export function ViewAllMembersDialog({
                             <p className="text-red-700 text-sm font-medium">{roleUpdateError}</p>
                         </div>
                     ) : null}
+                    {cancelMessage ? (
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <p className="text-green-700 text-sm font-medium">{cancelMessage}</p>
+                        </div>
+                    ) : null}
+                    {cancelError ? (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-700 text-sm font-medium">{cancelError}</p>
+                        </div>
+                    ) : null}
                     {team && team.teamInvites.length > 0 ? (
                         <div className="space-y-6 py-4">
                             {/* Accepted Members */}
@@ -115,7 +129,7 @@ export function ViewAllMembersDialog({
                                             (() => {
                                                 const memberId = invite.accepted_by_user_id || "";
                                                 const member = memberId ? membershipByUserId.get(memberId) : undefined;
-                                                const roleName = member?.role?.name || "TEAM_MEMBER";
+                                                const roleName = member?.role?.name || "TEAM_AGENT";
                                                 const canEditRole = roleOptions.length > 0 && memberId && memberId !== team.owner_id;
 
                                                 return (
@@ -170,6 +184,13 @@ export function ViewAllMembersDialog({
                                                 onReinvite={
                                                     onReinvite
                                                         ? () => onReinvite(invite.id, invite.email, team.id)
+                                                        : undefined
+                                                }
+                                                showCancel={canReinvite || currentRoleName === "TEAM_ADMIN"}
+                                                cancelling={removingMemberId === invite.id}
+                                                onCancel={
+                                                    onCancelInvitation
+                                                        ? () => onCancelInvitation(invite.id, team.id, team.owner_id)
                                                         : undefined
                                                 }
                                             />

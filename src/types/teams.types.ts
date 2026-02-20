@@ -99,6 +99,7 @@ export interface TeamMember {
     used: number;
     joined_at: string;
     updated_at: string;
+    deleted_at: string;
     user: User;
     role: TeamRole;
 }

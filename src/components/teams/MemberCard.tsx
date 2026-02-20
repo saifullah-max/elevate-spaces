@@ -183,6 +183,9 @@ interface PendingInviteCardProps {
     showReinvite?: boolean;
     reinviting?: boolean;
     onReinvite?: () => void;
+    showCancel?: boolean;
+    cancelling?: boolean;
+    onCancel?: () => void;
 }
 
 export function PendingInviteCard({
@@ -194,6 +197,9 @@ export function PendingInviteCard({
     showReinvite,
     reinviting,
     onReinvite,
+    showCancel,
+    cancelling,
+    onCancel,
 }: PendingInviteCardProps) {
     const bgColor = status === "PENDING" ? "bg-amber-200 text-amber-700" : "bg-red-200 text-red-700";
     const borderColor = status === "PENDING" ? "border-amber-200" : "border-red-200";
@@ -235,6 +241,28 @@ export function PendingInviteCard({
                                 <>
                                     <RefreshCw className="w-4 h-4 mr-2" />
                                     Reinvite
+                                </>
+                            )}
+                        </Button>
+                    ) : null}
+                    {showCancel ? (
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={onCancel}
+                            disabled={cancelling}
+                            aria-busy={cancelling}
+                        >
+                            {cancelling ? (
+                                <>
+                                    <X className="w-4 h-4 mr-2 animate-spin" />
+                                    Cancelling...
+                                </>
+                            ) : (
+                                <>
+                                    <X className="w-4 h-4 mr-2" />
+                                    Cancel
                                 </>
                             )}
                         </Button>

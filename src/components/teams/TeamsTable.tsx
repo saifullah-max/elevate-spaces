@@ -1,5 +1,5 @@
 'use client'
-import { Users, Plus, MoreVertical, UserPlus, Coins } from "lucide-react";
+import { Users, Plus, MoreVertical, UserPlus, Coins, Trash2, Pencil } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -18,6 +18,8 @@ interface TeamsTableProps {
     onInviteClick: (team: Team) => void;
     onViewAllClick: (team: Team) => void;
     onAllocateCreditsClick: (team: Team) => void;
+    onDeleteClick?: (team: Team) => void;
+    onEditNameClick?: (team: Team) => void;
 }
 
 export function TeamsTable({
@@ -26,6 +28,8 @@ export function TeamsTable({
     onInviteClick,
     onViewAllClick,
     onAllocateCreditsClick,
+    onDeleteClick,
+    onEditNameClick,
 }: TeamsTableProps) {
     if (!teams || teams.teams.length === 0) {
         return (
@@ -81,7 +85,11 @@ export function TeamsTable({
                             </TableCell>
                             <TableCell>
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {team.teamInvites.filter(inv => inv.status === "ACCEPTED").length} members
+                                    {
+                                        [
+                                            ...team.members.filter(mem => mem.deleted_at === null)
+                                        ].length
+                                    } members
                                 </span>
                             </TableCell>
                             <TableCell>
@@ -117,6 +125,26 @@ export function TeamsTable({
                                             <Users className="w-4 h-4 mr-2" />
                                             View All
                                         </DropdownMenuItem>
+                                        {onEditNameClick && (
+                                            <DropdownMenuItem onClick={() => onEditNameClick(team)}>
+                                                <Pencil className="w-4 h-4 mr-2 items-baseline"/>
+                                                Edit Name
+                                            </DropdownMenuItem>
+                                        )}
+                                        {onDeleteClick && (
+                                            <>
+                                                <div className="flex items-center px-2 py-1.5 text-xs text-slate-500 cursor-default">
+                                                    <div className="flex-1 h-px bg-slate-200"></div>
+                                                </div>
+                                                <DropdownMenuItem
+                                                    onClick={() => onDeleteClick(team)}
+                                                    className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                                                >
+                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                    Delete Team
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>

@@ -1,6 +1,12 @@
 'use client'
 import { useState, useEffect } from "react";
-import { allocateCreditsToMember, createTeam, getTeams, getTeamsByUserId, inviteTeamMember, reinviteTeamMember, removeTeamMember, updateTeamMemberRole } from "@/services/teams.service";
+import {
+    allocateCreditsToMember, createTeam, getTeams,
+    getTeamsByUserId, inviteTeamMember, reinviteTeamMember,
+    removeTeamMember, updateTeamMemberRole, leaveTeam,
+    transferCreditsBeforeLeaving, completeLeaveTeam,
+    deleteTeam, cancelInvitation, updateTeamName
+} from "@/services/teams.service";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { Get_Teams_Response, Team } from "@/types/teams.types";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
@@ -12,7 +18,12 @@ import { ViewAllMembersDialog } from "@/components/teams/ViewAllMembersDialog";
 import { InviteMemberDialog } from "@/components/teams/InviteMemberDialog";
 import { AllocateCreditsDialog } from "@/components/teams/AllocateCreditsDialog";
 import { TransferCreditsDialog } from "@/components/teams/TransferCreditsDialog";
+import { TransferCreditsBeforeLeavingModal } from "@/components/teams/TransferCreditsBeforeLeavingModal";
 import { getStatusBadgeColor, getStatusIcon } from "@/components/teams/utils";
+import { DeleteTeamModal } from "@/components/teams/DeleteTeamModal";
+import { LeaveTeamModal } from "@/components/teams/LeaveTeamModal";
+import { EditTeamNameDialog } from "@/components/teams/EditTeamNameDialog";
+
 
 export default function Teams() {
     const [name, setName] = useState("");
@@ -25,7 +36,7 @@ export default function Teams() {
     const [inviteEmail, setInviteEmail] = useState("");
     const [inviteSubject, setInviteSubject] = useState("");
     const [inviteText, setInviteText] = useState("");
-    const [inviteRole, setInviteRole] = useState("TEAM_MEMBER");
+    const [inviteRole, setInviteRole] = useState("TEAM_AGENT");
     const [inviteLoading, setInviteLoading] = useState(false);
     const [inviteMessage, setInviteMessage] = useState<string | null>(null);
     const [inviteError, setInviteError] = useState<string | null>(null);
@@ -40,6 +51,8 @@ export default function Teams() {
     const [reinvitingInviteId, setReinvitingInviteId] = useState<string | null>(null);
     const [reinviteMessage, setReinviteMessage] = useState<string | null>(null);
     const [reinviteError, setReinviteError] = useState<string | null>(null);
+    const [cancelMessage, setCancelMessage] = useState<string | null>(null);
+    const [cancelError, setCancelError] = useState<string | null>(null);
     const [updatingRoleMemberId, setUpdatingRoleMemberId] = useState<string | null>(null);
     const [roleUpdateMessage, setRoleUpdateMessage] = useState<string | null>(null);
     const [roleUpdateError, setRoleUpdateError] = useState<string | null>(null);
@@ -55,6 +68,22 @@ export default function Teams() {
     const [transferLoading, setTransferLoading] = useState(false);
     const [transferError, setTransferError] = useState<string | null>(null);
     const [transferMessage, setTransferMessage] = useState<string | null>(null);
+    const [leavingTeamId, setLeavingTeamId] = useState<string | null>(null);
+    const [transferCreditsModalOpen, setTransferCreditsModalOpen] = useState(false);
+    const [transferCreditsTeam, setTransferCreditsTeam] = useState<Team | null>(null);
+    const [transferCreditsAmount, setTransferCreditsAmount] = useState(0);
+    const [transferCreditsLoading, setTransferCreditsLoading] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deleteModalTeam, setDeleteModalTeam] = useState<Team | null>(null);
+    const [deleteModalLoading, setDeleteModalLoading] = useState(false);
+    const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+    const [leaveModalTeam, setLeaveModalTeam] = useState<Team | null>(null);
+    const [leaveModalLoading, setLeaveModalLoading] = useState(false);
+    const [editNameDialogOpen, setEditNameDialogOpen] = useState(false);
+    const [editNameTeam, setEditNameTeam] = useState<Team | null>(null);
+    const [editNameLoading, setEditNameLoading] = useState(false);
+    const [editNameError, setEditNameError] = useState<string | null>(null);
+    const [editNameSuccess, setEditNameSuccess] = useState<string | null>(null);
 
     useEffect(() => {
         const authData = getAuthFromStorage();
@@ -91,10 +120,43 @@ export default function Teams() {
         if (!viewAllMembersOpen) {
             setReinviteMessage(null);
             setReinviteError(null);
+            setCancelMessage(null);
+            setCancelError(null);
             setRoleUpdateMessage(null);
             setRoleUpdateError(null);
         }
     }, [viewAllMembersOpen]);
+
+    // Auto-dismiss messages after 5 seconds
+    useEffect(() => {
+        if (reinviteMessage || reinviteError) {
+            const timer = setTimeout(() => {
+                setReinviteMessage(null);
+                setReinviteError(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [reinviteMessage, reinviteError]);
+
+    useEffect(() => {
+        if (cancelMessage || cancelError) {
+            const timer = setTimeout(() => {
+                setCancelMessage(null);
+                setCancelError(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [cancelMessage, cancelError]);
+
+    useEffect(() => {
+        if (roleUpdateMessage || roleUpdateError) {
+            const timer = setTimeout(() => {
+                setRoleUpdateMessage(null);
+                setRoleUpdateError(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [roleUpdateMessage, roleUpdateError]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -160,13 +222,30 @@ export default function Teams() {
             setInviteEmail("");
             setInviteSubject("");
             setInviteText("");
-            setInviteRole("TEAM_MEMBER");
+            setInviteRole("TEAM_AGENT");
             setInviteDialogOpen(false);
             getAllTeams();
         } catch (err: any) {
             setInviteError(err.message || "Invitation failed");
         } finally {
             setInviteLoading(false);
+        }
+    };
+
+    const handleCancelInvitation = async (inviteId: string, teamId: string, ownerId: string) => {
+        try {
+            setCancelError(null);
+            setCancelMessage(null);
+            setRemovingMemberId(inviteId);
+            await cancelInvitation({ id: inviteId });
+            setCancelMessage("Invitation cancelled successfully");
+            await getAllTeams();
+        } catch (err: any) {
+            const errorMsg = err?.message || "Failed to cancel invitation";
+            setCancelError(errorMsg);
+            console.error("Failed to cancel invitation", errorMsg);
+        } finally {
+            setRemovingMemberId(null);
         }
     };
 
@@ -303,6 +382,98 @@ export default function Teams() {
         }
     };
 
+    const handleLeaveTeam = async (teamId: string) => {
+        try {
+            setLeavingTeamId(teamId);
+            const result = await leaveTeam(teamId);
+
+            if (result.requiresCreditsTransfer && result.availableCredits) {
+                // Show modal for credit transfer
+                const team = memberTeams?.teams.find((t) => t.id === teamId);
+                setTransferCreditsTeam(team || null);
+                setTransferCreditsAmount(result.availableCredits);
+                setTransferCreditsModalOpen(true);
+            } else {
+                setMessage("You have successfully left the team");
+                await getAllTeams();
+            }
+        } catch (err: any) {
+            setError(err.message || "Failed to leave the team");
+        } finally {
+            setLeavingTeamId(null);
+        }
+    };
+
+    const handleTransferCreditsAndLeave = async (memberId?: string, credits?: number) => {
+        try {
+            if (!transferCreditsTeam) return;
+
+            setTransferCreditsLoading(true);
+
+            if (memberId) {
+                // Transfer to member
+                await transferCreditsBeforeLeaving({
+                    teamId: transferCreditsTeam.id,
+                    transferToUserId: memberId,
+                    credits: credits || transferCreditsAmount,
+                });
+            } else {
+                // Transfer to wallet
+                await transferCreditsBeforeLeaving({
+                    teamId: transferCreditsTeam.id,
+                    credits: credits || transferCreditsAmount,
+                });
+            }
+
+            // Complete the leave
+            await completeLeaveTeam(transferCreditsTeam.id);
+            setMessage("You have successfully left the team");
+            setTransferCreditsModalOpen(false);
+            await getAllTeams();
+        } catch (err: any) {
+            setError(err.message || "Failed to transfer credits and leave");
+        } finally {
+            setTransferCreditsLoading(false);
+        }
+    };
+
+    const handleDeleteTeam = async (teamId: string) => {
+        setDeleteModalLoading(true);
+        try {
+            await deleteTeam(teamId);
+            setMessage("Team deleted successfully");
+            await getAllTeams();
+        } catch (err: any) {
+            setError(err.message || "Failed to delete team");
+        } finally {
+            setDeleteModalLoading(false);
+            setDeleteModalOpen(false);
+            setDeleteModalTeam(null);
+        }
+    };
+
+    const handleUpdateTeamName = async (newName: string) => {
+        if (!editNameTeam) return;
+        
+        setEditNameLoading(true);
+        setEditNameError(null);
+        setEditNameSuccess(null);
+        try {
+            await updateTeamName(editNameTeam.id, newName);
+            setEditNameSuccess("Team name updated successfully");
+            await getAllTeams();
+            setTimeout(() => {
+                setEditNameDialogOpen(false);
+                setEditNameError(null);
+                setEditNameSuccess(null);
+            }, 1500);
+        } catch (err: any) {
+            setEditNameError(err.message || "Failed to update team name");
+        } finally {
+            setEditNameLoading(false);
+        }
+    };
+
     // Show loading state while checking authentication
     if (isAuthenticated === null) {
         return null;
@@ -333,28 +504,54 @@ export default function Teams() {
 
                 <div className="mb-10">
                     <h2 className="text-2xl font-semibold text-slate-900 mb-4">My Teams</h2>
-                <TeamsTable
-                    teams={teams}
-                    onEmptyStateClick={() => setCreateDialogOpen(true)}
-                    onInviteClick={(team) => {
-                        setSelectedTeam(team);
-                        setTeamId(team.id);
-                        setInviteDialogOpen(true);
-                    }}
-                    onAllocateCreditsClick={(team) => {
-                        setSelectedTeam(team);
-                        setAllocateDialogOpen(true);
-                    }}
-                    onViewAllClick={(team) => {
-                        setSelectedTeam(team);
-                        setViewAllMembersOpen(true);
-                    }}
-                />
+                    <TeamsTable
+                        teams={teams}
+                        onEmptyStateClick={() => setCreateDialogOpen(true)}
+                        onInviteClick={(team) => {
+                            setSelectedTeam(team);
+                            setTeamId(team.id);
+                            setInviteDialogOpen(true);
+                        }}
+                        onAllocateCreditsClick={(team) => {
+                            setSelectedTeam(team);
+                            setAllocateDialogOpen(true);
+                        }}
+                        onViewAllClick={(team) => {
+                            setSelectedTeam(team);
+                            setViewAllMembersOpen(true);
+                        }}
+                        onDeleteClick={(team) => {
+                            if (currentUserId === team.owner_id) {
+                                setDeleteModalTeam(team);
+                                setDeleteModalOpen(true);
+                            } else {
+                                setError("Only team owners can delete teams");
+                            }
+                        }}
+                        onEditNameClick={(team) => {
+                            setEditNameTeam(team);
+                            setEditNameDialogOpen(true);
+                        }}
+                    />
                 </div>
+
+                {/* Edit Team Name Dialog */}
+                {editNameTeam && (
+                    <EditTeamNameDialog
+                        open={editNameDialogOpen}
+                        onOpenChange={setEditNameDialogOpen}
+                        teamId={editNameTeam.id}
+                        currentName={editNameTeam.name}
+                        loading={editNameLoading}
+                        error={editNameError}
+                        successMessage={editNameSuccess}
+                        onSubmit={handleUpdateTeamName}
+                    />
+                )}
 
                 <div className="mb-10">
                     <h2 className="text-2xl font-semibold text-slate-900 mb-4">Teams I'm Part Of</h2>
-                    <MemberTeamsTable 
+                    <MemberTeamsTable
                         teams={memberTeams}
                         currentUserId={currentUserId}
                         onInviteClick={(team) => {
@@ -365,6 +562,58 @@ export default function Teams() {
                         onTransferClick={(team) => {
                             setSelectedTeam(team);
                             setTransferDialogOpen(true);
+                        }}
+                        onLeaveClick={(team) => {
+                            setLeaveModalTeam(team);
+                            setLeaveModalOpen(true);
+                        }}
+                        onViewAllClick={(team) => {
+                            setSelectedTeam(team);
+                            setViewAllMembersOpen(true);
+                        }}
+                        onAllocateCreditsClick={(team) => {
+                            setSelectedTeam(team);
+                            setAllocateDialogOpen(true);
+                        }}
+                        onEditNameClick={(team) => {
+                            setEditNameTeam(team);
+                            setEditNameDialogOpen(true);
+                        }}
+                        onDeleteClick={(team) => {
+                            setDeleteModalTeam(team);
+                            setDeleteModalOpen(true);
+                        }}
+                    />
+                    {/* Place modals at the root, after main content */}
+                    <DeleteTeamModal
+                        open={deleteModalOpen}
+                        onOpenChange={(open) => {
+                            setDeleteModalOpen(open);
+                            if (!open) setDeleteModalTeam(null);
+                        }}
+                        teamName={deleteModalTeam?.name || ""}
+                        isLoading={deleteModalLoading}
+                        onDelete={() => {
+                            if (deleteModalTeam) handleDeleteTeam(deleteModalTeam.id);
+                        }}
+                    />
+
+                    <LeaveTeamModal
+                        open={leaveModalOpen}
+                        onOpenChange={(open) => {
+                            setLeaveModalOpen(open);
+                            if (!open) setLeaveModalTeam(null);
+                        }}
+                        teamName={leaveModalTeam?.name || ""}
+                        isLoading={leaveModalLoading}
+                        onLeave={async () => {
+                            if (leaveModalTeam) {
+                                setLeaveModalLoading(true);
+                                await handleLeaveTeam(leaveModalTeam.id);
+                                setLeaveModalLoading(false);
+                                setLeaveModalOpen(false);
+                                setLeaveModalTeam(null);
+                            }
                         }}
                     />
                 </div>
@@ -377,11 +626,14 @@ export default function Teams() {
                     getStatusIcon={getStatusIcon}
                     currentUserId={currentUserId}
                     onRemoveMember={handleRemoveMember}
+                    onCancelInvitation={handleCancelInvitation}
                     removingMemberId={removingMemberId}
                     onReinvite={handleReinvite}
                     reinvitingInviteId={reinvitingInviteId}
                     reinviteMessage={reinviteMessage}
                     reinviteError={reinviteError}
+                    cancelMessage={cancelMessage}
+                    cancelError={cancelError}
                     onUpdateMemberRole={handleUpdateMemberRole}
                     updatingRoleMemberId={updatingRoleMemberId}
                     roleUpdateMessage={roleUpdateMessage}
@@ -437,6 +689,23 @@ export default function Teams() {
                     error={transferError}
                     successMessage={transferMessage}
                     currentUserId={currentUserId}
+                />
+
+                <TransferCreditsBeforeLeavingModal
+                    open={transferCreditsModalOpen}
+                    team={transferCreditsTeam}
+                    availableCredits={transferCreditsAmount}
+                    onTransferToWallet={async (credits) => {
+                        await handleTransferCreditsAndLeave(undefined, credits);
+                    }}
+                    onTransferToMember={async (memberId, credits) => {
+                        await handleTransferCreditsAndLeave(memberId, credits);
+                    }}
+                    onLeaveWithoutCredits={async () => {
+                        await handleTransferCreditsAndLeave();
+                    }}
+                    onOpenChange={setTransferCreditsModalOpen}
+                // loading={transferCreditsLoading}
                 />
             </div>
         </div>
