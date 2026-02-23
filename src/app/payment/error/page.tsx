@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader } from "lucide-react";
 import Link from "next/link";
 
-export default function PaymentError() {
+function PaymentErrorHandler() {
   const searchParams = useSearchParams();
   const errorType = searchParams.get("type") || "failed"; // 'failed' or 'cancelled'
 
@@ -146,5 +146,20 @@ export default function PaymentError() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentError() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-linear-to-br from-red-50 to-rose-50 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <Loader className="w-12 h-12 text-red-600 animate-spin mx-auto" />
+          <h1 className="text-2xl font-bold text-slate-900">Loading...</h1>
+        </div>
+      </div>
+    }>
+      <PaymentErrorHandler />
+    </Suspense>
   );
 }
