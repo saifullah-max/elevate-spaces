@@ -54,7 +54,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
     const selectedImageIdx = props?.selectedImageIdx ?? 0;
     const setSelectedImageIdx = props?.setSelectedImageIdx ?? (() => { });
 
-    const handleStageImage = (file: File | null, roomType: RoomType | undefined, exteriorType: RoomType | undefined, stagingStyle: StagingStyle | undefined, prompt: string, areaType: "interior" | "exterior", removeFurniture?: boolean, teamId?: string, onSuccess?: () => void) => {
+    const handleStageImage = (file: File | null, roomType: RoomType | undefined, exteriorType: RoomType | undefined, stagingStyle: StagingStyle | undefined, prompt: string, areaType: "interior" | "exterior", removeFurniture?: boolean, teamId?: string, onSuccess?: () => void, projectId?: string) => {
         if (!file) return;
         setLoading(true);
         setError(null);
@@ -72,6 +72,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             prompt,
             deviceId,
             teamId,
+            projectId,
             onImage: (data) => {
                 setStagedImageUrls(prev => [...prev, data.stagedImageUrl]);
                 setStagedIds(prev => [...prev, data.stagedId]);

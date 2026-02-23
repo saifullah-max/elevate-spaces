@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Coins, Loader2, Shield, Users } from "lucide-react";
 import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:3003";
+const TEAMS_CACHE_KEY = 'elevate_teams_cache';
+const TEAMS_CACHE_EXPIRY_KEY = 'elevate_teams_cache_expiry';
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes cache
 
 interface Team {
   id: string;
@@ -31,21 +34,41 @@ export function TeamCreditsSelector({
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  // Expose refresh function to parent (only once)
-  useEffect(() => {
-    if (onRefreshReady) {
-      onRefreshReady(fetchTeams);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array - only run once on mount
-
-  const fetchTeams = async () => {
+  // Memoized fetch function to prevent unnecessary re-renders
+  const fetchTeams = useCallback(async (skipCache = false) => {
     try {
+      // Check cache first (unless skipCache is true)
+      if (!skipCache && typeof window !== 'undefined') {
+        const cachedData = localStorage.getItem(TEAMS_CACHE_KEY);
+        const cacheExpiry = localStorage.getItem(TEAMS_CACHE_EXPIRY_KEY);
+        
+        if (cachedData && cacheExpiry) {
+          const expiryTime = parseInt(cacheExpiry, 10);
+          if (Date.now() < expiryTime) {
+            try {
+              const parsedTeams = JSON.parse(cachedData);
+              setTeams(parsedTeams);
+              setLoading(false);
+              setError(null);
+              
+              // Update remaining credits for currently selected team if any
+              if (selectedTeamId) {
+                const updatedTeam = parsedTeams.find((t: Team) => t.id === selectedTeamId);
+                if (updatedTeam) {
+                  onTeamSelect(updatedTeam.id, updatedTeam.remaining);
+                }
+              }
+              return; // Use cache, don't fetch
+            } catch (e) {
+              console.error('Failed to parse cached teams:', e);
+            }
+          }
+        }
+      }
+
+      setIsFetching(true);
       setLoading(true);
       setError(null);
 
@@ -54,6 +77,7 @@ export function TeamCreditsSelector({
       if (!authRaw) {
         setError("Please log in to use team credits");
         setLoading(false);
+        setIsFetching(false);
         return;
       }
 
@@ -64,20 +88,23 @@ export function TeamCreditsSelector({
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        // Add request timeout
+        timeout: 10000,
       });
 
       if (response.data.success) {
-        setTeams(response.data.data.teams);
+        const teamsData = response.data.data.teams;
+        setTeams(teamsData);
         
-        // Auto-select first team with credits if none selected
-        if (!selectedTeamId && response.data.data.teams.length > 0) {
-          const teamWithCredits = response.data.data.teams.find((t: Team) => t.remaining > 0);
-          if (teamWithCredits) {
-            onTeamSelect(teamWithCredits.id, teamWithCredits.remaining);
-          }
-        } else if (selectedTeamId) {
-          // Update remaining credits for currently selected team
-          const updatedTeam = response.data.data.teams.find((t: Team) => t.id === selectedTeamId);
+        // Cache the result
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(TEAMS_CACHE_KEY, JSON.stringify(teamsData));
+          localStorage.setItem(TEAMS_CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION_MS).toString());
+        }
+        
+        // Update remaining credits for currently selected team if any
+        if (selectedTeamId) {
+          const updatedTeam = teamsData.find((t: Team) => t.id === selectedTeamId);
           if (updatedTeam) {
             onTeamSelect(updatedTeam.id, updatedTeam.remaining);
           }
@@ -88,8 +115,21 @@ export function TeamCreditsSelector({
       setError(err.response?.data?.message || "Failed to load teams");
     } finally {
       setLoading(false);
+      setIsFetching(false);
     }
-  };
+  }, [selectedTeamId, onTeamSelect]);
+
+  useEffect(() => {
+    fetchTeams();
+  }, [fetchTeams]);
+
+  // Expose refresh function to parent (only once)
+  useEffect(() => {
+    if (onRefreshReady) {
+      onRefreshReady(() => fetchTeams(true)); // Skip cache on manual refresh
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleTeamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const teamId = e.target.value;
@@ -125,13 +165,13 @@ export function TeamCreditsSelector({
 
   if (teams.length === 0) {
     return (
-      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex items-start gap-3">
-          <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
+          <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-900">No Teams Available</p>
-            <p className="text-xs text-amber-700 mt-1">
-              You need to be part of a team with allocated credits to use this feature.
+            <p className="text-sm font-medium text-blue-900">No Team Credits Available</p>
+            <p className="text-xs text-blue-700 mt-1">
+              You can still use your personal credits for image generation. Create or join a team to use shared team credits.
             </p>
           </div>
         </div>
@@ -144,7 +184,7 @@ export function TeamCreditsSelector({
       <div className="space-y-2">
         <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
           <Users className="w-3.5 h-3.5" />
-          Select Team
+          Select Team (Optional)
         </label>
         <select
           value={selectedTeamId || ""}

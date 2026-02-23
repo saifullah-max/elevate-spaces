@@ -43,7 +43,7 @@ export const getMyProjects = async (): Promise<ProjectsResponse> => {
         }
 
         const response = await axios.get<ProjectsResponse>(
-            `${API_BASE_URL}/projects/my`,
+            `${API_BASE_URL}/projects`,
             { headers: getAuthHeaders() }
         );
 
@@ -55,6 +55,37 @@ export const getMyProjects = async (): Promise<ProjectsResponse> => {
                     error.response?.data?.message ||
                     error.message ||
                     "Failed to fetch projects. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+export const getProjectImages = async (projectId: string): Promise<any> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.get<any>(
+            `${API_BASE_URL}/projects/${projectId}/images`,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to fetch project images. Please try again.",
             };
         }
 

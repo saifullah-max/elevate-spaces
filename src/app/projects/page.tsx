@@ -10,10 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
-import { Plus } from "lucide-react";
+import { Plus, Image as ImageIcon } from "lucide-react";
+import { ProjectImagesViewer } from "@/components/ProjectImagesViewer";
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<ProjectsResponse | null>(null);
+    const [showImagesViewer, setShowImagesViewer] = useState(false);
+    const [selectedProject, setSelectedProject] = useState<{ id: string; name: string } | null>(null);
     const [teams, setTeams] = useState<Team[]>([]);
     const [teamId, setTeamId] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -132,6 +135,7 @@ export default function ProjectsPage() {
                                 <TableHead className="font-semibold text-left">Created By</TableHead>
                                 <TableHead className="font-semibold text-left">Address</TableHead>
                                 <TableHead className="font-semibold text-left">Created</TableHead>
+                                <TableHead className="font-semibold text-left">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -143,11 +147,25 @@ export default function ProjectsPage() {
                                         <TableCell>{project.created_by?.name || project.created_by?.email || "-"}</TableCell>
                                         <TableCell className="text-slate-600">{project.address || "-"}</TableCell>
                                         <TableCell className="text-slate-600">{new Date(project.created_at).toLocaleDateString()}</TableCell>
+                                        <TableCell>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex items-center gap-1"
+                                                onClick={() => {
+                                                    setSelectedProject({ id: project.id, name: project.name });
+                                                    setShowImagesViewer(true);
+                                                }}
+                                            >
+                                                <ImageIcon className="w-4 h-4" />
+                                                View Images
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center text-slate-500 py-10">
+                                    <TableCell colSpan={6} className="text-center text-slate-500 py-10">
                                         No projects yet.
                                     </TableCell>
                                 </TableRow>
@@ -156,6 +174,16 @@ export default function ProjectsPage() {
                     </Table>
                 </div>
             </div>
+            {/* Project Images Viewer Modal */}
+            {selectedProject && (
+                <ProjectImagesViewer
+                    open={showImagesViewer}
+                    onOpenChange={setShowImagesViewer}
+                    projectId={selectedProject.id}
+                    projectName={selectedProject.name}
+                />
+            )}
+
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
 

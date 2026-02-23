@@ -18,6 +18,7 @@ export function stageImageSSE({
   stagingStyle = "modern",
   deviceId,
   teamId,
+  projectId,
   onImage,
   onError,
   onDone,
@@ -25,6 +26,7 @@ export function stageImageSSE({
 }: StageImageParams & {
   deviceId?: string,
   teamId?: string,
+  projectId?: string,
   onImage: (data: any) => void,
   onError?: (err: any) => void,
   onDone?: () => void,
@@ -36,7 +38,18 @@ export function stageImageSSE({
   formData.append("stagingStyle", stagingStyle);
   if (prompt) formData.append("prompt", prompt);
   if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
-  if (teamId) formData.append("teamId", teamId);
+  // Only append teamId if it's a non-empty string
+  if (teamId && typeof teamId === 'string' && teamId.trim() !== '') {
+    formData.append("teamId", teamId);
+    console.log('Image generation will use team credits for team:', teamId);
+  } else {
+    console.log('Image generation will use personal credits (no team selected)');
+  }
+  // Only append projectId if it's a non-empty string
+  if (projectId && typeof projectId === 'string' && projectId.trim() !== '') {
+    formData.append("projectId", projectId);
+    console.log('Image will be linked to project:', projectId);
+  }
 
   // First, upload the file and get a token or temp id (or use a presigned URL approach)
   // For simplicity, we'll POST to a special /images/generate/stream endpoint (must match backend route)
@@ -325,8 +338,22 @@ export interface RecentUploadsResponse {
 
 export async function getRecentUploads(limit = 10): Promise<RecentUploadsResponse> {
   try {
+    // Get token from localStorage only
+    let token: string | null = null;
+    if (typeof window !== "undefined") {
+      const authRaw = localStorage.getItem("elevate_spaces_auth");
+      if (authRaw) {
+        try {
+          const auth = JSON.parse(authRaw);
+          token = auth.token || null;
+        } catch {}
+      }
+    }
     const response = await axios.get(`${API_BASE_URL}/images/recent`, {
       params: { limit },
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
     if (response.data && response.data.success) {
       return response.data.data;

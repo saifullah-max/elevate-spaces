@@ -9,6 +9,7 @@ import {
   MoveHorizontal,
   Sparkles,
   Settings,
+  Loader,
 } from "lucide-react";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -22,6 +23,8 @@ import { UploadArea } from "./UploadArea";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { exteriorOptions, interiorOptions, stagingStyles } from "./data/dropdown";
 import { TeamCreditsSelector } from "./TeamCreditsSelector";
+import { CreditBalance } from "./CreditBalance";
+import { ProjectSelectorModal } from "./ProjectSelectorModal";
 
 
 export default function Demo() {
@@ -109,23 +112,54 @@ export default function Demo() {
   const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
   // const [removeFurniture, setRemoveFurniture] = useState(false);
 
-  // Team selection state
+  // Team selection state - persist to localStorage
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [refreshTeamCredits, setRefreshTeamCredits] = useState<(() => Promise<void>) | null>(null);
+  
+  // Confirmation modal state
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [dontShowConfirmationAgain, setDontShowConfirmationAgain] = useState(false);
+  const [pendingGenerationAction, setPendingGenerationAction] = useState<(() => Promise<void>) | null>(null);
+  
+  // Project selection modal state
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectName, setSelectedProjectName] = useState<string | null>(null);
 
-  // Check if user is logged in
+  // Check if user is logged in and load selected team from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const authRaw = localStorage.getItem('elevate_spaces_auth');
       setIsLoggedIn(!!authRaw);
+      
+      // Load selected team from localStorage
+      const savedTeamId = localStorage.getItem('elevate_selected_team_id');
+      if (savedTeamId && savedTeamId !== 'null') {
+        setSelectedTeamId(savedTeamId);
+      }
+      
+      // Load confirmation preference
+      const savedConfirmationPref = localStorage.getItem('elevate_hide_generation_confirmation');
+      if (savedConfirmationPref === 'true') {
+        setDontShowConfirmationAgain(true);
+      }
     }
   }, []);
 
   const handleTeamSelect = (teamId: string | null, remaining: number) => {
     setSelectedTeamId(teamId);
     setRemainingCredits(remaining);
+    
+    // Persist selected team to localStorage
+    if (typeof window !== 'undefined') {
+      if (teamId) {
+        localStorage.setItem('elevate_selected_team_id', teamId);
+      } else {
+        localStorage.removeItem('elevate_selected_team_id');
+      }
+    }
   };
 
   const handleRefreshReady = (refreshFn: () => Promise<void>) => {
@@ -293,6 +327,12 @@ export default function Demo() {
               {isLoggedIn && (
                 <>
                   <div className="border-t border-slate-200 my-1" />
+                  
+                  {/* Personal Credit Balance */}
+                  <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
+                    <CreditBalance />
+                  </div>
+
                   <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
                     <TeamCreditsSelector 
                       onTeamSelect={handleTeamSelect}
@@ -302,7 +342,7 @@ export default function Demo() {
                     />
                   </div>
                 </>
-              )}
+              )}``
 
               {/* Divider */}
               <div className="border-t border-slate-200 my-1" />
@@ -408,13 +448,38 @@ export default function Demo() {
                 <Button
                   className="w-full text-xs font-bold mt-2"
                   onClick={async () => {
-                    // Frontend validation for logged-in users
-                    if (isLoggedIn && !selectedTeamId) {
-                      setError('Please select a team to use credits from.');
+                    // Frontend validation for logged-in users with team selected
+                    if (isLoggedIn && selectedTeamId && remainingCredits <= 0) {
+                      setError('You have no remaining credits in the selected team.');
                       return;
                     }
-                    if (isLoggedIn && remainingCredits <= 0) {
-                      setError('You have no remaining credits in the selected team.');
+
+                    // For new image generation, show confirmation if not disabled
+                    if (mode === 'generate' && !dontShowConfirmationAgain) {
+                      setPendingGenerationAction(() => async () => {
+                        // If logged in, show project selection modal after confirmation
+                        if (isLoggedIn) {
+                          setShowProjectModal(true);
+                        } else {
+                          // Guest user - generate directly
+                          let finalPrompt = prompt;
+                          if (areaType === 'exterior' && !prompt) {
+                            finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+                          }
+                          await handleStageImage(
+                            file,
+                            roomType,
+                            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+                            areaType === 'exterior' ? undefined : selectedStagingStyle,
+                            finalPrompt,
+                            areaType,
+                            undefined,
+                            undefined,
+                            undefined
+                          );
+                        }
+                      });
+                      setShowConfirmation(true);
                       return;
                     }
 
@@ -448,29 +513,30 @@ export default function Demo() {
                         areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
                         areaType,
-                        // removeFurniture
                       );
                     } else {
-                      let finalPrompt = prompt;
-                      if (areaType === 'exterior' && !prompt) {
-                        finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
-                      }
-                      await handleStageImage(
-                        file,
-                        roomType,
-                        areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-                        areaType === 'exterior' ? undefined : selectedStagingStyle,
-                        finalPrompt,
-                        areaType,
-                        undefined, // removeFurniture
-                        isLoggedIn ? selectedTeamId || undefined : undefined, // Pass teamId only if logged in
-                        async () => {
-                          // Refresh team credits after successful generation
-                          if (isLoggedIn && refreshTeamCredits) {
-                            await refreshTeamCredits();
-                          }
+                      // Generate mode with confirmation disabled
+                      if (isLoggedIn) {
+                        // Show project modal first
+                        setShowProjectModal(true);
+                      } else {
+                        // Guest user - execute directly
+                        let finalPrompt = prompt;
+                        if (areaType === 'exterior' && !prompt) {
+                          finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
                         }
-                      );
+                        await handleStageImage(
+                          file,
+                          roomType,
+                          areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+                          areaType === 'exterior' ? undefined : selectedStagingStyle,
+                          finalPrompt,
+                          areaType,
+                          undefined,
+                          undefined,
+                          undefined
+                        );
+                      }
                     }
                     if (limitReached) {
                       showError('Demo limit reached. Please sign up and continue to buying a plan for further image staging.');
@@ -487,7 +553,19 @@ export default function Demo() {
                   {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : "Generate Image")}
                 </Button>
 
-                {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+                {error && (
+                  <div className="mt-2">
+                    <p className="text-red-500 text-xs">{error}</p>
+                    {error.toLowerCase().includes('insufficient') && (
+                      <a 
+                        href="/test#try-it-free" 
+                        className="text-blue-600 text-xs font-semibold hover:underline mt-1 inline-block"
+                      >
+                        → Buy credits to continue
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -579,8 +657,81 @@ export default function Demo() {
           </div>
         </div>
       </section>
-      {/* Thumbnails for alternate images */}
-      {/* Always show 5 boxes for image generation, fill as images arrive */}
+      
+      {/* CONFIRMATION MODAL FOR NEW IMAGE GENERATION */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Generate New Image</h2>
+            </div>
+            
+            <div className="space-y-3 mb-6 text-sm text-slate-700">
+              <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                <span className="text-lg">💳</span>
+                <div>
+                  <p className="font-semibold text-indigo-900">Generating a new image uses 1 credit</p>
+                  <p className="text-indigo-800 mt-1">Each new staging will deduct from your available credits. Credits cost money when purchased.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                <span className="text-lg">♻️</span>
+                <div>
+                  <p className="font-semibold text-green-900">Restaging is FREE</p>
+                  <p className="text-green-800 mt-1">You can restage any generated image unlimited times without using credits.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 mb-6 p-3 bg-slate-100 rounded-lg">
+              <input
+                type="checkbox"
+                id="dontShowAgain"
+                checked={dontShowConfirmationAgain}
+                onChange={(e) => {
+                  setDontShowConfirmationAgain(e.target.checked);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('elevate_hide_generation_confirmation', e.target.checked.toString());
+                  }
+                }}
+                className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+              />
+              <label htmlFor="dontShowAgain" className="text-sm text-slate-700 cursor-pointer flex-1">
+                Don't show this again
+              </label>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowConfirmation(false);
+                  setPendingGenerationAction(null);
+                }}
+                className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setShowConfirmation(false);
+                  if (pendingGenerationAction) {
+                    await pendingGenerationAction();
+                  }
+                  setPendingGenerationAction(null);
+                }}
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+              >
+                Generate & Use Credit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
         {[0, 1, 2, 3, 4].map((idx) => (
           <div key={idx} className="w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 cursor-pointer transition-all"
@@ -598,8 +749,41 @@ export default function Demo() {
               <span className="text-xs text-slate-400">{loading ? '...' : ''}</span>
             )}
           </div>
-        ))}
-      </div>
+        ))}      </div>
+
+      {/* Project Selection Modal */}
+      <ProjectSelectorModal
+        open={showProjectModal}
+        onOpenChange={setShowProjectModal}
+        teamId={selectedTeamId}
+        onSelectProject={async (projectId, projectName) => {
+          setSelectedProjectId(projectId);
+          setSelectedProjectName(projectName || null);
+          setShowProjectModal(false);
+          
+          // Now execute the image generation with projectId
+          let finalPrompt = prompt;
+          if (areaType === 'exterior' && !prompt) {
+            finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+          }
+          await handleStageImage(
+            file,
+            roomType,
+            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+            areaType === 'exterior' ? undefined : selectedStagingStyle,
+            finalPrompt,
+            areaType,
+            undefined,
+            (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+            async () => {
+              if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+                await refreshTeamCredits();
+              }
+            },
+            projectId || undefined
+          );
+        }}
+      />      
     </>
   )
 }
