@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Loader, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +16,7 @@ interface SessionStatus {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:5000/api";
 
-export default function PaymentSuccess() {
+function PaymentSuccessHandler() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -247,5 +247,20 @@ export default function PaymentSuccess() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-linear-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <Loader className="w-12 h-12 text-green-600 animate-spin mx-auto" />
+          <h1 className="text-2xl font-bold text-slate-900">Loading...</h1>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessHandler />
+    </Suspense>
   );
 }

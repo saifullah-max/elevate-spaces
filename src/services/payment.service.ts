@@ -8,6 +8,7 @@ export async function createCheckoutSession(params: {
     purchaseFor: "individual" | "team";
     teamId?: string;
     quantity?: number;
+    confirmPlanChange?: boolean;
 }): Promise<{ url: string }> {
     if (!API_BASE_URL) {
         throw new Error("Backend API URL is not configured");
@@ -22,11 +23,16 @@ export async function createCheckoutSession(params: {
         return response.data;
     } catch (error: any) {
         if (axios.isAxiosError(error)) {
-            throw new Error(
+            const message =
                 error.response?.data?.message ||
                 error.message ||
-                "Failed to start checkout"
-            );
+                "Failed to start checkout";
+            const err: any = new Error(message);
+            const code = error.response?.data?.code;
+            if (code) {
+                err.code = code;
+            }
+            throw err;
         }
         throw error;
     }
