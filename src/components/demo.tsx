@@ -7,9 +7,13 @@ import {
   Download,
   Share2,
   MoveHorizontal,
+  Maximize2,
   Sparkles,
   Settings,
   Loader,
+  X,
+  FolderOpen,
+  Trash2,
 } from "lucide-react";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -25,11 +29,14 @@ import { exteriorOptions, interiorOptions, stagingStyles } from "./data/dropdown
 import { TeamCreditsSelector } from "./TeamCreditsSelector";
 import { CreditBalance } from "./CreditBalance";
 import { ProjectSelectorModal } from "./ProjectSelectorModal";
+import { SignUpBonusModal } from "./SignUpBonusModal";
 
 
 export default function Demo() {
   // Move selectedImageIdx state to Demo
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [showBonusModal, setShowBonusModal] = useState(false);
+  const [bonusOfferShownToday, setBonusOfferShownToday] = useState(false);
 
 
   const {
@@ -85,6 +92,21 @@ export default function Demo() {
     }
   }, [isBlocked]);
 
+  // Show bonus signup modal when demo limit reached
+  useEffect(() => {
+    if (limitReached && !bonusOfferShownToday) {
+      // Check if offer was already shown today
+      const today = new Date().toDateString();
+      const lastOfferDate = localStorage.getItem('demo_bonus_offer_date');
+      
+      if (lastOfferDate !== today) {
+        setShowBonusModal(true);
+        setBonusOfferShownToday(true);
+        localStorage.setItem('demo_bonus_offer_date', today);
+      }
+    }
+  }, [limitReached, bonusOfferShownToday]);
+
   // Ref and state to sync left panel height with image area
   const imageAreaRef = useRef<HTMLDivElement | null>(null);
   const [imageAreaHeight, setImageAreaHeight] = useState<number | undefined>(undefined);
@@ -110,7 +132,9 @@ export default function Demo() {
   const [roomType, setRoomType] = useState<RoomType | undefined>(undefined);
   const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
   const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
-  // const [removeFurniture, setRemoveFurniture] = useState(false);
+  const [removeFurniture, setRemoveFurniture] = useState(false);
+  const [showRemoveFurnitureInfo, setShowRemoveFurnitureInfo] = useState(false);
+  const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
 
   // Team selection state - persist to localStorage
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -127,6 +151,22 @@ export default function Demo() {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectName, setSelectedProjectName] = useState<string | null>(null);
+  const [defaultProject, setDefaultProject] = useState<{projectId: string, projectName: string} | null>(null);
+
+  // Load default project preference
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isLoggedIn) {
+      const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
+      const stored = localStorage.getItem(defaultKey);
+      if (stored) {
+        try {
+          setDefaultProject(JSON.parse(stored));
+        } catch {}
+      } else {
+        setDefaultProject(null);
+      }
+    }
+  }, [isLoggedIn, selectedTeamId]);
 
   // Check if user is logged in and load selected team from localStorage
   useEffect(() => {
@@ -247,6 +287,7 @@ export default function Demo() {
             </div>
           </div>
         )}
+
         {/* HERO SECTION */}
         <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold mb-6 border border-indigo-100 animate-slide-down">
@@ -341,8 +382,41 @@ export default function Demo() {
                       onRefreshReady={handleRefreshReady}
                     />
                   </div>
+
+                  {/* Default Project Manager */}
+                  <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className="w-4 h-4 text-indigo-500" />
+                        <span className="text-sm font-bold text-slate-700">Default Project</span>
+                      </div>
+                    </div>
+                    {defaultProject ? (
+                      <div className="flex items-center justify-between p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-indigo-900">{defaultProject.projectName}</p>
+                          <p className="text-xs text-indigo-600">Images auto-link here</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
+                            localStorage.removeItem(defaultKey);
+                            setDefaultProject(null);
+                          }}
+                          className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded transition"
+                          title="Remove default"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                        <p className="text-xs text-slate-600">No default project set. You'll be prompted on each generation.</p>
+                      </div>
+                    )}
+                  </div>
                 </>
-              )}``
+              )}
 
               {/* Divider */}
               <div className="border-t border-slate-200 my-1" />
@@ -440,8 +514,14 @@ export default function Demo() {
                 <label className="flex items-center gap-2 mt-2 select-none">
                   <input
                     type="checkbox"
-                    // checked={removeFurniture}
-                    // onChange={e => setRemoveFurniture(e.target.checked)}
+                    checked={removeFurniture}
+                    onChange={(e) => {
+                      const nextValue = e.target.checked;
+                      setRemoveFurniture(nextValue);
+                      if (nextValue) {
+                        setShowRemoveFurnitureInfo(true);
+                      }
+                    }}
                   />
                   <span className="text-xs text-slate-700">Remove all furniture (empty room)</span>
                 </label>
@@ -457,9 +537,35 @@ export default function Demo() {
                     // For new image generation, show confirmation if not disabled
                     if (mode === 'generate' && !dontShowConfirmationAgain) {
                       setPendingGenerationAction(() => async () => {
-                        // If logged in, show project selection modal after confirmation
+                        // If logged in, check for default project or show modal
                         if (isLoggedIn) {
-                          setShowProjectModal(true);
+                          // Check if default project exists
+                          if (defaultProject && defaultProject.projectId) {
+                            // Use default project directly
+                            let finalPrompt = prompt;
+                            if (areaType === 'exterior' && !prompt) {
+                              finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+                            }
+                            await handleStageImage(
+                              file,
+                              roomType,
+                              areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+                              areaType === 'exterior' ? undefined : selectedStagingStyle,
+                              finalPrompt,
+                              areaType,
+                              removeFurniture,
+                              (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+                              async () => {
+                                if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+                                  await refreshTeamCredits();
+                                }
+                              },
+                              defaultProject.projectId
+                            );
+                          } else {
+                            // No default, show modal
+                            setShowProjectModal(true);
+                          }
                         } else {
                           // Guest user - generate directly
                           let finalPrompt = prompt;
@@ -473,6 +579,7 @@ export default function Demo() {
                             areaType === 'exterior' ? undefined : selectedStagingStyle,
                             finalPrompt,
                             areaType,
+                            removeFurniture,
                             undefined,
                             undefined,
                             undefined
@@ -513,12 +620,38 @@ export default function Demo() {
                         areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
                         areaType === 'exterior' ? undefined : selectedStagingStyle,
                         areaType,
+                        removeFurniture,
                       );
                     } else {
                       // Generate mode with confirmation disabled
                       if (isLoggedIn) {
-                        // Show project modal first
-                        setShowProjectModal(true);
+                        // Check for default project
+                        if (defaultProject && defaultProject.projectId) {
+                          // Use default project directly
+                          let finalPrompt = prompt;
+                          if (areaType === 'exterior' && !prompt) {
+                            finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+                          }
+                          await handleStageImage(
+                            file,
+                            roomType,
+                            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+                            areaType === 'exterior' ? undefined : selectedStagingStyle,
+                            finalPrompt,
+                            areaType,
+                            removeFurniture,
+                            (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+                            async () => {
+                              if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+                                await refreshTeamCredits();
+                              }
+                            },
+                            defaultProject.projectId
+                          );
+                        } else {
+                          // No default, show project modal first
+                          setShowProjectModal(true);
+                        }
                       } else {
                         // Guest user - execute directly
                         let finalPrompt = prompt;
@@ -532,6 +665,7 @@ export default function Demo() {
                           areaType === 'exterior' ? undefined : selectedStagingStyle,
                           finalPrompt,
                           areaType,
+                          removeFurniture,
                           undefined,
                           undefined,
                           undefined
@@ -604,18 +738,31 @@ export default function Demo() {
                       clipPath: `inset(0 0 0 ${sliderPosition}%)`,
                     }}
                   />
-                  {/* Download icon overlay */}
-                  <button
-                    className="absolute top-4 right-4 z-20 bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
-                    title="Open image in new tab"
-                    onClick={() => {
-                      const url = stagedImageUrls[selectedImageIdx];
-                      if (!url) return;
-                      window.open(url, '_blank', 'noopener,noreferrer');
-                    }}
-                  >
-                    <Download className="w-6 h-6 text-indigo-600" />
-                  </button>
+                  {/* Download + Fullscreen icons overlay */}
+                  <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
+                    <button
+                      className="bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
+                      title="Open image in new tab"
+                      onClick={() => {
+                        const url = stagedImageUrls[selectedImageIdx];
+                        if (!url) return;
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                      }}
+                    >
+                      <Download className="w-6 h-6 text-indigo-600" />
+                    </button>
+                    <button
+                      className="bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
+                      title="View fullscreen"
+                      onClick={() => {
+                        const url = stagedImageUrls[selectedImageIdx];
+                        if (!url) return;
+                        setFullscreenImageUrl(url);
+                      }}
+                    >
+                      <Maximize2 className="w-6 h-6 text-indigo-600" />
+                    </button>
+                  </div>
                   {/* Overlay to block interaction for demo images */}
                   {isDemo && (
                     <div
@@ -732,6 +879,47 @@ export default function Demo() {
         </div>
       )}
 
+      {showRemoveFurnitureInfo && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Remove All Furniture</h2>
+            </div>
+            <p className="text-sm text-slate-700 mb-6">
+              When enabled, the AI will remove all furniture from the room, leaving it empty. This can change lighting and shadows.
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowRemoveFurnitureInfo(false)}
+                className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {fullscreenImageUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <button
+            className="absolute top-4 right-4 text-white bg-white/10 rounded-full p-2 hover:bg-white/20 transition"
+            title="Close fullscreen"
+            onClick={() => setFullscreenImageUrl(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={fullscreenImageUrl}
+            alt="Fullscreen staged"
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
         {[0, 1, 2, 3, 4].map((idx) => (
           <div key={idx} className="w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 cursor-pointer transition-all"
@@ -761,6 +949,15 @@ export default function Demo() {
           setSelectedProjectName(projectName || null);
           setShowProjectModal(false);
           
+          // Refresh default project state (user might have set new default)
+          const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
+          const stored = localStorage.getItem(defaultKey);
+          if (stored) {
+            try {
+              setDefaultProject(JSON.parse(stored));
+            } catch {}
+          }
+          
           // Now execute the image generation with projectId
           let finalPrompt = prompt;
           if (areaType === 'exterior' && !prompt) {
@@ -773,7 +970,7 @@ export default function Demo() {
             areaType === 'exterior' ? undefined : selectedStagingStyle,
             finalPrompt,
             areaType,
-            undefined,
+            removeFurniture,
             (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
             async () => {
               if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
@@ -783,7 +980,14 @@ export default function Demo() {
             projectId || undefined
           );
         }}
-      />      
+      />
+
+      {/* Sign Up Bonus Modal */}
+      <SignUpBonusModal
+        open={showBonusModal}
+        onOpenChange={setShowBonusModal}
+      />
+      
     </>
   )
 }

@@ -90,7 +90,7 @@ function AcceptInvitePage() {
 
     if (!token) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-50 via-white to-purple-50">
                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-indigo-100 max-w-md w-full text-center">
                     <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                     <h1 className="text-xl font-semibold text-slate-800">Invalid Invitation</h1>
@@ -101,7 +101,7 @@ function AcceptInvitePage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-50 via-white to-purple-50 px-4">
             <div className="bg-white rounded-2xl shadow-xl p-8 border border-indigo-100 max-w-md w-full">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="bg-indigo-100 p-3 rounded-lg">

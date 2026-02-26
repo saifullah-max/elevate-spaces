@@ -41,7 +41,7 @@ const PricingPage = () => {
   const isTeamCheckoutDisabled = purchaseFor === 'team' && !teamId.trim();
   return (
     <div className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-350 mx-auto">
         
         {/* Header */}
         <div className="text-center mb-16">

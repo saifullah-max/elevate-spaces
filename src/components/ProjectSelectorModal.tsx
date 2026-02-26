@@ -31,6 +31,7 @@ export function ProjectSelectorModal({
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [setAsDefault, setSetAsDefault] = useState(false);
   
   // Create new project form state
   const [newProjectName, setNewProjectName] = useState('');
@@ -134,6 +135,15 @@ export function ProjectSelectorModal({
         const data = await response.json();
         const newProject = data.data?.project;
         if (newProject) {
+          // Save as default if checkbox is checked
+          if (setAsDefault) {
+            const defaultKey = teamId ? `default_project_team_${teamId}` : 'default_project_personal';
+            localStorage.setItem(defaultKey, JSON.stringify({
+              projectId: newProject.id,
+              projectName: newProject.name
+            }));
+          }
+          
           onSelectProject(newProject.id, newProject.name);
           onOpenChange(false);
           // Reset form
@@ -156,6 +166,16 @@ export function ProjectSelectorModal({
   const handleSelectExisting = () => {
     if (selectedProjectId) {
       const project = projects.find(p => p.id === selectedProjectId);
+      
+      // Save as default if checkbox is checked
+      if (setAsDefault) {
+        const defaultKey = teamId ? `default_project_team_${teamId}` : 'default_project_personal';
+        localStorage.setItem(defaultKey, JSON.stringify({
+          projectId: selectedProjectId,
+          projectName: project?.name || 'Unknown'
+        }));
+      }
+      
       onSelectProject(selectedProjectId, project?.name);
       onOpenChange(false);
     }
@@ -168,7 +188,7 @@ export function ProjectSelectorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-137.5">
         <DialogHeader>
           <DialogTitle className="text-2xl">Link to Project</DialogTitle>
           <DialogDescription>
@@ -177,6 +197,11 @@ export function ProjectSelectorModal({
               : "Organize your images by linking them to a personal project"
             }
           </DialogDescription>
+          <div className="mt-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <p className="text-sm text-indigo-900">
+              💡 <strong>Recommendation:</strong> Select a default project to avoid selecting project on each image generation
+            </p>
+          </div>
         </DialogHeader>
 
         {/* Mode Selection */}
@@ -211,7 +236,7 @@ export function ProjectSelectorModal({
                 <p>No projects found. Create a new one!</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              <div className="space-y-2 max-h-75 overflow-y-auto">
                 {projects.map((project) => (
                   <div
                     key={project.id}
@@ -234,17 +259,32 @@ export function ProjectSelectorModal({
               </div>
             )}
 
-            <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={handleSkip} className="flex-1">
-                Skip for Now
-              </Button>
-              <Button
-                onClick={handleSelectExisting}
-                disabled={!selectedProjectId}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-              >
-                Link to Project
-              </Button>
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="set-as-default"
+                  checked={setAsDefault}
+                  onChange={(e) => setSetAsDefault(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                />
+                <label htmlFor="set-as-default" className="text-sm text-slate-700 cursor-pointer flex-1">
+                  Set as default project (skip this modal next time)
+                </label>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleSkip} className="flex-1">
+                  Skip for Now
+                </Button>
+                <Button
+                  onClick={handleSelectExisting}
+                  disabled={!selectedProjectId}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Link to Project
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -300,24 +340,39 @@ export function ProjectSelectorModal({
               </div>
             )}
 
-            <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={handleSkip} className="flex-1">
-                Skip for Now
-              </Button>
-              <Button
-                onClick={handleCreateProject}
-                disabled={createLoading || !newProjectName.trim()}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-              >
-                {createLoading ? (
-                  <>
-                    <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create & Link'
-                )}
-              </Button>
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="set-as-default-create"
+                  checked={setAsDefault}
+                  onChange={(e) => setSetAsDefault(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                />
+                <label htmlFor="set-as-default-create" className="text-sm text-slate-700 cursor-pointer flex-1">
+                  Set as default project (skip this modal next time)
+                </label>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleSkip} className="flex-1">
+                  Skip for Now
+                </Button>
+                <Button
+                  onClick={handleCreateProject}
+                  disabled={createLoading || !newProjectName.trim()}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                >
+                  {createLoading ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create & Link'
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}

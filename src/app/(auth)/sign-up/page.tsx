@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { signUp } from "@/services/auth.service";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setAuth } from "@/store/slices/authSlice";
 import { saveAuthToStorage } from "@/lib/auth.storage";
 
-export default function SignUp() {
+function SignUpForm() {
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -23,6 +24,18 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fromDemoBonus, setFromDemoBonus] = useState(false);
+
+  // Check if user is coming from demo bonus offer
+  useEffect(() => {
+    const bonusParam = searchParams.get('bonus');
+    const today = new Date().toDateString();
+    const bonusOfferDate = localStorage.getItem('demo_bonus_offer_date');
+    
+    if (bonusParam === 'true' || bonusOfferDate === today) {
+      setFromDemoBonus(true);
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -42,6 +55,7 @@ export default function SignUp() {
         name: form.name,
         email: form.email,
         password: form.password,
+        fromDemoBonus,
       });
 
       if (response.success && response.user && response.token) {
@@ -56,6 +70,12 @@ export default function SignUp() {
 
         setSuccess(true);
         setForm({ name: "", email: "", password: "" });
+        
+        // Clear demo bonus offer date after successful signup
+        if (fromDemoBonus) {
+          localStorage.removeItem('demo_bonus_offer_date');
+        }
+        
         // Redirect to home page (or onboarding based on role)
         setTimeout(() => {
           router.push('/');
@@ -101,6 +121,17 @@ export default function SignUp() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-5">
+          {fromDemoBonus && !success && (
+            <div className="p-3 bg-linear-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <p className="text-sm font-semibold text-indigo-900">
+                  Bonus Offer: You'll receive 5 free credits instantly!
+                </p>
+              </div>
+            </div>
+          )}
+          
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -109,7 +140,17 @@ export default function SignUp() {
 
           {success && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              Account created successfully! Redirecting to sign in...
+              {fromDemoBonus ? (
+                <>
+                  <p className="font-semibold flex items-center gap-1">
+                    <Sparkles className="w-4 h-4" />
+                    Account created! 5 bonus credits added to your account!
+                  </p>
+                  <p className="text-xs mt-1">Redirecting...</p>
+                </>
+              ) : (
+                "Account created successfully! Redirecting..."
+              )}
             </div>
           )}
 
@@ -261,5 +302,12 @@ export default function SignUp() {
         </div>
       </div>
     </div>
+  );
+}
+export default function SignUp() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin text-indigo-600" /></div>}>
+      <SignUpForm />
+    </Suspense>
   );
 }

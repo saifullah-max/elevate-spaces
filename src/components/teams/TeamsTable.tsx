@@ -1,4 +1,5 @@
 'use client'
+import { useState } from "react";
 import { Users, Plus, MoreVertical, UserPlus, Coins, Trash2, Pencil } from "lucide-react";
 import {
     Table,
@@ -11,6 +12,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Get_Teams_Response, Team } from "@/types/teams.types";
+import { TeamMembersCreditsModal } from "./TeamMembersCreditsModal";
 
 interface TeamsTableProps {
     teams: Get_Teams_Response | null;
@@ -31,6 +33,14 @@ export function TeamsTable({
     onDeleteClick,
     onEditNameClick,
 }: TeamsTableProps) {
+    const [showCreditsModal, setShowCreditsModal] = useState(false);
+    const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+
+    const handleViewAll = (team: Team) => {
+        setSelectedTeam(team);
+        setShowCreditsModal(true);
+        onViewAllClick(team);
+    };
     if (!teams || teams.teams.length === 0) {
         return (
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
@@ -121,13 +131,13 @@ export function TeamsTable({
                                             <Coins className="w-4 h-4 mr-2" />
                                             Allocate Credits
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onViewAllClick(team)}>
+                                        <DropdownMenuItem onClick={() => handleViewAll(team)}>
                                             <Users className="w-4 h-4 mr-2" />
                                             View All
                                         </DropdownMenuItem>
                                         {onEditNameClick && (
                                             <DropdownMenuItem onClick={() => onEditNameClick(team)}>
-                                                <Pencil className="w-4 h-4 mr-2 items-baseline"/>
+                                                <Pencil className="w-4 h-4 mr-2 items-baseline" />
                                                 Edit Name
                                             </DropdownMenuItem>
                                         )}
@@ -152,6 +162,14 @@ export function TeamsTable({
                     ))}
                 </TableBody>
             </Table>
+
+            <TeamMembersCreditsModal
+                open={showCreditsModal}
+                onOpenChange={setShowCreditsModal}
+                team={selectedTeam}
+            />
         </div>
+
+
     );
 }

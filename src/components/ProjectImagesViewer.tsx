@@ -254,7 +254,7 @@ export function ProjectImagesViewer({
                           <button
                             key={version.id}
                             onClick={() => setSelectedVersionIdx(idx)}
-                            className={`flex-shrink-0 w-16 h-12 rounded-lg border-2 overflow-hidden transition ${
+                            className={`shrink-0 w-16 h-12 rounded-lg border-2 overflow-hidden transition ${
                               selectedVersionIdx === idx
                                 ? "border-indigo-600 ring-2 ring-indigo-300"
                                 : "border-slate-200 hover:border-slate-300"
@@ -333,7 +333,7 @@ export function ProjectImagesViewer({
                       setSelectedGroupIdx(idx);
                       setSelectedVersionIdx(0);
                     }}
-                    className={`flex-shrink-0 w-10 h-10 rounded border-2 text-xs font-semibold transition ${
+                    className={`shrink-0 w-10 h-10 rounded border-2 text-xs font-semibold transition ${
                       selectedGroupIdx === idx
                         ? "border-indigo-600 bg-indigo-600 text-white"
                         : "border-slate-300 text-slate-700 hover:border-slate-400"

@@ -1,5 +1,5 @@
 import { stageImage, restageImage, stageImageSSE } from "@/services/image.service";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { showError } from "./toastUtils";
 import { v4 as uuidv4 } from 'uuid';
@@ -22,6 +22,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
     const [error, setError] = useState<string | null>(null);
     const [stagedImageUrls, setStagedImageUrls] = useState<string[]>([]);
     const [stagedIds, setStagedIds] = useState<string[]>([]);
+    const requestIdRef = useRef(0);
     // Load demoCount and demoLimit from localStorage if available
     const getStoredDemoCount = () => {
         if (typeof window === 'undefined') return 0;
@@ -61,9 +62,11 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         // Only clear images for new generation, not for restage
         setStagedImageUrls([]);
         setStagedIds([]);
-        let demoCountValue = 0;
-        let demoLimitValue = 10;
-        let isDemoValue = false;
+        requestIdRef.current += 1;
+        const requestId = requestIdRef.current;
+        let demoCountValue = demoCount;
+        let demoLimitValue = demoLimit;
+        let isDemoValue = isDemo;
         let done = false;
         stageImageSSE({
             file,
@@ -74,25 +77,42 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             teamId,
             projectId,
             onImage: (data) => {
+                if (requestId !== requestIdRef.current) return;
                 setStagedImageUrls(prev => [...prev, data.stagedImageUrl]);
                 setStagedIds(prev => [...prev, data.stagedId]);
                 setSelectedImageIdx(0); // Always select the first image after new generation
-                if (typeof data.demoCount === "number") demoCountValue = data.demoCount;
-                if (typeof data.demoLimit === "number") demoLimitValue = data.demoLimit;
-                if (typeof data.isDemo === "boolean") isDemoValue = data.isDemo;
-                setDemoCount(demoCountValue);
-                setDemoLimit(demoLimitValue);
-                setIsDemo(isDemoValue);
-                if ((demoCountValue ?? 0) >= (demoLimitValue ?? 10)) setLimitReached(true);
-                if (isDemoValue) {
-                    setError("This is a watermarked demo preview. Sign up or purchase credits to download full-resolution images.");
+                                if (typeof data.demoCount === "number") demoCountValue = data.demoCount;
+                                if (typeof data.demoLimit === "number") demoLimitValue = data.demoLimit;
+                                if (typeof data.isDemo === "boolean") isDemoValue = data.isDemo;
+                                setDemoCount(demoCountValue);
+                                setDemoLimit(demoLimitValue);
+                                setIsDemo(isDemoValue);
+                                setLimitReached(isDemoValue && demoCountValue >= demoLimitValue);
+                                if (isDemoValue) {
+                    // Check if user is logged in
+                    const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('elevate_spaces_auth');
+                    if (isLoggedIn) {
+                        setError("This is a watermarked demo preview. Purchase credits to download full-resolution images.");
+                    } else {
+                        setError("This is a watermarked demo preview. Sign up or purchase credits to download full-resolution images.");
+                    }
                 }
             },
             onError: (err) => {
-                setError(err.message || "Failed to stage image");
+                if (requestId !== requestIdRef.current) return;
+                if (err.code === 'DEMO_LIMIT_REACHED') {
+                    setError('Demo limit reached. Please sign up or purchase credits to continue.');
+                    setLimitReached(true);
+                } else if (err.code === 'DEMO_BLOCKED') {
+                    setError('Demo access blocked due to repeated use. Please sign up or contact support.');
+                    setIsBlocked(true);
+                } else {
+                    setError(err.message || "Failed to stage image");
+                }
                 setLoading(false);
             },
             onDone: () => {
+                if (requestId !== requestIdRef.current) return;
                 setLoading(false);
                 done = true;
                 // Call success callback if provided (for credit refresh)

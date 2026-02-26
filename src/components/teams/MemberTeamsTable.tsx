@@ -1,4 +1,5 @@
 'use client'
+import { useState } from "react";
 import { Users, MoreVertical, UserPlus, Send, Coins, Pencil, Trash2 } from "lucide-react";
 import {
     Table,
@@ -12,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 import { Get_Teams_Response, Team } from "@/types/teams.types";
 import { getAuthFromStorage } from "@/lib/auth.storage";
+import { TeamMembersCreditsModal } from "./TeamMembersCreditsModal";
 
 interface MemberTeamsTableProps {
     teams: Get_Teams_Response | null;
@@ -26,6 +28,14 @@ interface MemberTeamsTableProps {
 }
 
 export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransferClick, onLeaveClick, onViewAllClick, onAllocateCreditsClick, onEditNameClick, onDeleteClick }: MemberTeamsTableProps) {
+    const [showCreditsModal, setShowCreditsModal] = useState(false);
+    const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+
+    const handleViewAll = (team: Team) => {
+        setSelectedTeam(team);
+        setShowCreditsModal(true);
+        onViewAllClick && onViewAllClick(team);
+    };
     if (!teams || teams.teams.length === 0) {
         return (
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
@@ -165,7 +175,7 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                                             </DropdownMenuItem>
                                         )}
                                         {isOwnerOrAdmin(team) && onViewAllClick && (
-                                            <DropdownMenuItem onClick={() => onViewAllClick(team)}>
+                                            <DropdownMenuItem onClick={() => handleViewAll(team)}>
                                                 <Users className="w-4 h-4 mr-2" />
                                                 View All
                                             </DropdownMenuItem>
@@ -210,6 +220,12 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                     ))}
                 </TableBody>
             </Table>
+            <TeamMembersCreditsModal
+                open={showCreditsModal}
+                onOpenChange={setShowCreditsModal}
+                team={selectedTeam}
+            />
         </div>
+
     );
 }

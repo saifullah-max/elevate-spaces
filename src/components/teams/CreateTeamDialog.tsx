@@ -38,7 +38,7 @@ export function CreateTeamDialog({
                     Add New Team
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-125">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Create a New Team</DialogTitle>
                     <DialogDescription>

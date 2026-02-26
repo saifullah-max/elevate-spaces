@@ -196,7 +196,7 @@ function PaymentSuccessHandler() {
                   <span>Check your email for a receipt (check spam folder)</span>
                 </li>
                 <li className="flex gap-2">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
                   <span>Your credits are now available in your account</span>
                 </li>
                 <li className="flex gap-2">

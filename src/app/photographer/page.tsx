@@ -194,7 +194,7 @@ export default function LensProp() {
     return (
       <div
         onClick={() => openDetail(pro)}
-        className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-blue-300 transition-all flex flex-col md:flex-row group min-h-[16rem] cursor-pointer"
+        className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:border-blue-300 transition-all flex flex-col md:flex-row group min-h-64 cursor-pointer"
       >
         <div className="md:w-72 h-48 md:h-auto relative overflow-hidden shrink-0">
           <img

@@ -12,6 +12,7 @@ interface SignUpData {
   name: string;
   email: string;
   password: string;
+  fromDemoBonus?: boolean;
 }
 
 interface SignUpResponse {

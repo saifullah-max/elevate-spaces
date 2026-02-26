@@ -73,6 +73,14 @@ export function stageImageSSE({
     body: formData,
   })
     .then(async (response) => {
+      // Check for non-2xx responses (e.g., 429 for demo limit)
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (onError) {
+          onError(errorData.error || { message: 'Request failed' });
+        }
+        return;
+      }
       if (!response.body) throw new Error("No response body for SSE");
       const reader = response.body.getReader();
       let buffer = '';
