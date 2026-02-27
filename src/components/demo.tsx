@@ -37,6 +37,8 @@ export default function Demo() {
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [showBonusModal, setShowBonusModal] = useState(false);
   const [bonusOfferShownToday, setBonusOfferShownToday] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const hasShownDemoInfoRef = useRef(false);
 
 
   const {
@@ -64,10 +66,17 @@ export default function Demo() {
     handleRestageImage,
   } = useDemoApi({ selectedImageIdx, setSelectedImageIdx });
 
-  // Show info toast on mount
+  const shouldShowDemoNotice = (!isLoggedIn || isDemo) && demoCount < demoLimit;
+
+  // Show info toast when demo credits are relevant
   useEffect(() => {
-    showInfo("You can stage up to 10 demo images per device for free. After that, you'll need to sign up to continue. The demo limit resets every 30 days for each device. Abuse may result in a block.");
-  }, []);
+    if (!shouldShowDemoNotice || hasShownDemoInfoRef.current) return;
+    const demoScope = isLoggedIn ? "per account" : "per device";
+    showInfo(
+      `You can stage up to ${demoLimit} demo images for free ${demoScope}. After that, you'll need to sign up or purchase credits to continue.`
+    );
+    hasShownDemoInfoRef.current = true;
+  }, [shouldShowDemoNotice, demoLimit, isLoggedIn]);
 
   // Only reset selectedImageIdx to 0 when a new generation occurs (when array is cleared and refilled)
   const prevUrlsRef = useRef<string[]>([]);
@@ -94,7 +103,7 @@ export default function Demo() {
 
   // Show bonus signup modal when demo limit reached
   useEffect(() => {
-    if (limitReached && !bonusOfferShownToday) {
+    if (limitReached && !bonusOfferShownToday && !isLoggedIn) {
       // Check if offer was already shown today
       const today = new Date().toDateString();
       const lastOfferDate = localStorage.getItem('demo_bonus_offer_date');
@@ -105,7 +114,7 @@ export default function Demo() {
         localStorage.setItem('demo_bonus_offer_date', today);
       }
     }
-  }, [limitReached, bonusOfferShownToday]);
+  }, [limitReached, bonusOfferShownToday, isLoggedIn]);
 
   // Ref and state to sync left panel height with image area
   const imageAreaRef = useRef<HTMLDivElement | null>(null);
@@ -139,7 +148,6 @@ export default function Demo() {
   // Team selection state - persist to localStorage
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [refreshTeamCredits, setRefreshTeamCredits] = useState<(() => Promise<void>) | null>(null);
   
   // Confirmation modal state
@@ -257,14 +265,16 @@ export default function Demo() {
       <ToastContainer />
       <section id="try-it-free" className="pt-32 pb-12">
         {/* DEMO LIMIT ALERT */}
-        <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
-          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-yellow-50 text-yellow-900 text-sm font-semibold border border-yellow-200 shadow animate-slide-down">
-            <Sparkles className="w-5 h-5 text-yellow-500" />
-            <span>
-              You can stage up to <b>10 demo images</b> for free. After that, you'll need to sign up to continue. The demo limit resets every 30 days. Abuse may result in a block.
-            </span>
+        {shouldShowDemoNotice && (
+          <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
+            <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-yellow-50 text-yellow-900 text-sm font-semibold border border-yellow-200 shadow animate-slide-down">
+              <Sparkles className="w-5 h-5 text-yellow-500" />
+              <span>
+                You can stage up to <b>{demoLimit} demo images</b> for free {isLoggedIn ? "per account" : "per device"}. After that, you'll need to sign up or purchase credits to continue.
+              </span>
+            </div>
           </div>
-        </div>
+        )}
         {/* BLOCKED ALERT */}
         {isBlocked && (
           <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
@@ -314,9 +324,11 @@ export default function Demo() {
               <Monitor className="w-4 h-4" />
               <span id="workspace-title">Instant AI Staging Demo</span>
             </span>
-            <span className="text-xs font-mono text-indigo-200 ml-auto">
-              Demo Used: {demoCount} / {demoLimit}
-            </span>
+            {shouldShowDemoNotice && (
+              <span className="text-xs font-mono text-indigo-200 ml-auto">
+                Demo Used: {demoCount} / {demoLimit}
+              </span>
+            )}
           </div>
 
           <div className="grid lg:grid-cols-3 relative">
@@ -339,20 +351,22 @@ export default function Demo() {
                   </div>
                 )}
               {/* Demo usage progress */}
-              <div className="mb-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-indigo-700 flex items-center gap-1">
-                    <Sparkles className="w-4 h-4" /> Demo Usage
-                  </span>
-                  <span className="text-xs text-slate-500">{demoCount} / {demoLimit}</span>
+              {shouldShowDemoNotice && (
+                <div className="mb-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-indigo-700 flex items-center gap-1">
+                      <Sparkles className="w-4 h-4" /> Demo Usage
+                    </span>
+                    <span className="text-xs text-slate-500">{demoCount} / {demoLimit}</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-2 bg-linear-to-r from-indigo-400 to-indigo-600 rounded-full transition-all"
+                      style={{ width: `${Math.min((demoCount / demoLimit) * 100, 100)}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-2 bg-linear-to-r from-indigo-400 to-indigo-600 rounded-full transition-all"
-                    style={{ width: `${Math.min((demoCount / demoLimit) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Upload Section */}
               <div className="bg-white rounded-xl shadow border border-slate-100 p-3 mb-1 flex flex-col gap-1">

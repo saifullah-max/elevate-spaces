@@ -192,6 +192,9 @@ export interface RestageImageResponse {
   stagingStyle: string;
   prompt: string | null;
   storage?: string;
+  demoCount?: number;
+  demoLimit?: number;
+  isDemo?: boolean;
 }
 
 export async function restageImage({

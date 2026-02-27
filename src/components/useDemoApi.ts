@@ -46,7 +46,8 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         setDemoLimitState(val);
         if (typeof window !== 'undefined') localStorage.setItem('demo_limit', val.toString());
     };
-    const [isDemo, setIsDemo] = useState<boolean>(false);
+    const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('elevate_spaces_auth');
+    const [isDemo, setIsDemo] = useState<boolean>(!isLoggedIn);
     const [isRepeatDemoUser, setIsRepeatDemoUser] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
     const [limitReached, setLimitReached] = useState<boolean>(false);
@@ -162,6 +163,22 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                 updated[props?.selectedImageIdx ?? 0] = restaged.stagedId;
                 return updated;
             });
+            if (typeof restaged.demoCount === "number") {
+                setDemoCount(restaged.demoCount);
+            }
+            if (typeof restaged.demoLimit === "number") {
+                setDemoLimit(restaged.demoLimit);
+            }
+            if (typeof restaged.isDemo === "boolean") {
+                setIsDemo(restaged.isDemo);
+                if (
+                    restaged.isDemo &&
+                    typeof restaged.demoCount === "number" &&
+                    typeof restaged.demoLimit === "number"
+                ) {
+                    setLimitReached(restaged.demoCount >= restaged.demoLimit);
+                }
+            }
         } catch (err: any) {
             setError(err?.message || "Failed to restage image");
         } finally {
