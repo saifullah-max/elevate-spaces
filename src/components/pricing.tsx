@@ -11,6 +11,7 @@ const PricingPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [planChangePending, setPlanChangePending] = useState<null | { productKey: string; qty?: number }>(null);
 
   const startCheckout = async (productKey: string, qty?: number, confirmPlanChange?: boolean) => {
     try {
@@ -70,8 +71,13 @@ const PricingPage = () => {
           await startCheckout(productKey, qty, true);
           return;
         }
+        // Fallback: show clickable error message
+        setPlanChangePending({ productKey, qty });
+        setErrorMessage(err?.message || 'Plan change confirmation required.');
+        return;
       }
       setErrorMessage(err?.message || 'Checkout failed');
+      setPlanChangePending(null);
     } finally {
       setLoadingKey(null);
     }
@@ -117,7 +123,32 @@ const PricingPage = () => {
               />
             )}
             {errorMessage && (
-              <p className="text-sm text-red-600 font-medium">{errorMessage}</p>
+              <div className="text-sm text-red-600 font-medium flex flex-col gap-2">
+                <span>{errorMessage}</span>
+                {planChangePending && (
+                  <button
+                    style={{
+                      background: '#2563eb',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 6,
+                      padding: '8px 18px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: 15,
+                      width: 'fit-content',
+                      alignSelf: 'flex-start',
+                    }}
+                    onClick={() => {
+                      startCheckout(planChangePending.productKey, planChangePending.qty, true);
+                      setPlanChangePending(null);
+                      setErrorMessage(null);
+                    }}
+                  >
+                    Confirm to Proceedddd
+                  </button>
+                )}
+              </div>
             )}
           </div>
           <div className="mt-6 max-w-3xl mx-auto rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">

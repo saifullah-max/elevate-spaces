@@ -2,18 +2,36 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Team } from "@/types/teams.types";
-import { Users, Mail, Clock, AlertCircle, CheckCircle } from "lucide-react";
+import { Users, Mail, Clock, AlertCircle, CheckCircle, Menu, MoreVertical, Trash2, UserPlus, Coins } from "lucide-react";
+import { DropdownMenuContent, DropdownMenuTrigger, DropdownMenu, DropdownMenuItem } from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { useState } from "react";
+import { showError, showSuccess } from "../toastUtils";
 
 interface TeamMembersCreditsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   team: Team | null;
+  currentUserId?: string | null;
+  onUpdateMemberRole?: (teamId: string, memberId: string, roleName: string) => void;
+  updatingRoleMemberId?: string | null;
+  roleUpdateMessage?: string | null;
+  roleUpdateError?: string | null;
+  onRemoveMember?: (inviteId: string, teamId: string, ownerId: string) => void;
+  removingMemberId?: string | null;
 }
 
 export function TeamMembersCreditsModal({
   open,
   onOpenChange,
   team,
+  currentUserId,
+  onUpdateMemberRole,
+  updatingRoleMemberId,
+  roleUpdateMessage,
+  roleUpdateError,
+  onRemoveMember,
+  removingMemberId,
 }: TeamMembersCreditsModalProps) {
   if (!team) return null;
 
@@ -26,9 +44,18 @@ export function TeamMembersCreditsModal({
   const totalUsed = activeMembers.reduce((sum, m) => sum + m.used, 0);
   const totalAvailable = activeMembers.reduce((sum, m) => sum + Math.max(0, m.allocated - m.used), 0);
 
+  const roleOptions = [
+    { value: "TEAM_ADMIN", label: "Admin" },
+    { value: "TEAM_AGENT", label: "Agent" },
+    { value: "TEAM_PHOTOGRAPHER", label: "Photographer" },
+  ];
+
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [roleModalMember, setRoleModalMember] = useState<any>(null);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-5xl max-h-[85vh] flex flex-col">
         <DialogHeader className="border-b border-slate-200 pb-4 shrink-0">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-100 p-2 rounded-lg">
@@ -43,7 +70,7 @@ export function TeamMembersCreditsModal({
           </div>
         </DialogHeader>
 
-        <div className="overflow-y-auto flex-1 px-6 py-4">
+        <div className="flex-1 px-6 py-4">
           <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -74,7 +101,7 @@ export function TeamMembersCreditsModal({
                   </div>
                   <h3 className="font-bold text-slate-900 text-lg">Active Members ({activeMembers.length})</h3>
                 </div>
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <div className="border border-slate-200 rounded-lg overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-50 hover:bg-slate-50">
@@ -84,12 +111,15 @@ export function TeamMembersCreditsModal({
                         <TableHead className="font-semibold text-slate-700 text-right">Used</TableHead>
                         <TableHead className="font-semibold text-slate-700 text-right">Available</TableHead>
                         <TableHead className="font-semibold text-slate-700 text-right">Joined</TableHead>
+                        <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {activeMembers.map((member) => {
                         const available = Math.max(0, member.allocated - member.used);
                         const isOwner = team.owner_id === member.user_id;
+                        const canEditRole = onUpdateMemberRole && !isOwner;
+                        const canRemove = onRemoveMember && !isOwner && currentUserId && (currentUserId === team.owner_id || currentUserId === member.user_id);
                         return (
                           <TableRow key={member.id} className="hover:bg-slate-50 border-b border-slate-100">
                             <TableCell className="py-4">
@@ -118,78 +148,100 @@ export function TeamMembersCreditsModal({
                             <TableCell className="py-4 text-right text-xs text-slate-500">
                               {new Date(member.joined_at).toLocaleDateString()}
                             </TableCell>
+                            <TableCell className="py-4 text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                  {canEditRole && (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setRoleModalMember(member);
+                                        setRoleModalOpen(true);
+                                      }}
+                                    >
+                                      Update Role
+                                    </DropdownMenuItem>
+                                  )}
+                                  {/* Add more actions here if needed */}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+
                           </TableRow>
                         );
                       })}
+                      {/* Role Update Modal */}
+                      {roleModalOpen && roleModalMember && (
+                        <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Update Role</DialogTitle>
+                              <DialogDescription>
+                                Update the role for <span className="font-semibold">{roleModalMember.user.name}</span>
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="mt-4">
+                              <select
+                                value={roleModalMember.role.name}
+                                onChange={e => {
+                                  setRoleModalMember({ ...roleModalMember, role: { ...roleModalMember.role, name: e.target.value } });
+                                }}
+                                disabled={updatingRoleMemberId === roleModalMember.user_id}
+                                className="border rounded px-2 py-1 text-sm bg-white w-full"
+                              >
+                                {roleOptions.map(opt => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                              {roleUpdateMessage && (
+                                <div className="text-green-600 text-xs mt-2">{roleUpdateMessage}</div>
+                              )}
+                              {roleUpdateError && (
+                                <div className="text-red-600 text-xs mt-2">{roleUpdateError}</div>
+                              )}
+                            </div>
+                            <div className="flex justify-end gap-2 mt-6">
+                              <Button variant="outline" onClick={() => setRoleModalOpen(false)}>
+                                Cancel
+                              </Button>
+                              <Button
+                                onClick={async () => {
+                                  let success = false;
+                                  if (onUpdateMemberRole) {
+                                    try {
+                                      await onUpdateMemberRole(team.id, roleModalMember.user_id, roleModalMember.role.name);
+                                      // If the handler completes without throwing, treat as success
+                                      success = true;
+                                    } catch (err) {
+                                      success = false;
+                                    }
+                                  }
+                                  setRoleModalOpen(false);
+                                  if (success || roleUpdateMessage) {
+                                    showSuccess(roleUpdateMessage || "Role updated successfully");
+                                  } else if (roleUpdateError) {
+                                    showError(roleUpdateError || "Failed to update role");
+                                  }
+                                }}
+                                disabled={updatingRoleMemberId === roleModalMember.user_id}
+                              >
+                                Done
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
               </div>
             )}
 
-            {/* Pending Invitations */}
-            {pendingInvites.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
-                  <div className="bg-amber-100 p-2 rounded-lg">
-                    <Clock className="w-5 h-5 text-amber-700" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-lg">Pending Invitations ({pendingInvites.length})</h3>
-                </div>
-                <div className="space-y-2">
-                  {pendingInvites.map((invite) => (
-                    <div key={invite.id} className="p-3 border border-amber-200 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-amber-600" />
-                            <span className="font-medium text-slate-900">{invite.email}</span>
-                          </div>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
-                            <span>Expires: <span className="font-semibold">{new Date(invite.expires_at).toLocaleDateString()}</span></span>
-                          </div>
-                        </div>
-                        <div className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-200 text-amber-800">
-                          PENDING
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Failed Invitations */}
-            {failedInvites.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
-                  <div className="bg-red-100 p-2 rounded-lg">
-                    <AlertCircle className="w-5 h-5 text-red-700" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-lg">Failed Invitations ({failedInvites.length})</h3>
-                </div>
-                <div className="space-y-2">
-                  {failedInvites.map((invite) => (
-                    <div key={invite.id} className="p-3 border border-red-200 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-red-600" />
-                            <span className="font-medium text-slate-900">{invite.email}</span>
-                          </div>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
-                            <span>Sent: <span className="font-semibold">{new Date(invite.invited_at).toLocaleDateString()}</span></span>
-                          </div>
-                        </div>
-                        <div className="px-2.5 py-1 rounded-full text-xs font-medium bg-red-200 text-red-800">
-                          FAILED
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Empty State */}
             {activeMembers.length === 0 && pendingInvites.length === 0 && failedInvites.length === 0 && (
@@ -205,3 +257,66 @@ export function TeamMembersCreditsModal({
     </Dialog>
   );
 }
+            // {/* Pending Invitations */}
+            // {pendingInvites.length > 0 && (
+            //   <div className="space-y-3">
+            //     <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
+            //       <div className="bg-amber-100 p-2 rounded-lg">
+            //         <Clock className="w-5 h-5 text-amber-700" />
+            //       </div>
+            //       <h3 className="font-bold text-slate-900 text-lg">Pending Invitations ({pendingInvites.length})</h3>
+            //     </div>
+            //     <div className="space-y-2">
+            //       {pendingInvites.map((invite) => (
+            //         <div key={invite.id} className="p-3 border border-amber-200 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors">
+            //           <div className="flex items-center justify-between">
+            //             <div className="flex-1">
+            //               <div className="flex items-center gap-2">
+            //                 <Mail className="w-4 h-4 text-amber-600" />
+            //                 <span className="font-medium text-slate-900">{invite.email}</span>
+            //               </div>
+            //               <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
+            //                 <span>Expires: <span className="font-semibold">{new Date(invite.expires_at).toLocaleDateString()}</span></span>
+            //               </div>
+            //             </div>
+            //             <div className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-200 text-amber-800">
+            //               PENDING
+            //             </div>
+            //           </div>
+            //         </div>
+            //       ))}
+            //     </div>
+            //   </div>
+            // )}
+
+            // {/* Failed Invitations */}
+            // {failedInvites.length > 0 && (
+            //   <div className="space-y-3">
+            //     <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
+            //       <div className="bg-red-100 p-2 rounded-lg">
+            //         <AlertCircle className="w-5 h-5 text-red-700" />
+            //       </div>
+            //       <h3 className="font-bold text-slate-900 text-lg">Failed Invitations ({failedInvites.length})</h3>
+            //     </div>
+            //     <div className="space-y-2">
+            //       {failedInvites.map((invite) => (
+            //         <div key={invite.id} className="p-3 border border-red-200 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
+            //           <div className="flex items-center justify-between">
+            //             <div className="flex-1">
+            //               <div className="flex items-center gap-2">
+            //                 <Mail className="w-4 h-4 text-red-600" />
+            //                 <span className="font-medium text-slate-900">{invite.email}</span>
+            //               </div>
+            //               <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
+            //                 <span>Sent: <span className="font-semibold">{new Date(invite.invited_at).toLocaleDateString()}</span></span>
+            //               </div>
+            //             </div>
+            //             <div className="px-2.5 py-1 rounded-full text-xs font-medium bg-red-200 text-red-800">
+            //               FAILED
+            //             </div>
+            //           </div>
+            //         </div>
+            //       ))}
+            //     </div>
+            //   </div>
+            // )}

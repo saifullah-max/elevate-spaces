@@ -163,11 +163,11 @@ export function TeamsTable({
                 </TableBody>
             </Table>
 
-            <TeamMembersCreditsModal
+            {/* <TeamMembersCreditsModal
                 open={showCreditsModal}
                 onOpenChange={setShowCreditsModal}
                 team={selectedTeam}
-            />
+            /> */}
         </div>
 
 

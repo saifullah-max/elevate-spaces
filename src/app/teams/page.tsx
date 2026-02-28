@@ -14,7 +14,7 @@ import { TeamsHeader } from "@/components/teams/TeamsHeader";
 import { CreateTeamDialog } from "@/components/teams/CreateTeamDialog";
 import { TeamsTable } from "@/components/teams/TeamsTable";
 import { MemberTeamsTable } from "@/components/teams/MemberTeamsTable";
-import { ViewAllMembersDialog } from "@/components/teams/ViewAllMembersDialog";
+import { TeamMembersCreditsModal } from "../../components/teams/TeamMembersCreditsModal";
 import { InviteMemberDialog } from "@/components/teams/InviteMemberDialog";
 import { AllocateCreditsDialog } from "@/components/teams/AllocateCreditsDialog";
 import { TransferCreditsDialog } from "@/components/teams/TransferCreditsDialog";
@@ -454,7 +454,7 @@ export default function Teams() {
 
     const handleUpdateTeamName = async (newName: string) => {
         if (!editNameTeam) return;
-        
+
         setEditNameLoading(true);
         setEditNameError(null);
         setEditNameSuccess(null);
@@ -618,22 +618,13 @@ export default function Teams() {
                     />
                 </div>
 
-                <ViewAllMembersDialog
+                <TeamMembersCreditsModal
                     open={viewAllMembersOpen}
                     onOpenChange={setViewAllMembersOpen}
                     team={selectedTeam}
-                    getStatusBadgeColor={getStatusBadgeColor}
-                    getStatusIcon={getStatusIcon}
                     currentUserId={currentUserId}
                     onRemoveMember={handleRemoveMember}
-                    onCancelInvitation={handleCancelInvitation}
                     removingMemberId={removingMemberId}
-                    onReinvite={handleReinvite}
-                    reinvitingInviteId={reinvitingInviteId}
-                    reinviteMessage={reinviteMessage}
-                    reinviteError={reinviteError}
-                    cancelMessage={cancelMessage}
-                    cancelError={cancelError}
                     onUpdateMemberRole={handleUpdateMemberRole}
                     updatingRoleMemberId={updatingRoleMemberId}
                     roleUpdateMessage={roleUpdateMessage}
@@ -676,6 +667,7 @@ export default function Teams() {
                     currentUserId={currentUserId}
                 />
 
+                {/* real state to photographer credits */}
                 <TransferCreditsDialog
                     open={transferDialogOpen}
                     onOpenChange={setTransferDialogOpen}
