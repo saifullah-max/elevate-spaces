@@ -23,9 +23,17 @@ import { getStatusBadgeColor, getStatusIcon } from "@/components/teams/utils";
 import { DeleteTeamModal } from "@/components/teams/DeleteTeamModal";
 import { LeaveTeamModal } from "@/components/teams/LeaveTeamModal";
 import { EditTeamNameDialog } from "@/components/teams/EditTeamNameDialog";
+import { transferCreditsToTeam, TransferCreditsToTeamData } from "@/services/teams.service";
+import { Button } from "@/components/ui/button";
 
 
 export default function Teams() {
+    const [transferToTeamDialogOpen, setTransferToTeamDialogOpen] = useState(false);
+    const [transferToTeamCredits, setTransferToTeamCredits] = useState("");
+    const [transferToTeamLoading, setTransferToTeamLoading] = useState(false);
+    const [transferToTeamError, setTransferToTeamError] = useState<string | null>(null);
+    const [transferToTeamMessage, setTransferToTeamMessage] = useState<string | null>(null);
+    const [transferToTeamSelectedTeamId, setTransferToTeamSelectedTeamId] = useState<string>("");
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false);
@@ -474,6 +482,37 @@ export default function Teams() {
         }
     };
 
+    const handleTransferToTeam = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setTransferToTeamError(null);
+        setTransferToTeamMessage(null);
+        if (!transferToTeamSelectedTeamId) {
+            setTransferToTeamError("Please select a team");
+            return;
+        }
+        const creditsValue = Number(transferToTeamCredits);
+        if (!Number.isFinite(creditsValue) || creditsValue <= 0) {
+            setTransferToTeamError("Credits must be a positive number");
+            return;
+        }
+        try {
+            setTransferToTeamLoading(true);
+            const res = await transferCreditsToTeam({
+                team_id: transferToTeamSelectedTeamId,
+                credits: creditsValue,
+            });
+            setTransferToTeamMessage(res.message || "Credits transferred to team wallet");
+            setTransferToTeamCredits("");
+            setTransferToTeamDialogOpen(false);
+            setTransferToTeamSelectedTeamId("");
+            await getAllTeams();
+        } catch (err: any) {
+            setTransferToTeamError(err.message || "Failed to transfer credits");
+        } finally {
+            setTransferToTeamLoading(false);
+        }
+    };
+
     // Show loading state while checking authentication
     if (isAuthenticated === null) {
         return null;
@@ -501,6 +540,68 @@ export default function Teams() {
                         onSubmit={handleSubmit}
                     />
                 </TeamsHeader>
+
+                <>
+                    {/* Always show button if user owns teams */}
+                    {teams?.teams?.some(t => t.owner_id === currentUserId) && (
+                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white flex justify-end"
+                            onClick={() => setTransferToTeamDialogOpen(true)}
+                        >
+                            Transfer Credits to Team Wallet
+                        </Button>
+                    )}
+                    {transferToTeamDialogOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-30">
+                            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                                <h3 className="text-lg font-semibold mb-4">Transfer Credits to Team Wallet</h3>
+                                <form onSubmit={handleTransferToTeam}>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Select Team</label>
+                                        <select
+                                            className="w-full border rounded px-3 py-2 mb-2"
+                                            value={transferToTeamSelectedTeamId}
+                                            onChange={e => setTransferToTeamSelectedTeamId(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Select a team</option>
+                                            {teams?.teams?.filter(t => t.owner_id === currentUserId).map(team => (
+                                                <option key={team.id} value={team.id}>{team.name}</option>
+                                            ))}
+                                        </select>
+                                        <label className="block text-sm font-medium mb-1">Credits to Transfer</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            className="w-full border rounded px-3 py-2"
+                                            value={transferToTeamCredits}
+                                            onChange={e => setTransferToTeamCredits(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    {transferToTeamError && <div className="text-red-600 mb-2">{transferToTeamError}</div>}
+                                    {transferToTeamMessage && <div className="text-green-600 mb-2">{transferToTeamMessage}</div>}
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                            onClick={() => setTransferToTeamDialogOpen(false)}
+                                            disabled={transferToTeamLoading}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                            disabled={transferToTeamLoading}
+                                        >
+                                            {transferToTeamLoading ? "Transferring..." : "Transfer"}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </>
 
                 <div className="mb-10">
                     <h2 className="text-2xl font-semibold text-slate-900 mb-4">My Teams</h2>

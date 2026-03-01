@@ -1,17 +1,55 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { showInfo } from './toastUtils';
 import { toast } from 'react-toastify';
 import { Check, X, Building, Camera, Users, Zap, Home } from 'lucide-react';
 import { createCheckoutSession } from '@/services/payment.service';
+import { getTeams } from '@/services/teams.service';
 
 const PricingPage = () => {
   const [purchaseFor, setPurchaseFor] = useState<'individual' | 'team'>('individual');
   const [teamId, setTeamId] = useState('');
+  const [ownedTeams, setOwnedTeams] = useState<Array<{ id: string; name: string }>>([]);
+  const [teamsLoading, setTeamsLoading] = useState(false);
+  const [teamsError, setTeamsError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [topUpCredits, setTopUpCredits] = useState(25);
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [planChangePending, setPlanChangePending] = useState<null | { productKey: string; qty?: number }>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadOwnedTeams = async () => {
+      try {
+        setTeamsLoading(true);
+        setTeamsError(null);
+        const response = await getTeams();
+        if (!isMounted) return;
+        const teams = (response.teams || []).map((team) => ({ id: team.id, name: team.name }));
+        setOwnedTeams(teams);
+
+        if (teams.length > 0 && !teamId) {
+          setTeamId(teams[0].id);
+        }
+      } catch (error: any) {
+        if (!isMounted) return;
+        setOwnedTeams([]);
+        setTeamsError(error?.message || 'Failed to load owned teams');
+      } finally {
+        if (isMounted) {
+          setTeamsLoading(false);
+        }
+      }
+    };
+
+    loadOwnedTeams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const startCheckout = async (productKey: string, qty?: number, confirmPlanChange?: boolean) => {
     try {
@@ -115,12 +153,29 @@ const PricingPage = () => {
               </button>
             </div>
             {purchaseFor === 'team' && (
-              <input
-                value={teamId}
-                onChange={(e) => setTeamId(e.target.value)}
-                placeholder="Enter Team ID"
-                className="w-64 px-3 py-2 rounded-lg border border-slate-200 text-sm"
-              />
+              <div className="w-64">
+                {teamsLoading ? (
+                  <div className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-500 text-left">
+                    Loading owned teams...
+                  </div>
+                ) : ownedTeams.length > 0 ? (
+                  <select
+                    value={teamId}
+                    onChange={(e) => setTeamId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                  >
+                    {ownedTeams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-700 text-left">
+                    {teamsError || 'No owned teams found. Create a team first to buy a team plan.'}
+                  </div>
+                )}
+              </div>
             )}
             {errorMessage && (
               <div className="text-sm text-red-600 font-medium flex flex-col gap-2">
@@ -429,22 +484,23 @@ const PricingPage = () => {
               <div>
                 <h4 className="font-bold text-slate-900">Buy Extra Credits</h4>
                 <p className="text-sm text-slate-600">
-                  <span className="font-semibold text-blue-600">50</span> for $22 or <span className="font-semibold text-blue-600">100</span> for $40
+                  If you have an active subscription, buy any amount at your current plan's per-credit rate.
                 </p>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={1000}
+                    value={topUpCredits}
+                    onChange={(e) => setTopUpCredits(Math.max(1, Number(e.target.value) || 1))}
+                    className="w-20 px-2 py-1 text-xs border border-slate-200 rounded-lg"
+                  />
                   <button
-                    onClick={() => startCheckout('extra_credits_50')}
-                    disabled={isTeamCheckoutDisabled || loadingKey === 'extra_credits_50'}
+                    onClick={() => startCheckout('subscription_topup', topUpCredits)}
+                    disabled={isTeamCheckoutDisabled || loadingKey === 'subscription_topup'}
                     className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {loadingKey === 'extra_credits_50' ? 'Processing...' : 'Buy 50'}
-                  </button>
-                  <button
-                    onClick={() => startCheckout('extra_credits_100')}
-                    disabled={isTeamCheckoutDisabled || loadingKey === 'extra_credits_100'}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {loadingKey === 'extra_credits_100' ? 'Processing...' : 'Buy 100'}
+                    {loadingKey === 'subscription_topup' ? 'Processing...' : 'Buy at Plan Rate'}
                   </button>
                 </div>
               </div>

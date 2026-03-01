@@ -1,3 +1,43 @@
+export interface TransferCreditsToTeamData {
+    team_id: string;
+    credits: number;
+}
+
+export interface TransferCreditsToTeamResponse {
+    success: boolean;
+    message: string;
+}
+
+export const transferCreditsToTeam = async (
+    data: TransferCreditsToTeamData
+): Promise<TransferCreditsToTeamResponse> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+        const response = await axios.post<TransferCreditsToTeamResponse>(
+            `${API_BASE_URL}/teams/credits/transfer-credits-to-team`,
+            data,
+            { headers: getAuthHeaders() }
+        );
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to transfer credits. Please try again.",
+            };
+        }
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
 import { getAuthHeaders } from "@/helpers/auth.helpers";
 import {
     acceptInviteData,

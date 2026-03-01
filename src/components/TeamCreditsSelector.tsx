@@ -37,7 +37,7 @@ export function TeamCreditsSelector({
   const [isFetching, setIsFetching] = useState(false);
 
   // Memoized fetch function to prevent unnecessary re-renders
-  const fetchTeams = useCallback(async (skipCache = false) => {
+  const fetchTeams = useCallback(async (skipCache = true) => {
     try {
       // Check cache first (unless skipCache is true)
       if (!skipCache && typeof window !== 'undefined') {

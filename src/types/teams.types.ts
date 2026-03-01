@@ -1,3 +1,12 @@
+export interface TransferCreditsToTeamData {
+    team_id: string;
+    credits: number;
+}
+
+export interface TransferCreditsToTeamResponse {
+    success: boolean;
+    message: string;
+}
 export interface createTeamData {
     name: string;
     description: string;

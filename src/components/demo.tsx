@@ -14,6 +14,7 @@ import {
   X,
   FolderOpen,
   Trash2,
+  ChevronDown,
 } from "lucide-react";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -30,6 +31,7 @@ import { TeamCreditsSelector } from "./TeamCreditsSelector";
 import { CreditBalance } from "./CreditBalance";
 import { ProjectSelectorModal } from "./ProjectSelectorModal";
 import { SignUpBonusModal } from "./SignUpBonusModal";
+import Image from "next/image";
 
 
 export default function Demo() {
@@ -38,8 +40,44 @@ export default function Demo() {
   const [showBonusModal, setShowBonusModal] = useState(false);
   const [bonusOfferShownToday, setBonusOfferShownToday] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const hasShownDemoInfoRef = useRef(false);
+  const hasInitializedLimitWatcherRef = useRef(false);
+  const prevLimitReachedRef = useRef(false);
+  // Toggle for generate vs restage
+  const [mode, setMode] = useState<'generate' | 'restage'>('generate');
+  const stagedImgRef = useRef<HTMLImageElement | null>(null);
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [prompt, setPrompt] = useState("");
+  const [areaType, setAreaType] = useState<"interior" | "exterior">("interior");
+  const [roomType, setRoomType] = useState<RoomType | undefined>(undefined);
+  const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
+  const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
+  const [removeFurniture, setRemoveFurniture] = useState(false);
+  const [showRemoveFurnitureInfo, setShowRemoveFurnitureInfo] = useState(false);
+  const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
 
+  // Team selection state - persist to localStorage
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [remainingCredits, setRemainingCredits] = useState<number>(0);
+  const [refreshTeamCredits, setRefreshTeamCredits] = useState<(() => Promise<void>) | null>(null);
+
+  // Confirmation modal state
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [dontShowConfirmationAgain, setDontShowConfirmationAgain] = useState(false);
+  const [pendingGenerationAction, setPendingGenerationAction] = useState<(() => Promise<void>) | null>(null);
+
+  // Project selection modal state
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectName, setSelectedProjectName] = useState<string | null>(null);
+  const [defaultProject, setDefaultProject] = useState<{ projectId: string, projectName: string } | null>(null);
+  // Ref to image area
+  const imageAreaRef = useRef<HTMLDivElement | null>(null);
+  const leftPanelRef = useRef<HTMLDivElement | null>(null);
+  const [imageAreaHeight, setImageAreaHeight] = useState<number | undefined>(undefined);
 
   const {
     loading,
@@ -53,6 +91,9 @@ export default function Demo() {
     isRepeatDemoUser,
     isBlocked,
     limitReached,
+    hasPurchasedCredits,
+    demoCreditsRemaining,
+    demoSessionReady,
     setError,
     setStagedImageUrls,
     setStagedIds,
@@ -66,17 +107,17 @@ export default function Demo() {
     handleRestageImage,
   } = useDemoApi({ selectedImageIdx, setSelectedImageIdx });
 
-  const shouldShowDemoNotice = (!isLoggedIn || isDemo) && demoCount < demoLimit;
+  const shouldShowDemoNotice = authChecked && demoSessionReady && demoCreditsRemaining > 0 && (!isLoggedIn || isDemo || hasPurchasedCredits);
 
   // Show info toast when demo credits are relevant
   useEffect(() => {
     if (!shouldShowDemoNotice || hasShownDemoInfoRef.current) return;
     const demoScope = isLoggedIn ? "per account" : "per device";
     showInfo(
-      `You can stage up to ${demoLimit} demo images for free ${demoScope}. After that, you'll need to sign up or purchase credits to continue.`
+      `You have ${demoCreditsRemaining} of ${demoLimit} free demo credits left ${demoScope} this month.`
     );
     hasShownDemoInfoRef.current = true;
-  }, [shouldShowDemoNotice, demoLimit, isLoggedIn]);
+  }, [shouldShowDemoNotice, demoCreditsRemaining, demoLimit, isLoggedIn]);
 
   // Only reset selectedImageIdx to 0 when a new generation occurs (when array is cleared and refilled)
   const prevUrlsRef = useRef<string[]>([]);
@@ -103,63 +144,28 @@ export default function Demo() {
 
   // Show bonus signup modal when demo limit reached
   useEffect(() => {
-    if (limitReached && !bonusOfferShownToday && !isLoggedIn) {
+    if (!hasInitializedLimitWatcherRef.current) {
+      hasInitializedLimitWatcherRef.current = true;
+      prevLimitReachedRef.current = limitReached;
+      return;
+    }
+
+    const justReachedLimit = !prevLimitReachedRef.current && limitReached;
+    prevLimitReachedRef.current = limitReached;
+
+    if (justReachedLimit && !bonusOfferShownToday && !isLoggedIn && demoCreditsRemaining === 0) {
       // Check if offer was already shown today
       const today = new Date().toDateString();
       const lastOfferDate = localStorage.getItem('demo_bonus_offer_date');
-      
+
       if (lastOfferDate !== today) {
         setShowBonusModal(true);
         setBonusOfferShownToday(true);
         localStorage.setItem('demo_bonus_offer_date', today);
       }
     }
-  }, [limitReached, bonusOfferShownToday, isLoggedIn]);
+  }, [limitReached, bonusOfferShownToday, isLoggedIn, demoCreditsRemaining]);
 
-  // Ref and state to sync left panel height with image area
-  const imageAreaRef = useRef<HTMLDivElement | null>(null);
-  const [imageAreaHeight, setImageAreaHeight] = useState<number | undefined>(undefined);
-  const leftPanelRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    function updateHeight() {
-      if (imageAreaRef.current) {
-        setImageAreaHeight(imageAreaRef.current.offsetHeight);
-      }
-    }
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
-  }, []);
-  // Toggle for generate vs restage
-  const [mode, setMode] = useState<'generate' | 'restage'>('generate');
-  const stagedImgRef = useRef<HTMLImageElement | null>(null);
-  const [sliderPosition, setSliderPosition] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [prompt, setPrompt] = useState("");
-  const [areaType, setAreaType] = useState<"interior" | "exterior">("interior");
-  const [roomType, setRoomType] = useState<RoomType | undefined>(undefined);
-  const [exteriorType, setExteriorType] = useState<RoomType | undefined>(undefined);
-  const [selectedStagingStyle, setSelectedStagingStyle] = useState<StagingStyle | undefined>(undefined);
-  const [removeFurniture, setRemoveFurniture] = useState(false);
-  const [showRemoveFurnitureInfo, setShowRemoveFurnitureInfo] = useState(false);
-  const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
-
-  // Team selection state - persist to localStorage
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [remainingCredits, setRemainingCredits] = useState<number>(0);
-  const [refreshTeamCredits, setRefreshTeamCredits] = useState<(() => Promise<void>) | null>(null);
-  
-  // Confirmation modal state
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [dontShowConfirmationAgain, setDontShowConfirmationAgain] = useState(false);
-  const [pendingGenerationAction, setPendingGenerationAction] = useState<(() => Promise<void>) | null>(null);
-  
-  // Project selection modal state
-  const [showProjectModal, setShowProjectModal] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [selectedProjectName, setSelectedProjectName] = useState<string | null>(null);
-  const [defaultProject, setDefaultProject] = useState<{projectId: string, projectName: string} | null>(null);
 
   // Load default project preference
   useEffect(() => {
@@ -169,7 +175,7 @@ export default function Demo() {
       if (stored) {
         try {
           setDefaultProject(JSON.parse(stored));
-        } catch {}
+        } catch { }
       } else {
         setDefaultProject(null);
       }
@@ -181,25 +187,27 @@ export default function Demo() {
     if (typeof window !== 'undefined') {
       const authRaw = localStorage.getItem('elevate_spaces_auth');
       setIsLoggedIn(!!authRaw);
-      
+
       // Load selected team from localStorage
       const savedTeamId = localStorage.getItem('elevate_selected_team_id');
       if (savedTeamId && savedTeamId !== 'null') {
         setSelectedTeamId(savedTeamId);
       }
-      
+
       // Load confirmation preference
       const savedConfirmationPref = localStorage.getItem('elevate_hide_generation_confirmation');
       if (savedConfirmationPref === 'true') {
         setDontShowConfirmationAgain(true);
       }
+
+      setAuthChecked(true);
     }
   }, []);
 
   const handleTeamSelect = (teamId: string | null, remaining: number) => {
     setSelectedTeamId(teamId);
     setRemainingCredits(remaining);
-    
+
     // Persist selected team to localStorage
     if (typeof window !== 'undefined') {
       if (teamId) {
@@ -242,7 +250,7 @@ export default function Demo() {
     setIsDragging(false);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDragging) {
       window.addEventListener("mousemove", handleDrag as any);
       window.addEventListener("mouseup", handleEnd);
@@ -257,24 +265,43 @@ export default function Demo() {
     }
   }, [isDragging]);
 
+  useEffect(() => {
+    const updateHeights = () => {
+      if (imageAreaRef.current) {
+        setImageAreaHeight(imageAreaRef.current.offsetHeight);
+      }
+    };
 
-  // ...existing code...
+    updateHeights();
+    window.addEventListener("resize", updateHeights);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && imageAreaRef.current) {
+      observer = new ResizeObserver(() => updateHeights());
+      observer.observe(imageAreaRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateHeights);
+      if (observer) observer.disconnect();
+    };
+  }, [file, stagedImageUrls.length, loading, restageLoading]);
 
   return (
     <>
       <ToastContainer />
-      <section id="try-it-free" className="pt-32 pb-12">
+      <section id="try-it-free" className="pt-8 pb-12">
         {/* DEMO LIMIT ALERT */}
-        {shouldShowDemoNotice && (
+        {/* {shouldShowDemoNotice && (
           <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
             <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-yellow-50 text-yellow-900 text-sm font-semibold border border-yellow-200 shadow animate-slide-down">
               <Sparkles className="w-5 h-5 text-yellow-500" />
               <span>
-                You can stage up to <b>{demoLimit} demo images</b> for free {isLoggedIn ? "per account" : "per device"}. After that, you'll need to sign up or purchase credits to continue.
+                You have <b>{demoCreditsRemaining} free demo credits</b> left {isLoggedIn ? "on this account" : "on this device"} this month.
               </span>
             </div>
           </div>
-        )}
+        )} */}
         {/* BLOCKED ALERT */}
         {isBlocked && (
           <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
@@ -297,6 +324,87 @@ export default function Demo() {
             </div>
           </div>
         )}
+
+        {/* QUICK START FLOW */}
+        <div className="max-w-5xl mx-auto mb-8 animate-fade-in">
+          <h3 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-center mb-8">STEPS :</h3>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
+            <div className="bg-white border border-indigo-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
+              <p className="text-xs font-semibold text-indigo-700">Step 1</p>
+              <p className="text-sm font-bold text-slate-800">Upload Photo</p>
+            </div>
+            <svg
+              className="hidden md:block w-14 h-10 opacity-80 rotate-155"
+              viewBox="0 0 120 80"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Solid arrow line */}
+              <path
+                d="M10 20 C 40 60, 80 60, 100 30"
+                stroke="black"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+
+              {/* Arrow head */}
+              <path
+                d="M10 20 L30 20 M10 20 L10 40"
+                stroke="black"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+
+              {/* Dotted curve */}
+              <path
+                d="M60 30 C 80 10, 100 40, 90 70"
+                stroke="black"
+                strokeWidth="3"
+                strokeDasharray="2 8"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="bg-white border border-indigo-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
+              <p className="text-xs font-semibold text-indigo-700">Step 2</p>
+              <p className="text-sm font-bold text-slate-800">Choose Area & Style</p>
+            </div>
+            <svg
+              className="hidden md:block w-14 h-10 opacity-80 rotate-155"
+              viewBox="0 0 120 80"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Solid arrow line */}
+              <path
+                d="M10 20 C 40 60, 80 60, 100 30"
+                stroke="black"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+
+              {/* Arrow head */}
+              <path
+                d="M10 20 L30 20 M10 20 L10 40"
+                stroke="black"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+
+              {/* Dotted curve */}
+              <path
+                d="M60 30 C 80 10, 100 40, 90 70"
+                stroke="black"
+                strokeWidth="3"
+                strokeDasharray="2 8"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="bg-white border border-indigo-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
+              <p className="text-xs font-semibold text-indigo-700">Step 3</p>
+              <p className="text-sm font-bold text-slate-800">Generate / Restage</p>
+            </div>
+          </div>
+        </div>
 
         {/* HERO SECTION */}
         <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
@@ -335,8 +443,8 @@ export default function Demo() {
             {/* Controls */}
             <div
               ref={leftPanelRef}
-              className="p-4 border-r border-slate-200 bg-linear-to-b from-slate-50 to-white flex flex-col gap-4 overflow-y-auto custom-scrollbar relative"
-              style={imageAreaHeight ? { height: imageAreaHeight } : {}}
+              className="p-4 border-r border-slate-200 bg-linear-to-b from-slate-50 to-white flex flex-col gap-3 relative overflow-y-auto"
+              style={imageAreaHeight ? { height: imageAreaHeight } : undefined}
             >
               {/* Down arrow indicator for small screens */}
               {(
@@ -352,7 +460,7 @@ export default function Demo() {
                 )}
               {/* Demo usage progress */}
               {shouldShowDemoNotice && (
-                <div className="mb-1">
+                <div className="mb-1 bg-white rounded-xl shadow border border-slate-100 p-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold text-indigo-700 flex items-center gap-1">
                       <Sparkles className="w-4 h-4" /> Demo Usage
@@ -380,124 +488,119 @@ export default function Demo() {
 
               {/* Team Credits Selector - Only show for logged-in users */}
               {isLoggedIn && (
-                <>
-                  <div className="border-t border-slate-200 my-1" />
-                  
-                  {/* Personal Credit Balance */}
-                  <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
-                    <CreditBalance />
-                  </div>
-
-                  <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
-                    <TeamCreditsSelector 
-                      onTeamSelect={handleTeamSelect}
-                      selectedTeamId={selectedTeamId}
-                      disabled={loading || restageLoading}
-                      onRefreshReady={handleRefreshReady}
-                    />
-                  </div>
-
-                  {/* Default Project Manager */}
-                  <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <FolderOpen className="w-4 h-4 text-indigo-500" />
+                <details className="bg-white rounded-xl shadow border border-slate-100 p-3">
+                  <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
+                    <FolderOpen className="w-4 h-4 text-indigo-500" />
+                    <span>Account & Team</span>
+                    <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
+                  </summary>
+                  <div className="mt-3 flex flex-col gap-3">
+                    <div className="flex flex-col gap-1">
+                      <CreditBalance />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <TeamCreditsSelector
+                        onTeamSelect={handleTeamSelect}
+                        selectedTeamId={selectedTeamId}
+                        disabled={loading || restageLoading}
+                        onRefreshReady={handleRefreshReady}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-bold text-slate-700">Default Project</span>
                       </div>
-                    </div>
-                    {defaultProject ? (
-                      <div className="flex items-center justify-between p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-indigo-900">{defaultProject.projectName}</p>
-                          <p className="text-xs text-indigo-600">Images auto-link here</p>
+                      {defaultProject ? (
+                        <div className="flex items-center justify-between p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-indigo-900">{defaultProject.projectName}</p>
+                            <p className="text-xs text-indigo-600">Images auto-link here</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
+                              localStorage.removeItem(defaultKey);
+                              setDefaultProject(null);
+                            }}
+                            className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded transition"
+                            title="Remove default"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => {
-                            const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
-                            localStorage.removeItem(defaultKey);
-                            setDefaultProject(null);
-                          }}
-                          className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded transition"
-                          title="Remove default"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                        <p className="text-xs text-slate-600">No default project set. You'll be prompted on each generation.</p>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                          <p className="text-xs text-slate-600">No default project set. You'll be prompted on each generation.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </>
+                </details>
               )}
 
-              {/* Divider */}
-              <div className="border-t border-slate-200 my-1" />
-
               {/* Area Type & Options */}
-              <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
-                <div className="flex items-center gap-2 mb-1">
+              <details className="bg-white rounded-xl shadow border border-slate-100 p-3">
+                <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
                   <Settings className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">2. Area & Style</span>
-                </div>
-                <div className="flex gap-2 mb-2">
-                  <button
-                    type="button"
-                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${areaType === "interior"
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                      }`}
-                    onClick={() => setAreaType("interior")}
-                  >
-                    Interior
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${areaType === "exterior"
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                      }`}
-                    onClick={() => setAreaType("exterior")}
-                  >
-                    Exterior
-                  </button>
-                </div>
-                {areaType === "interior" && (
-                  <DemoDropdown<RoomType>
-                    label="Interior Type"
-                    value={roomType}
-                    options={interiorOptions}
-                    onChange={setRoomType}
+                  <span>Step 2: Area & Style</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
+                </summary>
+                <div className="mt-3 flex flex-col gap-2">
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      type="button"
+                      className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${areaType === "interior"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow"
+                        : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                        }`}
+                      onClick={() => setAreaType("interior")}
+                    >
+                      Interior
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${areaType === "exterior"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow"
+                        : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                        }`}
+                      onClick={() => setAreaType("exterior")}
+                    >
+                      Exterior
+                    </button>
+                  </div>
+                  {areaType === "interior" && (
+                    <DemoDropdown<RoomType>
+                      label="Interior Type"
+                      value={roomType}
+                      options={interiorOptions}
+                      onChange={setRoomType}
                     // placeholder={removeFurniture ? "Select Interior Type (optional)" : "Select Interior Type (required)"}
-                  />
-                )}
-                {areaType === "exterior" && (
-                  <DemoDropdown<RoomType>
-                    label="Exterior Type (optional)"
-                    value={exteriorType}
-                    options={exteriorOptions}
-                    onChange={setExteriorType}
-                    placeholder="Select Exterior Type"
-                  />
-                )}
-                <DemoDropdown<StagingStyle>
-                  label="Staging Style"
-                  value={selectedStagingStyle}
-                  options={stagingStyles}
-                  onChange={setSelectedStagingStyle}
+                    />
+                  )}
+                  {areaType === "exterior" && (
+                    <DemoDropdown<RoomType>
+                      label="Exterior Type (optional)"
+                      value={exteriorType}
+                      options={exteriorOptions}
+                      onChange={setExteriorType}
+                      placeholder="Select Exterior Type"
+                    />
+                  )}
+                  <DemoDropdown<StagingStyle>
+                    label="Staging Style"
+                    value={selectedStagingStyle}
+                    options={stagingStyles}
+                    onChange={setSelectedStagingStyle}
                   // placeholder={removeFurniture ? "Select Staging Style (optional)" : (areaType === 'exterior' ? '(Optional) Select Staging Style' : 'Select Staging Style (required)')}
-                />
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-slate-200 my-1" />
+                  />
+                </div>
+              </details>
 
               {/* Prompt & Action with mode toggle */}
-              <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-1">
+              <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">3. Refine</span>
+                  <span className="text-sm font-bold text-slate-700">Step 3: Refine & Generate</span>
                 </div>
                 <div className="flex gap-2 mb-2">
                   <button
@@ -516,14 +619,14 @@ export default function Demo() {
                     Restage Image
                   </button>
                 </div>
-                <input
-                  type="text"
+                <textarea
                   placeholder={mode === 'restage' ? "Enter prompt to restage (required)" : "e.g. kid friendly, bright colors (optional)"}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   required={mode === 'restage'}
                   disabled={mode === 'restage' && !stagedImageUrls.length}
+                  rows={2}
                 />
                 <label className="flex items-center gap-2 mt-2 select-none">
                   <input
@@ -540,7 +643,7 @@ export default function Demo() {
                   <span className="text-xs text-slate-700">Remove all furniture (empty room)</span>
                 </label>
                 <Button
-                  className="w-full text-xs font-bold mt-2"
+                  className="w-full text-sm font-bold mt-1 h-11"
                   onClick={async () => {
                     // Frontend validation for logged-in users with team selected
                     if (isLoggedIn && selectedTeamId && remainingCredits <= 0) {
@@ -705,8 +808,8 @@ export default function Demo() {
                   <div className="mt-2">
                     <p className="text-red-500 text-xs">{error}</p>
                     {error.toLowerCase().includes('insufficient') && (
-                      <a 
-                        href="/test#try-it-free" 
+                      <a
+                        href="/test#try-it-free"
                         className="text-blue-600 text-xs font-semibold hover:underline mt-1 inline-block"
                       >
                         → Buy credits to continue
@@ -818,7 +921,7 @@ export default function Demo() {
           </div>
         </div>
       </section>
-      
+
       {/* CONFIRMATION MODAL FOR NEW IMAGE GENERATION */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -829,7 +932,7 @@ export default function Demo() {
               </div>
               <h2 className="text-xl font-bold text-slate-900">Generate New Image</h2>
             </div>
-            
+
             <div className="space-y-3 mb-6 text-sm text-slate-700">
               <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
                 <span className="text-lg">💳</span>
@@ -838,7 +941,7 @@ export default function Demo() {
                   <p className="text-indigo-800 mt-1">Each new staging will deduct from your available credits. Credits cost money when purchased.</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
                 <span className="text-lg">♻️</span>
                 <div>
@@ -847,7 +950,7 @@ export default function Demo() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 mb-6 p-3 bg-slate-100 rounded-lg">
               <input
                 type="checkbox"
@@ -865,7 +968,7 @@ export default function Demo() {
                 Don't show this again
               </label>
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => {
@@ -951,7 +1054,8 @@ export default function Demo() {
               <span className="text-xs text-slate-400">{loading ? '...' : ''}</span>
             )}
           </div>
-        ))}      </div>
+        ))}
+      </div>
 
       {/* Project Selection Modal */}
       <ProjectSelectorModal
@@ -962,16 +1066,16 @@ export default function Demo() {
           setSelectedProjectId(projectId);
           setSelectedProjectName(projectName || null);
           setShowProjectModal(false);
-          
+
           // Refresh default project state (user might have set new default)
           const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
           const stored = localStorage.getItem(defaultKey);
           if (stored) {
             try {
               setDefaultProject(JSON.parse(stored));
-            } catch {}
+            } catch { }
           }
-          
+
           // Now execute the image generation with projectId
           let finalPrompt = prompt;
           if (areaType === 'exterior' && !prompt) {
@@ -1001,7 +1105,7 @@ export default function Demo() {
         open={showBonusModal}
         onOpenChange={setShowBonusModal}
       />
-      
+
     </>
   )
 }
