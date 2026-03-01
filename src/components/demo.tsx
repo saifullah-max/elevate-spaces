@@ -17,7 +17,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useDemoApi } from "./useDemoApi";
 import { ToastContainer } from 'react-toastify';
@@ -31,6 +31,7 @@ import { TeamCreditsSelector } from "./TeamCreditsSelector";
 import { CreditBalance } from "./CreditBalance";
 import { ProjectSelectorModal } from "./ProjectSelectorModal";
 import { SignUpBonusModal } from "./SignUpBonusModal";
+import { getRecentUploads, normalizeImageUrl } from "@/services/image.service";
 import Image from "next/image";
 
 
@@ -50,6 +51,7 @@ export default function Demo() {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
   const [areaType, setAreaType] = useState<"interior" | "exterior">("interior");
   const [roomType, setRoomType] = useState<RoomType | undefined>(undefined);
@@ -58,6 +60,7 @@ export default function Demo() {
   const [removeFurniture, setRemoveFurniture] = useState(false);
   const [showRemoveFurnitureInfo, setShowRemoveFurnitureInfo] = useState(false);
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
+  const [selectedPhotoIdx, setSelectedPhotoIdx] = useState<number>(0);
 
   // Team selection state - persist to localStorage
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -104,8 +107,17 @@ export default function Demo() {
     setIsBlocked,
     setLimitReached,
     handleStageImage,
+    handleStageMultipleImages,
     handleRestageImage,
   } = useDemoApi({ selectedImageIdx, setSelectedImageIdx });
+
+  const imagesToStageCount = selectedFiles.length > 0 ? selectedFiles.length : (file ? 1 : 0);
+  const creditsToUseCount = imagesToStageCount;
+  const isMultiImageMode = imagesToStageCount > 1;
+  const totalStagedPhotos = Math.ceil(stagedImageUrls.length / 5); // 5 variations per photo
+  const currentStagedImageUrl = normalizeImageUrl(
+    stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * 5 + selectedImageIdx : selectedImageIdx]
+  );
 
   const shouldShowDemoNotice = authChecked && demoSessionReady && demoCreditsRemaining > 0 && (!isLoggedIn || isDemo || hasPurchasedCredits);
 
@@ -132,6 +144,8 @@ export default function Demo() {
     }
     // Update ref for next render
     prevUrlsRef.current = stagedImageUrls;
+    // Reset photo selection when new results arrive
+    setSelectedPhotoIdx(0);
   }, [stagedImageUrls]);
 
 
@@ -141,6 +155,64 @@ export default function Demo() {
       showError('Demo access has been blocked for this device due to repeated use. Please sign up or contact support for help.');
     }
   }, [isBlocked]);
+
+  useEffect(() => {
+    if (!authChecked || !isLoggedIn) return;
+    if (stagedImageUrls.length > 0) return;
+    if (typeof window !== 'undefined' && !localStorage.getItem('elevate_pending_staging_recovery')) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await getRecentUploads(20);
+        if (!data.uploads?.length || cancelled) return;
+
+        const seenKey = 'elevate_seen_recent_group_ids';
+        const seenRaw = typeof window !== 'undefined' ? localStorage.getItem(seenKey) : null;
+        const seenGroupIds: string[] = seenRaw ? JSON.parse(seenRaw) : [];
+
+        const unseenGroup = data.uploads.find((upload: any) => {
+          const groupId = upload.groupId || `${upload.original?.url}:${upload.createdAt}`;
+          const hasVariants = Array.isArray(upload.stagedVariants) && upload.stagedVariants.length > 0;
+          return hasVariants && !seenGroupIds.includes(groupId);
+        });
+
+        if (!unseenGroup || cancelled) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('elevate_pending_staging_recovery');
+          }
+          return;
+        }
+
+        const variantUrls = (unseenGroup.stagedVariants || [])
+          .map((variant: any) => normalizeImageUrl(variant.url))
+          .filter(Boolean);
+        const variantIds = (unseenGroup.stagedVariants || []).map((variant: any) => variant.filename || variant.id).filter(Boolean);
+
+        if (variantUrls.length === 0) return;
+
+        setStagedImageUrls(variantUrls);
+        setStagedIds(variantIds);
+        setSelectedImageIdx(0);
+        setSelectedPhotoIdx(0);
+
+        const groupId = unseenGroup.groupId || `${unseenGroup.original?.url}:${unseenGroup.createdAt}`;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(seenKey, JSON.stringify([...seenGroupIds, groupId]));
+          localStorage.removeItem('elevate_pending_staging_recovery');
+        }
+
+        showInfo('Recovered completed staging results from your previous session.');
+      } catch (recoveryError) {
+        console.error('Failed to recover recent staged results:', recoveryError);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authChecked, isLoggedIn, stagedImageUrls.length, setStagedImageUrls, setStagedIds]);
 
   // Show bonus signup modal when demo limit reached
   useEffect(() => {
@@ -222,7 +294,116 @@ export default function Demo() {
     setRefreshTeamCredits(() => refreshFn);
   };
 
-  const handleMove = (clientX: number) => {
+  const runGenerate = useCallback(async (projectId?: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('elevate_pending_staging_recovery', JSON.stringify({ startedAt: Date.now() }));
+    }
+
+    let finalPrompt = prompt;
+    if (areaType === 'exterior' && !prompt) {
+      finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
+    }
+
+    if (imagesToStageCount > 1) {
+      if (!isLoggedIn) {
+        setError('Multiple image staging requires login. Please sign up or log in first.');
+        return;
+      }
+
+      const response = await handleStageMultipleImages(
+        selectedFiles,
+        roomType,
+        areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+        areaType === 'exterior' ? undefined : selectedStagingStyle,
+        finalPrompt,
+        areaType,
+        removeFurniture,
+        (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+        async () => {
+          if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+            await refreshTeamCredits();
+          }
+        },
+        projectId
+      );
+
+      if (response) {
+        const creditsUsed = response.creditsUsed ?? imagesToStageCount;
+        showInfo(`Started staging ${imagesToStageCount} images. ${creditsUsed} credits will be used.`);
+      }
+      setSelectedPhotoIdx(0);
+      return;
+    }
+
+    await handleStageImage(
+      file,
+      roomType,
+      areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+      areaType === 'exterior' ? undefined : selectedStagingStyle,
+      finalPrompt,
+      areaType,
+      removeFurniture,
+      (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+      async () => {
+        if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+          await refreshTeamCredits();
+        }
+      },
+      projectId
+    );
+  }, [
+    prompt,
+    areaType,
+    imagesToStageCount,
+    isLoggedIn,
+    handleStageMultipleImages,
+    selectedFiles,
+    roomType,
+    exteriorType,
+    selectedStagingStyle,
+    removeFurniture,
+    selectedTeamId,
+    refreshTeamCredits,
+    handleStageImage,
+    file,
+    setError,
+  ]);
+
+  /**
+   * Download image directly to device
+   * Works across all browsers including Safari on mobile
+   */
+  const downloadImage = useCallback(async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl, {
+        mode: 'cors',
+        credentials: 'omit',
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch image');
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      // Create anchor element for download
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `staged-image-${Date.now()}.png`;
+      link.style.display = 'none';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Cleanup
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+    } catch (error) {
+      console.error('Download failed:', error);
+      showError('Failed to download image. Please try again.');
+    }
+  }, []);
+
+  const handleMove = useCallback((clientX: number) => {
     const rect = document
       .getElementById("slider-container")
       ?.getBoundingClientRect();
@@ -232,23 +413,26 @@ export default function Demo() {
     const width = rect.width;
     const percentage = Math.max(0, Math.min(100, (x / width) * 100));
     setSliderPosition(percentage);
-  };
+  }, []);
 
-  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true);
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     handleMove(clientX);
-  };
+  }, [handleMove]);
 
-  const handleDrag = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging) return;
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    handleMove(clientX);
-  };
+  const handleDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging((isDragging) => {
+      if (!isDragging) return false;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      handleMove(clientX);
+      return true;
+    });
+  }, [handleMove]);
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -285,11 +469,11 @@ export default function Demo() {
       window.removeEventListener("resize", updateHeights);
       if (observer) observer.disconnect();
     };
-  }, [file, stagedImageUrls.length, loading, restageLoading]);
+  }, [file, selectedFiles.length, stagedImageUrls.length, loading, restageLoading]);
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer closeButton={false} />
       <section id="try-it-free" className="pt-8 pb-12">
         {/* DEMO LIMIT ALERT */}
         {/* {shouldShowDemoNotice && (
@@ -482,8 +666,8 @@ export default function Demo() {
                   <UploadCloud className="w-5 h-5 text-indigo-500" />
                   <span className="text-sm font-bold text-slate-700">1. Upload Photo</span>
                 </div>
-                <span className="text-xs text-slate-500 mb-1">JPG/PNG, 1 image only</span>
-                <UploadArea limitReached={limitReached} setFile={setFile} setStagedImageUrls={setStagedImageUrls} setError={setError} />
+                <span className="text-xs text-slate-500 mb-1">JPG/PNG, single or multiple images</span>
+                <UploadArea limitReached={limitReached} setFile={setFile} setFiles={setSelectedFiles} setStagedImageUrls={setStagedImageUrls} setError={setError} />
               </div>
 
               {/* Team Credits Selector - Only show for logged-in users */}
@@ -646,8 +830,8 @@ export default function Demo() {
                   className="w-full text-sm font-bold mt-1 h-11"
                   onClick={async () => {
                     // Frontend validation for logged-in users with team selected
-                    if (isLoggedIn && selectedTeamId && remainingCredits <= 0) {
-                      setError('You have no remaining credits in the selected team.');
+                    if (isLoggedIn && selectedTeamId && remainingCredits < creditsToUseCount) {
+                      setError(`You need ${creditsToUseCount} team credits, but only ${remainingCredits} are available.`);
                       return;
                     }
 
@@ -658,49 +842,14 @@ export default function Demo() {
                         if (isLoggedIn) {
                           // Check if default project exists
                           if (defaultProject && defaultProject.projectId) {
-                            // Use default project directly
-                            let finalPrompt = prompt;
-                            if (areaType === 'exterior' && !prompt) {
-                              finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
-                            }
-                            await handleStageImage(
-                              file,
-                              roomType,
-                              areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-                              areaType === 'exterior' ? undefined : selectedStagingStyle,
-                              finalPrompt,
-                              areaType,
-                              removeFurniture,
-                              (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
-                              async () => {
-                                if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
-                                  await refreshTeamCredits();
-                                }
-                              },
-                              defaultProject.projectId
-                            );
+                            await runGenerate(defaultProject.projectId);
                           } else {
                             // No default, show modal
                             setShowProjectModal(true);
                           }
                         } else {
                           // Guest user - generate directly
-                          let finalPrompt = prompt;
-                          if (areaType === 'exterior' && !prompt) {
-                            finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
-                          }
-                          await handleStageImage(
-                            file,
-                            roomType,
-                            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-                            areaType === 'exterior' ? undefined : selectedStagingStyle,
-                            finalPrompt,
-                            areaType,
-                            removeFurniture,
-                            undefined,
-                            undefined,
-                            undefined
-                          );
+                          await runGenerate(undefined);
                         }
                       });
                       setShowConfirmation(true);
@@ -744,49 +893,14 @@ export default function Demo() {
                       if (isLoggedIn) {
                         // Check for default project
                         if (defaultProject && defaultProject.projectId) {
-                          // Use default project directly
-                          let finalPrompt = prompt;
-                          if (areaType === 'exterior' && !prompt) {
-                            finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
-                          }
-                          await handleStageImage(
-                            file,
-                            roomType,
-                            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-                            areaType === 'exterior' ? undefined : selectedStagingStyle,
-                            finalPrompt,
-                            areaType,
-                            removeFurniture,
-                            (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
-                            async () => {
-                              if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
-                                await refreshTeamCredits();
-                              }
-                            },
-                            defaultProject.projectId
-                          );
+                          await runGenerate(defaultProject.projectId);
                         } else {
                           // No default, show project modal first
                           setShowProjectModal(true);
                         }
                       } else {
                         // Guest user - execute directly
-                        let finalPrompt = prompt;
-                        if (areaType === 'exterior' && !prompt) {
-                          finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
-                        }
-                        await handleStageImage(
-                          file,
-                          roomType,
-                          areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-                          areaType === 'exterior' ? undefined : selectedStagingStyle,
-                          finalPrompt,
-                          areaType,
-                          removeFurniture,
-                          undefined,
-                          undefined,
-                          undefined
-                        );
+                        await runGenerate(undefined);
                       }
                     }
                     if (limitReached) {
@@ -795,13 +909,13 @@ export default function Demo() {
                   }}
                   disabled={
                     loading ||
-                    !file ||
+                    imagesToStageCount === 0 ||
                     // (!removeFurniture && areaType === "interior" && !roomType) ||
                     // (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||
                     (mode === 'restage' && (!stagedImageUrls.length && areaType !== 'exterior' && !prompt))
                   }
                 >
-                  {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : "Generate Image")}
+                  {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : `Generate & Use ${creditsToUseCount || 1} Credit${(creditsToUseCount || 1) > 1 ? 's' : ''}`)}
                 </Button>
 
                 {error && (
@@ -828,42 +942,61 @@ export default function Demo() {
               style={{ minWidth: 0 }}
             >
               {/* BEFORE Image (Empty) */}
-              <img
-                src={
-                  file
-                    ? URL.createObjectURL(file)
-                    : "/unfurnished-room.png"
-                }
-                alt="Empty room before staging"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ zIndex: 1 }}
-              />
+              {file ? (
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Empty room before staging"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ zIndex: 1 }}
+                />
+              ) : (
+                <Image
+                  src="/unfurnished-room.png"
+                  alt="Empty room before staging"
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="100vw"
+                  style={{ zIndex: 1 }}
+                />
+              )}
 
               {/* AFTER Image (Staged) */}
               {stagedImageUrls && stagedImageUrls.length > 0 ? (
                 <>
-                  <img
-                    ref={stagedImgRef}
-                    src={stagedImageUrls[selectedImageIdx]}
-                    alt="Staged living room"
-                    className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                    draggable={false}
-                    onContextMenu={isDemo ? (e) => e.preventDefault() : undefined}
+                  <div
                     style={{
-                      userSelect: 'none',
-                      zIndex: 2,
+                      position: 'absolute',
+                      inset: 0,
                       clipPath: `inset(0 0 0 ${sliderPosition}%)`,
+                      zIndex: 2,
                     }}
-                  />
+                  >
+                    {currentStagedImageUrl ? (
+                      <Image
+                        ref={stagedImgRef}
+                        src={currentStagedImageUrl}
+                        alt="Staged living room"
+                        fill
+                        className="object-cover select-none pointer-events-none"
+                        draggable={false}
+                        onContextMenu={isDemo ? (e) => e.preventDefault() : undefined}
+                        priority
+                        sizes="100vw"
+                        unoptimized
+                        style={{ userSelect: 'none' }}
+                      />
+                    ) : null}
+                  </div>
                   {/* Download + Fullscreen icons overlay */}
                   <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
                     <button
                       className="bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
-                      title="Open image in new tab"
+                      title="Download image"
                       onClick={() => {
-                        const url = stagedImageUrls[selectedImageIdx];
+                        const url = currentStagedImageUrl;
                         if (!url) return;
-                        window.open(url, '_blank', 'noopener,noreferrer');
+                        downloadImage(url);
                       }}
                     >
                       <Download className="w-6 h-6 text-indigo-600" />
@@ -872,7 +1005,7 @@ export default function Demo() {
                       className="bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
                       title="View fullscreen"
                       onClick={() => {
-                        const url = stagedImageUrls[selectedImageIdx];
+                        const url = currentStagedImageUrl;
                         if (!url) return;
                         setFullscreenImageUrl(url);
                       }}
@@ -890,17 +1023,27 @@ export default function Demo() {
                   )}
                 </>
               ) : (
-                <img
-                  src="/furnished-room.png"
-                  alt="Staged living room"
-                  className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                  draggable={false}
+                <div
                   style={{
-                    userSelect: 'none',
-                    zIndex: 2,
+                    position: 'absolute',
+                    inset: 0,
                     clipPath: `inset(0 0 0 ${sliderPosition}%)`,
+                    zIndex: 2,
                   }}
-                />
+                >
+                  <Image
+                    src="/furnished-room.png"
+                    alt="Staged living room"
+                    fill
+                    className="object-cover select-none pointer-events-none"
+                    draggable={false}
+                    priority
+                    sizes="100vw"
+                    style={{
+                      userSelect: 'none',
+                    }}
+                  />
+                </div>
               )}
 
               {/* Slider Line + Handle */}
@@ -937,8 +1080,12 @@ export default function Demo() {
               <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
                 <span className="text-lg">💳</span>
                 <div>
-                  <p className="font-semibold text-indigo-900">Generating a new image uses 1 credit</p>
-                  <p className="text-indigo-800 mt-1">Each new staging will deduct from your available credits. Credits cost money when purchased.</p>
+                  <p className="font-semibold text-indigo-900">
+                    Generating {imagesToStageCount || 1} image{(imagesToStageCount || 1) > 1 ? 's' : ''} uses {creditsToUseCount || 1} credit{(creditsToUseCount || 1) > 1 ? 's' : ''}
+                  </p>
+                  <p className="text-indigo-800 mt-1">
+                    You're staging {imagesToStageCount || 1} image{(imagesToStageCount || 1) > 1 ? 's' : ''} at once, so {creditsToUseCount || 1} credit{(creditsToUseCount || 1) > 1 ? 's' : ''} will be deducted.
+                  </p>
                 </div>
               </div>
 
@@ -989,7 +1136,7 @@ export default function Demo() {
                 }}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
               >
-                Generate & Use Credit
+                Generate & Use {creditsToUseCount || 1} Credit{(creditsToUseCount || 1) > 1 ? 's' : ''}
               </button>
             </div>
           </div>
@@ -1037,24 +1184,95 @@ export default function Demo() {
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto mt-4 flex flex-row gap-2 justify-center">
-        {[0, 1, 2, 3, 4].map((idx) => (
-          <div key={idx} className="w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 cursor-pointer transition-all"
-            style={{ borderColor: selectedImageIdx === idx ? '#6366f1' : '#e5e7eb', boxShadow: selectedImageIdx === idx ? '0 0 0 2px #6366f1' : undefined, opacity: stagedImageUrls[idx] ? 1 : 0.7 }}
-            onClick={() => stagedImageUrls[idx] && setSelectedImageIdx(idx)}
-          >
-            {stagedImageUrls[idx] ? (
-              <img
-                src={stagedImageUrls[idx]}
-                alt={`Alternate ${idx + 1}`}
-                className="w-full h-full object-cover rounded"
-                style={{ pointerEvents: 'none' }}
-              />
-            ) : (
-              <span className="text-xs text-slate-400">{loading ? '...' : ''}</span>
-            )}
+      <div className="max-w-2xl mx-auto mt-4 flex flex-col gap-4 px-4">
+        {/* Photo Selector for Multi-Image */}
+        {isMultiImageMode && totalStagedPhotos > 0 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-slate-700">
+              Photo {selectedPhotoIdx + 1} of {totalStagedPhotos}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedPhotoIdx(Math.max(0, selectedPhotoIdx - 1))}
+                disabled={selectedPhotoIdx === 0}
+                className="px-3 py-1 rounded bg-slate-200 text-slate-700 disabled:opacity-50 hover:bg-slate-300 transition text-xs font-semibold"
+              >
+                ← Prev
+              </button>
+              {/* Photo thumbnails */}
+              <div className="flex gap-1">
+                {Array.from({ length: totalStagedPhotos }).map((_, photoIdx) => {
+                  const photoStartIdx = photoIdx * 5;
+                  const photoUrls = stagedImageUrls.slice(photoStartIdx, photoStartIdx + 5);
+                  return (
+                    <button
+                      key={photoIdx}
+                      onClick={() => setSelectedPhotoIdx(photoIdx)}
+                      className={`w-12 h-12 rounded border-2 transition overflow-hidden ${
+                        selectedPhotoIdx === photoIdx
+                          ? 'border-indigo-600 shadow-lg'
+                          : 'border-slate-300 hover:border-slate-400'
+                      }`}
+                    >
+                      {photoUrls[0] && (
+                        <img
+                          src={photoUrls[0]}
+                          alt={`Photo ${photoIdx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setSelectedPhotoIdx(Math.min(totalStagedPhotos - 1, selectedPhotoIdx + 1))}
+                disabled={selectedPhotoIdx === totalStagedPhotos - 1}
+                className="px-3 py-1 rounded bg-slate-200 text-slate-700 disabled:opacity-50 hover:bg-slate-300 transition text-xs font-semibold"
+              >
+                Next →
+              </button>
+            </div>
           </div>
-        ))}
+        )}
+
+        {/* Version Selector (5 Versions) */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-semibold text-slate-700">
+            {isMultiImageMode ? `Version ${selectedImageIdx + 1} for Photo ${selectedPhotoIdx + 1}` : `Version ${selectedImageIdx + 1}`}
+          </div>
+          <div className="flex flex-row gap-2 justify-center">
+            {[0, 1, 2, 3, 4].map((idx) => {
+              const imageIdx = isMultiImageMode ? selectedPhotoIdx * 5 + idx : idx;
+              return (
+                <div
+                  key={idx}
+                  className="relative w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 cursor-pointer transition-all overflow-hidden"
+                  style={{
+                    borderColor: selectedImageIdx === idx ? '#6366f1' : '#e5e7eb',
+                    boxShadow: selectedImageIdx === idx ? '0 0 0 2px #6366f1' : undefined,
+                    opacity: stagedImageUrls[imageIdx] ? 1 : 0.7,
+                  }}
+                  onClick={() => stagedImageUrls[imageIdx] && setSelectedImageIdx(idx)}
+                >
+                  {stagedImageUrls[imageIdx] ? (
+                    <Image
+                      src={normalizeImageUrl(stagedImageUrls[imageIdx])}
+                      alt={`Alternate ${idx + 1}`}
+                      width={80}
+                      height={56}
+                      className="object-cover rounded"
+                      unoptimized
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  ) : (
+                    <span className="text-xs text-slate-400">{loading ? '...' : ''}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Project Selection Modal */}
@@ -1077,26 +1295,7 @@ export default function Demo() {
           }
 
           // Now execute the image generation with projectId
-          let finalPrompt = prompt;
-          if (areaType === 'exterior' && !prompt) {
-            finalPrompt = 'clean the garbage, make grass cleaner and greener and keep layout and all same just make the outdoor look better';
-          }
-          await handleStageImage(
-            file,
-            roomType,
-            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-            areaType === 'exterior' ? undefined : selectedStagingStyle,
-            finalPrompt,
-            areaType,
-            removeFurniture,
-            (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
-            async () => {
-              if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
-                await refreshTeamCredits();
-              }
-            },
-            projectId || undefined
-          );
+          await runGenerate(projectId || undefined);
         }}
       />
 

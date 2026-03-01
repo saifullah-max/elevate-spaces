@@ -10,6 +10,7 @@ export default function RecentUploads() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<PairedUpload | null>(null);
   const [view, setView] = useState<"staged" | "original">("staged");
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -37,10 +38,12 @@ export default function RecentUploads() {
     window.URL.revokeObjectURL(blobUrl);
   };
 
-  const activeImage =
-    view === "staged" && selected?.staged
-      ? selected.staged
-      : selected?.original;
+  const activeStagedVariant =
+    selected?.stagedVariants && selected.stagedVariants.length > 0
+      ? selected.stagedVariants[selectedVariantIdx] || selected.stagedVariants[0]
+      : selected?.staged;
+
+  const activeImage = view === "staged" && activeStagedVariant ? activeStagedVariant : selected?.original;
 
   return (
     <section className="max-w-6xl mx-auto py-10 md:py-12 px-4">
@@ -58,6 +61,7 @@ export default function RecentUploads() {
               key={idx}
               onClick={() => {
                 setSelected(pair);
+                setSelectedVariantIdx(0);
                 setView(pair.staged ? "staged" : "original");
               }}
               className="
@@ -83,9 +87,9 @@ export default function RecentUploads() {
                   {pair.original.filename}
                 </p>
                 <p>{new Date(pair.createdAt).toLocaleString()}</p>
-                {pair.staged && (
+                {(pair.staged || (pair.stagedVariants && pair.stagedVariants.length > 0)) && (
                   <span className="text-emerald-600 font-semibold md:font-bold">
-                    Staged
+                    {(pair.stagedVariants?.length || 1)} staged versions
                   </span>
                 )}
               </div>
@@ -127,7 +131,7 @@ export default function RecentUploads() {
             </div>
 
             {/* Toggle */}
-            {selected.staged && (
+            {(selected.staged || (selected.stagedVariants && selected.stagedVariants.length > 0)) && (
               <div className="flex justify-center gap-2 py-2">
                 {["staged", "original"].map((type) => (
                   <button
@@ -145,6 +149,32 @@ export default function RecentUploads() {
                     {type}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {view === "staged" && selected.stagedVariants && selected.stagedVariants.length > 0 && (
+              <div className="px-4 md:px-5 pb-2">
+                <p className="text-xs text-slate-500 mb-2">Variants</p>
+                <div className="flex gap-2 overflow-x-auto">
+                  {selected.stagedVariants.map((variant, idx) => (
+                    <button
+                      key={variant.id || `${variant.url}-${idx}`}
+                      onClick={() => setSelectedVariantIdx(idx)}
+                      className={`shrink-0 w-16 h-12 rounded border-2 overflow-hidden ${
+                        idx === selectedVariantIdx ? "border-emerald-600" : "border-slate-200"
+                      }`}
+                    >
+                      <Image
+                        src={variant.url}
+                        alt={`Variant ${idx + 1}`}
+                        width={64}
+                        height={48}
+                        unoptimized
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

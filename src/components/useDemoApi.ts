@@ -1,4 +1,4 @@
-import { stageImage, restageImage, stageImageSSE } from "@/services/image.service";
+import { stageImage, restageImage, stageImageSSE, stageMultipleImagesSSE, normalizeImageUrl } from "@/services/image.service";
 import { useRef, useState, useEffect } from "react";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { showError } from "./toastUtils";
@@ -149,7 +149,8 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             projectId,
             onImage: (data) => {
                 if (requestId !== requestIdRef.current) return;
-                setStagedImageUrls(prev => [...prev, data.stagedImageUrl]);
+                const normalizedUrl = normalizeImageUrl(data.stagedImageUrl);
+                setStagedImageUrls(prev => [...prev, normalizedUrl]);
                 setStagedIds(prev => [...prev, data.stagedId]);
                 setSelectedImageIdx(0); // Always select the first image after new generation
                 if (typeof data.demoCount === "number") demoCountValue = data.demoCount;
@@ -172,6 +173,9 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             },
             onError: (err) => {
                 if (requestId !== requestIdRef.current) return;
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('elevate_pending_staging_recovery');
+                }
                 if (err.code === 'DEMO_LIMIT_REACHED') {
                     setError('Demo limit reached. Please sign up or purchase credits to continue.');
                     setLimitReached(true);
@@ -186,6 +190,9 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             onDone: () => {
                 if (requestId !== requestIdRef.current) return;
                 setLoading(false);
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('elevate_pending_staging_recovery');
+                }
                 done = true;
                 // Call success callback if provided (for credit refresh)
                 if (onSuccess) {
@@ -222,9 +229,10 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
             // Append the new restaged image and select it atomically
             setStagedImageUrls(prev => {
                 if (!restaged.stagedImageUrl) return prev;
+                const normalizedUrl = normalizeImageUrl(restaged.stagedImageUrl);
                 // Replace the selected image with the new restaged image
                 const updated = [...prev];
-                updated[props?.selectedImageIdx ?? 0] = restaged.stagedImageUrl;
+                updated[props?.selectedImageIdx ?? 0] = normalizedUrl;
                 setSelectedImageIdx(props?.selectedImageIdx ?? 0);
                 return updated;
             });
@@ -257,6 +265,91 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         }
     };
 
+    const handleStageMultipleImages = async (
+        files: File[],
+        roomType: RoomType | undefined,
+        exteriorType: RoomType | undefined,
+        stagingStyle: StagingStyle | undefined,
+        prompt: string,
+        areaType: "interior" | "exterior",
+        removeFurniture?: boolean,
+        teamId?: string,
+        onSuccess?: () => void,
+        projectId?: string
+    ) => {
+        if (!files || files.length === 0) return null;
+
+        setLoading(true);
+        setError(null);
+        setStagedImageUrls([]);
+        setStagedIds([]);
+        requestIdRef.current += 1;
+        const requestId = requestIdRef.current;
+
+        return new Promise<{ total: number; imageIds: string[]; creditsUsed?: number; creditScope?: "team" | "personal" } | null>((resolve) => {
+            stageMultipleImagesSSE({
+                files,
+                roomType: areaType === "interior" ? roomType : exteriorType,
+                stagingStyle,
+                prompt,
+                removeFurniture,
+                deviceId,
+                teamId,
+                projectId,
+                onAccepted: (data) => {
+                    if (requestId !== requestIdRef.current) return;
+                },
+                onImage: (data) => {
+                    if (requestId !== requestIdRef.current) return;
+
+                    const originalIndex = typeof data.originalIndex === "number" ? data.originalIndex : 0;
+                    const variationIndex = typeof data.variationIndex === "number" ? data.variationIndex : 0;
+                    const absoluteIndex = originalIndex * 5 + variationIndex;
+                    const normalizedUrl = normalizeImageUrl(data.stagedImageUrl);
+
+                    setStagedImageUrls((prev) => {
+                        const next = [...prev];
+                        next[absoluteIndex] = normalizedUrl;
+                        return next;
+                    });
+
+                    setStagedIds((prev) => {
+                        const next = [...prev];
+                        next[absoluteIndex] = data.stagedId;
+                        return next;
+                    });
+
+                    setSelectedImageIdx(0);
+                },
+                onError: (err) => {
+                    if (requestId !== requestIdRef.current) return;
+                    setError(err?.message || "Failed to start multi-image staging");
+                    setLoading(false);
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem('elevate_pending_staging_recovery');
+                    }
+                    resolve(null);
+                },
+                onDone: async (data) => {
+                    if (requestId !== requestIdRef.current) return;
+                    setLoading(false);
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem('elevate_pending_staging_recovery');
+                    }
+                    if (onSuccess) {
+                        await onSuccess();
+                    }
+                    resolve({
+                        total: files.length,
+                        imageIds: [],
+                        creditsUsed: files.length,
+                        creditScope: teamId ? "team" : "personal",
+                    });
+                },
+            });
+        });
+    };
+
 
     return {
         loading,
@@ -283,6 +376,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         setIsBlocked,
         setLimitReached,
         handleStageImage,
+        handleStageMultipleImages,
         handleRestageImage,
         selectedImageIdx,
         setSelectedImageIdx,

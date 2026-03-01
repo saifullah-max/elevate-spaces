@@ -10,6 +10,35 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 
+function getBackendBaseUrl(): string {
+  if (!API_BASE_URL) return "";
+  return API_BASE_URL.replace(/\/api\/?$/i, "");
+}
+
+export function normalizeImageUrl(rawUrl?: string | null): string {
+  if (!rawUrl) return "";
+  if (/^https?:\/\//i.test(rawUrl) || rawUrl.startsWith("data:") || rawUrl.startsWith("blob:")) {
+    return rawUrl;
+  }
+
+  const normalized = rawUrl.replace(/\\/g, "/");
+  const uploadsMatch = normalized.match(/(?:^|\/)(uploads\/.+)$/i);
+
+  if (uploadsMatch) {
+    const backendBase = getBackendBaseUrl();
+    if (!backendBase) return `/${uploadsMatch[1]}`;
+    return `${backendBase}/${uploadsMatch[1]}`;
+  }
+
+  if (normalized.startsWith("/")) {
+    const backendBase = getBackendBaseUrl();
+    if (!backendBase) return normalized;
+    return `${backendBase}${normalized}`;
+  }
+
+  return rawUrl;
+}
+
 // SSE streaming for image generation
 export function stageImageSSE({
   file,
@@ -279,11 +308,116 @@ export interface StageMultipleImagesParams {
   prompt?: string;
   roomType?: RoomType;
   stagingStyle?: StagingStyle;
+  removeFurniture?: boolean;
+  deviceId?: string;
+  teamId?: string;
+  projectId?: string;
 }
 
 export interface StageMultipleImagesResponse {
   total: number;
   imageIds: string[];
+  creditsUsed?: number;
+  creditScope?: "team" | "personal";
+}
+
+export function stageMultipleImagesSSE({
+  files,
+  prompt,
+  roomType = "living-room",
+  stagingStyle = "modern",
+  removeFurniture,
+  deviceId,
+  teamId,
+  projectId,
+  onAccepted,
+  onImage,
+  onError,
+  onDone,
+}: StageMultipleImagesParams & {
+  onAccepted?: (data: any) => void;
+  onImage: (data: any) => void;
+  onError?: (err: any) => void;
+  onDone?: (data?: any) => void;
+}) {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("files", file));
+  formData.append("roomType", roomType);
+  formData.append("stagingStyle", stagingStyle);
+  if (prompt) formData.append("prompt", prompt);
+  if (typeof removeFurniture !== "undefined") formData.append("removeFurniture", String(removeFurniture));
+  if (teamId) formData.append("teamId", teamId);
+  if (projectId) formData.append("projectId", projectId);
+
+  let token: string | null = null;
+  if (typeof window !== "undefined") {
+    const authRaw = localStorage.getItem("elevate_spaces_auth");
+    if (authRaw) {
+      try {
+        const auth = JSON.parse(authRaw);
+        token = auth.token || null;
+      } catch {}
+    }
+  }
+
+  fetch(`${API_BASE_URL}/images/multiple-generate?stream=1`, {
+    method: "POST",
+    headers: {
+      Accept: "text/event-stream",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(deviceId ? { "x-fingerprint": deviceId } : {}),
+    },
+    body: formData,
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json();
+        onError?.(errorData.error || { message: "Request failed" });
+        return;
+      }
+
+      if (!response.body) throw new Error("No response body for SSE");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let doneCalled = false;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        let eventIdx;
+
+        while ((eventIdx = buffer.indexOf("\n\n")) !== -1) {
+          const eventBlock = buffer.slice(0, eventIdx);
+          buffer = buffer.slice(eventIdx + 2);
+
+          const dataLine = eventBlock.split("\n").find((line) => line.startsWith("data: "));
+          if (!dataLine) continue;
+
+          const data = JSON.parse(dataLine.slice(6));
+          if (eventBlock.startsWith("event: accepted")) {
+            onAccepted?.(data);
+          } else if (eventBlock.startsWith("event: image")) {
+            onImage(data);
+          } else if (eventBlock.startsWith("event: error")) {
+            onError?.(data);
+          } else if (eventBlock.startsWith("event: done")) {
+            doneCalled = true;
+            onDone?.(data);
+          }
+        }
+      }
+
+      if (!doneCalled) {
+        onDone?.();
+      }
+    })
+    .catch((err) => {
+      onError?.(err);
+    });
 }
 
 export async function stageMultipleImages({
@@ -292,7 +426,10 @@ export async function stageMultipleImages({
   roomType = "living-room",
   stagingStyle = "modern",
   removeFurniture,
-}: StageMultipleImagesParams & { removeFurniture?: boolean }): Promise<StageMultipleImagesResponse> {
+  deviceId,
+  teamId,
+  projectId,
+}: StageMultipleImagesParams): Promise<StageMultipleImagesResponse> {
   if (!files || files.length === 0) {
     throw new ImageProcessingError(
       ImageErrorCode.NO_FILE_PROVIDED,
@@ -307,11 +444,30 @@ export async function stageMultipleImages({
     formData.append("stagingStyle", stagingStyle);
     if (prompt) formData.append("prompt", prompt);
     if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
+    if (teamId) formData.append("teamId", teamId);
+    if (projectId) formData.append("projectId", projectId);
+
+    let token: string | null = null;
+    if (typeof window !== 'undefined') {
+      const authRaw = localStorage.getItem('elevate_spaces_auth');
+      if (authRaw) {
+        try {
+          const auth = JSON.parse(authRaw);
+          token = auth.token || null;
+        } catch {}
+      }
+    }
 
     const response = await axios.post(
       `${API_BASE_URL}/images/multiple-generate`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(deviceId ? { 'x-fingerprint': deviceId } : {}),
+        },
+      }
     );
 
     if (response.data?.success) return response.data.data;
@@ -328,17 +484,26 @@ export async function stageMultipleImages({
 }
 
 export interface UploadFile {
+  id?: string;
   filename: string;
   url: string;
-  type: "original" | "staged";
+  type?: "original" | "staged";
   createdAt: string;
-  size: number;
+  size?: number;
+  status?: string;
 }
 
 export interface PairedUpload {
+  groupId?: string;
   original: UploadFile;
   staged: UploadFile | null;
+  stagedVariants?: UploadFile[];
   createdAt: string;
+  statusSummary?: {
+    processing: number;
+    completed: number;
+    failed: number;
+  };
 }
 
 export interface RecentUploadsResponse {
