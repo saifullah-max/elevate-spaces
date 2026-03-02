@@ -18,6 +18,8 @@ export interface StoredAuthData {
  * Save auth data to localStorage
  */
 export const saveAuthToStorage = (user: User, token: string): void => {
+  if (typeof window === "undefined") return;
+  
   try {
     const authData: StoredAuthData = {
       user,
@@ -34,6 +36,8 @@ export const saveAuthToStorage = (user: User, token: string): void => {
  * Retrieve auth data from localStorage
  */
 export const getAuthFromStorage = (): StoredAuthData | null => {
+  if (typeof window === "undefined") return null;
+  
   try {
     const stored = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!stored) return null;
@@ -50,6 +54,8 @@ export const getAuthFromStorage = (): StoredAuthData | null => {
  * Clear auth data from localStorage
  */
 export const clearAuthFromStorage = (): void => {
+  if (typeof window === "undefined") return;
+  
   try {
     localStorage.removeItem(AUTH_STORAGE_KEY);
     localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -64,6 +70,8 @@ export const clearAuthFromStorage = (): void => {
  * Check if stored auth is still valid (optional: add expiry check)
  */
 export const isStoredAuthValid = (): boolean => {
+  if (typeof window === "undefined") return false;
+  
   const authData = getAuthFromStorage();
   if (!authData) return false;
 
