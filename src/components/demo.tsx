@@ -31,6 +31,7 @@ import { TeamCreditsSelector } from "./TeamCreditsSelector";
 import { CreditBalance } from "./CreditBalance";
 import { ProjectSelectorModal } from "./ProjectSelectorModal";
 import { SignUpBonusModal } from "./SignUpBonusModal";
+import { CustomStylingModal } from "./CustomStylingModal";
 import { getRecentUploads, normalizeImageUrl } from "@/services/image.service";
 import Image from "next/image";
 
@@ -61,11 +62,21 @@ export default function Demo() {
   const [showRemoveFurnitureInfo, setShowRemoveFurnitureInfo] = useState(false);
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState<number>(0);
+  const [isBatchProcessing, setIsBatchProcessing] = useState(false); // Track overall batch status
+
+  // Multi-image custom styling state
+  const [useCustomStyling, setUseCustomStyling] = useState(false);
+  const [showCustomStylingModal, setShowCustomStylingModal] = useState(false);
+  const [perImageSettings, setPerImageSettings] = useState<Array<{roomType: RoomType | undefined; stagingStyle: StagingStyle | undefined}>>([])
 
   // Team selection state - persist to localStorage
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
   const [refreshTeamCredits, setRefreshTeamCredits] = useState<(() => Promise<void>) | null>(null);
+  
+  // Credit source selection
+  const [creditSource, setCreditSource] = useState<'personal' | 'team'>('personal');
+  const [personalBalance, setPersonalBalance] = useState<number>(0);
 
   // Confirmation modal state
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -77,6 +88,7 @@ export default function Demo() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectName, setSelectedProjectName] = useState<string | null>(null);
   const [defaultProject, setDefaultProject] = useState<{ projectId: string, projectName: string } | null>(null);
+  const [nowTs, setNowTs] = useState<number>(Date.now());
   // Ref to image area
   const imageAreaRef = useRef<HTMLDivElement | null>(null);
   const leftPanelRef = useRef<HTMLDivElement | null>(null);
@@ -109,6 +121,7 @@ export default function Demo() {
     handleStageImage,
     handleStageMultipleImages,
     handleRestageImage,
+    multiProgress,
   } = useDemoApi({ selectedImageIdx, setSelectedImageIdx });
 
   const imagesToStageCount = selectedFiles.length > 0 ? selectedFiles.length : (file ? 1 : 0);
@@ -118,6 +131,31 @@ export default function Demo() {
   const currentStagedImageUrl = normalizeImageUrl(
     stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * 5 + selectedImageIdx : selectedImageIdx]
   );
+  const maxMultiImages = 15;
+
+  const elapsedSeconds = multiProgress.startedAt
+    ? Math.floor((nowTs - multiProgress.startedAt) / 1000)
+    : 0;
+  const progressPct = multiProgress.expectedTotalVariants > 0
+    ? Math.min(100, Math.round((multiProgress.completedVariants / multiProgress.expectedTotalVariants) * 100))
+    : 0;
+  const estimatedRemainingSeconds = multiProgress.estimatedSeconds > 0
+    ? Math.max(0, multiProgress.estimatedSeconds - elapsedSeconds + 30)
+    : 0;
+
+  const visiblePhotoStart = Math.max(
+    0,
+    Math.min(totalStagedPhotos - 5, selectedPhotoIdx - 2)
+  );
+  const visiblePhotoIndices = Array.from({ length: Math.max(0, Math.min(5, totalStagedPhotos)) }).map(
+    (_, idx) => visiblePhotoStart + idx
+  );
+
+  useEffect(() => {
+    if (!multiProgress.active && !isBatchProcessing) return;
+    const timer = window.setInterval(() => setNowTs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [multiProgress.active, isBatchProcessing]);
 
   const shouldShowDemoNotice = authChecked && demoSessionReady && demoCreditsRemaining > 0 && (!isLoggedIn || isDemo || hasPurchasedCredits);
 
@@ -264,6 +302,7 @@ export default function Demo() {
       const savedTeamId = localStorage.getItem('elevate_selected_team_id');
       if (savedTeamId && savedTeamId !== 'null') {
         setSelectedTeamId(savedTeamId);
+        setCreditSource('team'); // Set credit source to team if a team was previously selected
       }
 
       // Load confirmation preference
@@ -276,9 +315,31 @@ export default function Demo() {
     }
   }, []);
 
+  // Initialize per-image settings when files are selected
+  useEffect(() => {
+    if (selectedFiles.length > 1) {
+      // Initialize with default room type and styling for each image
+      const defaultRoomType = areaType === "interior" ? roomType : exteriorType;
+      const defaultStagingStyle = areaType === "interior" ? selectedStagingStyle : undefined;
+      setPerImageSettings(
+        selectedFiles.map(() => ({
+          roomType: defaultRoomType,
+          stagingStyle: defaultStagingStyle,
+        }))
+      );
+      // Reset custom styling flag when new files are selected
+      setUseCustomStyling(false);
+    }
+  }, [selectedFiles, roomType, exteriorType, selectedStagingStyle, areaType]);
+
   const handleTeamSelect = (teamId: string | null, remaining: number) => {
     setSelectedTeamId(teamId);
     setRemainingCredits(remaining);
+    
+    // If a team is selected, automatically switch to team credit source
+    if (teamId) {
+      setCreditSource('team');
+    }
 
     // Persist selected team to localStorage
     if (typeof window !== 'undefined') {
@@ -289,12 +350,29 @@ export default function Demo() {
       }
     }
   };
+  
+  const handleCreditSourceChange = (source: 'personal' | 'team') => {
+    setCreditSource(source);
+    // If switching to personal, clear team selection
+    if (source === 'personal') {
+      setSelectedTeamId(null);
+      setRemainingCredits(0);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('elevate_selected_team_id');
+      }
+    }
+  };
 
   const handleRefreshReady = (refreshFn: () => Promise<void>) => {
     setRefreshTeamCredits(() => refreshFn);
   };
 
   const runGenerate = useCallback(async (projectId?: string) => {
+    if (imagesToStageCount > maxMultiImages) {
+      setError(`You can stage up to ${maxMultiImages} images at once. Please remove ${imagesToStageCount - maxMultiImages} image(s).`);
+      return;
+    }
+
     if (typeof window !== 'undefined') {
       localStorage.setItem('elevate_pending_staging_recovery', JSON.stringify({ startedAt: Date.now() }));
     }
@@ -310,28 +388,97 @@ export default function Demo() {
         return;
       }
 
-      const response = await handleStageMultipleImages(
-        selectedFiles,
-        roomType,
-        areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
-        areaType === 'exterior' ? undefined : selectedStagingStyle,
-        finalPrompt,
-        areaType,
-        removeFurniture,
-        (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
-        async () => {
-          if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
-            await refreshTeamCredits();
-          }
-        },
-        projectId
-      );
+      const shouldSplitIntoTwoBatches = selectedFiles.length > 10;
 
-      if (response) {
-        const creditsUsed = response.creditsUsed ?? imagesToStageCount;
-        showInfo(`Started staging ${imagesToStageCount} images. ${creditsUsed} credits will be used.`);
+      if (!shouldSplitIntoTwoBatches) {
+        const response = await handleStageMultipleImages(
+          selectedFiles,
+          roomType,
+          areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+          areaType === 'exterior' ? undefined : selectedStagingStyle,
+          finalPrompt,
+          areaType,
+          removeFurniture,
+          (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+          async () => {
+            if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+              await refreshTeamCredits();
+            }
+          },
+          projectId,
+          useCustomStyling ? perImageSettings.map(s => s.roomType) : undefined,
+          useCustomStyling ? perImageSettings.map(s => s.stagingStyle) : undefined
+        );
+
+        if (response) {
+          const creditsUsed = response.creditsUsed ?? selectedFiles.length;
+          showInfo(`Started staging ${selectedFiles.length} images. ${creditsUsed} credits will be used.`);
+        }
+        setSelectedPhotoIdx(0);
+        return;
       }
-      setSelectedPhotoIdx(0);
+
+      setIsBatchProcessing(true);
+      try {
+        const BATCH_SIZE = Math.ceil(selectedFiles.length / 2);
+        const batch1 = selectedFiles.slice(0, BATCH_SIZE);
+        const batch2 = selectedFiles.slice(BATCH_SIZE);
+
+        showInfo(`Processing ${selectedFiles.length} images in batches. Batch 1: ${batch1.length} images`);
+
+        const response1 = await handleStageMultipleImages(
+          batch1,
+          roomType,
+          areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+          areaType === 'exterior' ? undefined : selectedStagingStyle,
+          finalPrompt,
+          areaType,
+          removeFurniture,
+          (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+          async () => {
+            if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+              await refreshTeamCredits();
+            }
+          },
+          projectId,
+          useCustomStyling ? perImageSettings.slice(0, BATCH_SIZE).map(s => s.roomType) : undefined,
+          useCustomStyling ? perImageSettings.slice(0, BATCH_SIZE).map(s => s.stagingStyle) : undefined
+        );
+
+        if (batch2.length > 0) {
+          showInfo(`Batch 1 complete. Starting Batch 2: ${batch2.length} images`);
+
+          const response2 = await handleStageMultipleImages(
+            batch2,
+            roomType,
+            areaType === "exterior" ? (exteriorType || "outdoor") : exteriorType,
+            areaType === 'exterior' ? undefined : selectedStagingStyle,
+            finalPrompt,
+            areaType,
+            removeFurniture,
+            (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
+            async () => {
+              if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
+                await refreshTeamCredits();
+              }
+            },
+            projectId,
+            useCustomStyling ? perImageSettings.slice(BATCH_SIZE).map(s => s.roomType) : undefined,
+            useCustomStyling ? perImageSettings.slice(BATCH_SIZE).map(s => s.stagingStyle) : undefined
+          );
+
+          if (response2) {
+            showInfo(`All batches completed. Total credits used: ${(response1?.creditsUsed || batch1.length) + (response2.creditsUsed || batch2.length)}`);
+          }
+        } else if (response1) {
+          const creditsUsed = response1.creditsUsed ?? batch1.length;
+          showInfo(`Batch complete. ${creditsUsed} credits used.`);
+        }
+
+        setSelectedPhotoIdx(0);
+      } finally {
+        setIsBatchProcessing(false);
+      }
       return;
     }
 
@@ -355,6 +502,7 @@ export default function Demo() {
     prompt,
     areaType,
     imagesToStageCount,
+    maxMultiImages,
     isLoggedIn,
     handleStageMultipleImages,
     selectedFiles,
@@ -614,7 +762,7 @@ export default function Demo() {
           <div className="bg-slate-900 p-4 text-white flex justify-between items-center px-6">
             <span className="font-bold flex items-center gap-2">
               <Monitor className="w-4 h-4" />
-              <span id="workspace-title">Instant AI Staging Demo</span>
+              <span id="workspace-title">Instant AI Staging</span>
             </span>
             {shouldShowDemoNotice && (
               <span className="text-xs font-mono text-indigo-200 ml-auto">
@@ -668,53 +816,106 @@ export default function Demo() {
                 </div>
                 <span className="text-xs text-slate-500 mb-1">JPG/PNG, single or multiple images</span>
                 <UploadArea limitReached={limitReached} setFile={setFile} setFiles={setSelectedFiles} setStagedImageUrls={setStagedImageUrls} setError={setError} />
+                {imagesToStageCount > maxMultiImages && (
+                  <p className="text-xs text-red-600 font-semibold">Maximum {maxMultiImages} images allowed per batch.</p>
+                )}
               </div>
 
-              {/* Team Credits Selector - Only show for logged-in users */}
+              {/* Credits & Project */}
               {isLoggedIn && (
-                <details className="bg-white rounded-xl shadow border border-slate-100 p-3">
+                <details open className="bg-white rounded-xl shadow border border-slate-100 p-3">
                   <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
-                    <FolderOpen className="w-4 h-4 text-indigo-500" />
-                    <span>Account & Team</span>
+                    <Sparkles className="w-4 h-4 text-indigo-500" />
+                    <span>Credits & Project</span>
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
                   </summary>
                   <div className="mt-3 flex flex-col gap-3">
-                    <div className="flex flex-col gap-1">
-                      <CreditBalance />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <TeamCreditsSelector
-                        onTeamSelect={handleTeamSelect}
-                        selectedTeamId={selectedTeamId}
-                        disabled={loading || restageLoading}
-                        onRefreshReady={handleRefreshReady}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-slate-700">Default Project</span>
+                    {/* Credit Source Selection */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold text-slate-600 mb-1">Credit Source</label>
+                      
+                      {/* Personal Credits Radio */}
+                      <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${
+                        creditSource === 'personal' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="creditSource"
+                            value="personal"
+                            checked={creditSource === 'personal'}
+                            onChange={() => handleCreditSourceChange('personal')}
+                            className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm font-medium text-slate-700">Personal Credits</span>
+                        </div>
+                        <span className="text-sm font-bold text-indigo-600">{personalBalance}</span>
+                      </label>
+                      
+                      {/* Team Credits Radio */}
+                      <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${
+                        creditSource === 'team' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="creditSource"
+                            value="team"
+                            checked={creditSource === 'team'}
+                            onChange={() => handleCreditSourceChange('team')}
+                            className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm font-medium text-slate-700">Team Credits</span>
+                        </div>
+                      </label>
+                      
+                      {/* Team Selector - Only show when team is selected */}
+                      {creditSource === 'team' && (
+                        <div className="pl-6 pt-1">
+                          <TeamCreditsSelector
+                            onTeamSelect={handleTeamSelect}
+                            selectedTeamId={selectedTeamId}
+                            disabled={loading || restageLoading}
+                            onRefreshReady={handleRefreshReady}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Hidden CreditBalance to track personal balance */}
+                      <div className="hidden">
+                        <CreditBalance onBalanceChange={setPersonalBalance} />
                       </div>
-                      {defaultProject ? (
-                        <div className="flex items-center justify-between p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-indigo-900">{defaultProject.projectName}</p>
-                            <p className="text-xs text-indigo-600">Images auto-link here</p>
-                          </div>
+                    </div>
+                    
+                    {/* Default Project Section */}
+                    <div className="pt-2 border-t border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-slate-600">Default Project</span>
+                        {defaultProject && (
                           <button
                             onClick={() => {
                               const defaultKey = selectedTeamId ? `default_project_team_${selectedTeamId}` : 'default_project_personal';
                               localStorage.removeItem(defaultKey);
                               setDefaultProject(null);
                             }}
-                            className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded transition"
+                            className="p-1 text-red-500 hover:bg-red-50 rounded transition"
                             title="Remove default"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
+                        )}
+                      </div>
+                      {defaultProject ? (
+                        <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-300 rounded-lg">
+                          <FolderOpen className="w-4 h-4 text-green-600" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-green-900 truncate">{defaultProject.projectName}</p>
+                            <p className="text-xs text-green-600">Auto-linked ✓</p>
+                          </div>
                         </div>
                       ) : (
-                        <div className="p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                          <p className="text-xs text-slate-600">No default project set. You'll be prompted on each generation.</p>
+                        <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-lg">
+                          <p className="text-xs text-amber-700">Choose a project on each generation</p>
                         </div>
                       )}
                     </div>
@@ -779,6 +980,32 @@ export default function Demo() {
                   />
                 </div>
               </details>
+
+              {/* Custom Styling for Multi-Image */}
+              {isMultiImageMode && (
+                <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useCustomStyling}
+                      onChange={(e) => setUseCustomStyling(e.target.checked)}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span className="text-xs font-semibold text-slate-700">
+                      Customize styling for each image
+                    </span>
+                  </label>
+                  {useCustomStyling && (
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomStylingModal(true)}
+                      className="w-full px-3 py-2 text-xs font-semibold text-indigo-600 border border-indigo-300 rounded-lg hover:bg-indigo-50 transition-all"
+                    >
+                      View All & Customize
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Prompt & Action with mode toggle */}
               <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
@@ -910,6 +1137,7 @@ export default function Demo() {
                   disabled={
                     loading ||
                     imagesToStageCount === 0 ||
+                    imagesToStageCount > maxMultiImages ||
                     // (!removeFurniture && areaType === "interior" && !roomType) ||
                     // (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||
                     (mode === 'restage' && (!stagedImageUrls.length && areaType !== 'exterior' && !prompt))
@@ -917,6 +1145,32 @@ export default function Demo() {
                 >
                   {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : `Generate & Use ${creditsToUseCount || 1} Credit${(creditsToUseCount || 1) > 1 ? 's' : ''}`)}
                 </Button>
+
+                {(multiProgress.active || isBatchProcessing) && imagesToStageCount > 1 && (
+                  <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
+                    <p className="text-xs font-semibold text-indigo-800">
+                      Processing {multiProgress.totalImages} images ({multiProgress.completedVariants}/{multiProgress.expectedTotalVariants} variants {isBatchProcessing && !multiProgress.active ? '- preparing next batch...' : ''})
+                    </p>
+                    <div className="w-full h-2 bg-indigo-100 rounded-full overflow-hidden mt-2">
+                      <div
+                        className="h-2 bg-indigo-600 transition-all duration-300"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-indigo-700 mt-2">
+                      Estimated remaining time: {estimatedRemainingSeconds}s (elapsed {elapsedSeconds}s)
+                    </p>
+                    <p className="text-[11px] text-indigo-700 mt-1">
+                      Please keep this page open while staging runs. Closing the page may impact overall processing performance.
+                    </p>
+                  </div>
+                )}
+
+                {!multiProgress.active && multiProgress.failedOrMissing > 0 && (
+                  <p className="text-xs text-amber-700 mt-2">
+                    {multiProgress.failedOrMissing} variant(s) failed in this batch. You can re-run staging for those photos.
+                  </p>
+                )}
 
                 {error && (
                   <div className="mt-2">
@@ -1201,13 +1455,16 @@ export default function Demo() {
               </button>
               {/* Photo thumbnails */}
               <div className="flex gap-1">
-                {Array.from({ length: totalStagedPhotos }).map((_, photoIdx) => {
+                {visiblePhotoIndices.map((photoIdx) => {
                   const photoStartIdx = photoIdx * 5;
                   const photoUrls = stagedImageUrls.slice(photoStartIdx, photoStartIdx + 5);
                   return (
                     <button
                       key={photoIdx}
-                      onClick={() => setSelectedPhotoIdx(photoIdx)}
+                      onClick={() => {
+                        setSelectedPhotoIdx(photoIdx);
+                        setSelectedImageIdx(0);
+                      }}
                       className={`w-12 h-12 rounded border-2 transition overflow-hidden ${
                         selectedPhotoIdx === photoIdx
                           ? 'border-indigo-600 shadow-lg'
@@ -1303,6 +1560,17 @@ export default function Demo() {
       <SignUpBonusModal
         open={showBonusModal}
         onOpenChange={setShowBonusModal}
+      />
+
+      {/* Custom Styling Modal for Multi-Image */}
+      <CustomStylingModal
+        isOpen={showCustomStylingModal}
+        onClose={() => setShowCustomStylingModal(false)}
+        selectedFiles={selectedFiles}
+        perImageSettings={perImageSettings}
+        setPerImageSettings={setPerImageSettings}
+        areaType={areaType}
+        onApply={() => setShowCustomStylingModal(false)}
       />
 
     </>

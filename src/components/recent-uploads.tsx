@@ -3,26 +3,55 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { getRecentUploads, PairedUpload } from "@/services/image.service";
 import { Download, X } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function RecentUploads() {
+  const PAGE_SIZE = 8;
   const [uploads, setUploads] = useState<PairedUpload[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<PairedUpload | null>(null);
   const [view, setView] = useState<"staged" | "original">("staged");
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(uploads.length / PAGE_SIZE));
+  const clampedCurrentPage = Math.min(currentPage, totalPages);
+  const startIdx = (clampedCurrentPage - 1) * PAGE_SIZE;
+  const pagedUploads = uploads.slice(startIdx, startIdx + PAGE_SIZE);
+
+  const fetchUploads = async () => {
+    try {
+      const data = await getRecentUploads(50);
+      setUploads(data.uploads);
+      setCurrentPage(1);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to load uploads");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await getRecentUploads(8);
-        setUploads(data.uploads);
-      } catch (err: any) {
-        setError(err.message || "Failed to load uploads");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchUploads();
+
+    const onRefreshRequested = () => {
+      fetchUploads();
+    };
+
+    window.addEventListener("elevate:recent-uploads-refresh", onRefreshRequested);
+    return () => {
+      window.removeEventListener("elevate:recent-uploads-refresh", onRefreshRequested);
+    };
   }, []);
 
   const handleDownload = async (url: string, filename: string) => {
@@ -55,47 +84,109 @@ export default function RecentUploads() {
       {error && <div className="text-red-600">{error}</div>}
 
       {!loading && uploads.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {uploads.map((pair, idx) => (
-            <div
-              key={idx}
-              onClick={() => {
-                setSelected(pair);
-                setSelectedVariantIdx(0);
-                setView(pair.staged ? "staged" : "original");
-              }}
-              className="
-                bg-white rounded-xl border border-slate-200 cursor-pointer
-                hover:shadow-lg hover:-translate-y-1 transition
-              "
-            >
-              {/* Image */}
-              <div className="aspect-4/3 md:aspect-video bg-slate-100 overflow-hidden rounded-t-xl">
-                <Image
-                  src={pair.original.url}
-                  alt={pair.original.filename}
-                  width={400}
-                  height={300}
-                  unoptimized
-                  className="w-full h-full object-cover"
-                />
-              </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {pagedUploads.map((pair, idx) => (
+              <div
+                key={`${pair.groupId || pair.original.url}-${idx}`}
+                onClick={() => {
+                  setSelected(pair);
+                  setSelectedVariantIdx(0);
+                  setView(pair.staged ? "staged" : "original");
+                }}
+                className="
+                  bg-white rounded-xl border border-slate-200 cursor-pointer
+                  hover:shadow-lg hover:-translate-y-1 transition
+                "
+              >
+                <div className="aspect-4/3 md:aspect-video bg-slate-100 overflow-hidden rounded-t-xl">
+                  <Image
+                    src={pair.original.url}
+                    alt={pair.original.filename}
+                    width={400}
+                    height={300}
+                    unoptimized
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
-              {/* Meta */}
-              <div className="p-3 text-xs text-slate-600">
-                <p className="font-semibold truncate">
-                  {pair.original.filename}
-                </p>
-                <p>{new Date(pair.createdAt).toLocaleString()}</p>
-                {(pair.staged || (pair.stagedVariants && pair.stagedVariants.length > 0)) && (
-                  <span className="text-emerald-600 font-semibold md:font-bold">
-                    {(pair.stagedVariants?.length || 1)} staged versions
-                  </span>
-                )}
+                <div className="p-3 text-xs text-slate-600">
+                  <p className="font-semibold truncate">
+                    {pair.original.filename}
+                  </p>
+                  <p>{new Date(pair.createdAt).toLocaleString()}</p>
+                  {(pair.staged || (pair.stagedVariants && pair.stagedVariants.length > 0)) && (
+                    <span className="text-emerald-600 font-semibold md:font-bold">
+                      {(pair.stagedVariants?.length || 1)} staged versions
+                    </span>
+                  )}
+                </div>
               </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage((prev) => Math.max(1, prev - 1));
+                      }}
+                      className={clampedCurrentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+
+                  {Array.from({ length: totalPages }).map((_, idx) => {
+                    const page = idx + 1;
+                    const isNearCurrent = Math.abs(page - clampedCurrentPage) <= 1;
+                    const isEdge = page === 1 || page === totalPages;
+
+                    if (!isNearCurrent && !isEdge) {
+                      if (page === clampedCurrentPage - 2 || page === clampedCurrentPage + 2) {
+                        return (
+                          <PaginationItem key={`ellipsis-${page}`}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        );
+                      }
+                      return null;
+                    }
+
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          isActive={page === clampedCurrentPage}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+                      }}
+                      className={clampedCurrentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* MODAL */}

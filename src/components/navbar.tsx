@@ -13,7 +13,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getAuthFromStorage, clearAuthFromStorage } from "@/lib/auth.storage";
 import type { User as UserType } from "@/store/slices/authSlice";
 
@@ -29,6 +29,12 @@ export default function Navbar() {
   const [user, setUser] = useState<UserData | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Don't render navbar on admin pages
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   useEffect(() => {
     // Function to load user from localStorage

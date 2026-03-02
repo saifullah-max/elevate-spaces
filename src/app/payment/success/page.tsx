@@ -209,13 +209,13 @@ function PaymentSuccessHandler() {
             {/* Actions */}
             <div className="space-y-3 pt-4 border-t border-slate-200">
               <Link
-                href="/teams"
+                href="/"
                 className="w-full block text-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
               >
                 Go to Dashboard
               </Link>
               <Link
-                href="/test"
+                href="/"
                 className="w-full block text-center px-6 py-3 bg-slate-100 text-slate-900 font-semibold rounded-lg hover:bg-slate-200 transition-colors"
               >
                 Continue Shopping

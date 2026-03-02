@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { showInfo } from './toastUtils';
 import { toast } from 'react-toastify';
 import { Check, X, Building, Camera, Users, Zap, Home } from 'lucide-react';
-import { createCheckoutSession } from '@/services/payment.service';
+import { createCheckoutSession, getUserCredits } from '@/services/payment.service';
 import { getTeams } from '@/services/teams.service';
 
 const PricingPage = () => {
@@ -17,6 +17,8 @@ const PricingPage = () => {
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [planChangePending, setPlanChangePending] = useState<null | { productKey: string; qty?: number }>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [showSubscriptionTip, setShowSubscriptionTip] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,7 +46,21 @@ const PricingPage = () => {
       }
     };
 
+    const checkSubscriptionStatus = async () => {
+      try {
+        const credits = await getUserCredits();
+        // Check if user has recent subscription purchases
+        const hasRecentSubscription = credits.recentPurchases?.some(
+          (purchase) => purchase.packageName && purchase.packageName.toLowerCase().includes('subscription') && purchase.status === 'completed'
+        );
+        setHasActiveSubscription(hasRecentSubscription || false);
+      } catch (error) {
+        console.error('Failed to check subscription status:', error);
+      }
+    };
+
     loadOwnedTeams();
+    checkSubscriptionStatus();
 
     return () => {
       isMounted = false;
@@ -123,7 +139,7 @@ const PricingPage = () => {
 
   const isTeamCheckoutDisabled = purchaseFor === 'team' && !teamId.trim();
   return (
-    <div className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 font-sans">
+    <div id='#pricing' className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-350uto">
 
         {/* Header */}
@@ -506,35 +522,54 @@ const PricingPage = () => {
               </div>
             </div>
 
-            {/* Pay Per Image */}
-            <div className="flex items-center space-x-4 bg-white px-6 py-4 rounded-xl border border-slate-200 shadow-sm">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Zap className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-900">Pay Per Image</h4>
-                <p className="text-sm text-slate-600">
-                  Flexible usage starting from <span className="font-semibold text-blue-600">$1.50</span> / image
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={1}
-                    max={1000}
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
-                    className="w-20 px-2 py-1 text-xs border border-slate-200 rounded-lg"
-                  />
-                  <button
-                    onClick={() => startCheckout('pay_per_image', quantity)}
-                    disabled={isTeamCheckoutDisabled || loadingKey === 'pay_per_image'}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {loadingKey === 'pay_per_image' ? 'Processing...' : 'Pay Per Image'}
-                  </button>
+            {/* Pay Per Image - Conditional Display */}
+            {!hasActiveSubscription && (
+              <div className="flex items-center space-x-4 bg-white px-6 py-4 rounded-xl border border-slate-200 shadow-sm relative">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Zap className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900">Pay Per Image</h4>
+                    <button 
+                      onClick={() => setShowSubscriptionTip(!showSubscriptionTip)}
+                      className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition font-semibold"
+                    >
+                      💡 Save More
+                    </button>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    Flexible usage starting from <span className="font-semibold text-blue-600">$1.50</span> / image
+                  </p>
+                  {showSubscriptionTip && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-900 font-semibold mb-1">💰 Better Value with Subscription!</p>
+                      <p className="text-xs text-green-800">
+                        Subscribe for one month and get a lower price per image. Cancel anytime - no commitment required.
+                      </p>
+                      <p className="text-xs text-green-700 mt-2 font-semibold">Example: 100 credits/month = $0.50/image (Save 67%!)</p>
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+                      className="w-20 px-2 py-1 text-xs border border-slate-200 rounded-lg"
+                    />
+                    <button
+                      onClick={() => startCheckout('pay_per_image', quantity)}
+                      disabled={isTeamCheckoutDisabled || loadingKey === 'pay_per_image'}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {loadingKey === 'pay_per_image' ? 'Processing...' : 'Pay Per Image'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
 

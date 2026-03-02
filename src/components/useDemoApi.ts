@@ -53,6 +53,16 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
     const [hasPurchasedCredits, setHasPurchasedCredits] = useState<boolean>(false);
     const [demoCreditsRemaining, setDemoCreditsRemaining] = useState<number>(10);
     const [demoSessionReady, setDemoSessionReady] = useState<boolean>(false);
+    const [multiProgress, setMultiProgress] = useState({
+        active: false,
+        totalImages: 0,
+        expectedTotalVariants: 0,
+        completedVariants: 0,
+        estimatedSeconds: 0,
+        startedAt: 0,
+        failedOrMissing: 0,
+    });
+    const streamedIdsRef = useRef<Set<string>>(new Set());
 
     // Initialize guest session on mount
     useEffect(() => {
@@ -275,7 +285,9 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         removeFurniture?: boolean,
         teamId?: string,
         onSuccess?: () => void,
-        projectId?: string
+        projectId?: string,
+        perImageRoomTypes?: (RoomType | undefined)[],
+        perImageStagingStyles?: (StagingStyle | undefined)[]
     ) => {
         if (!files || files.length === 0) return null;
 
@@ -283,6 +295,16 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         setError(null);
         setStagedImageUrls([]);
         setStagedIds([]);
+        streamedIdsRef.current.clear();
+        setMultiProgress({
+            active: true,
+            totalImages: files.length,
+            expectedTotalVariants: files.length * 5,
+            completedVariants: 0,
+            estimatedSeconds: 0,
+            startedAt: Date.now(),
+            failedOrMissing: 0,
+        });
         requestIdRef.current += 1;
         const requestId = requestIdRef.current;
 
@@ -291,6 +313,8 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                 files,
                 roomType: areaType === "interior" ? roomType : exteriorType,
                 stagingStyle,
+                roomTypes: perImageRoomTypes ? perImageRoomTypes.map(rt => areaType === "interior" ? rt : undefined) : undefined,
+                stagingStyles: perImageStagingStyles,
                 prompt,
                 removeFurniture,
                 deviceId,
@@ -298,6 +322,14 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                 projectId,
                 onAccepted: (data) => {
                     if (requestId !== requestIdRef.current) return;
+                    setMultiProgress((prev) => ({
+                        ...prev,
+                        active: true,
+                        totalImages: typeof data.totalImages === "number" ? data.totalImages : prev.totalImages,
+                        expectedTotalVariants: typeof data.expectedTotalVariants === "number" ? data.expectedTotalVariants : prev.expectedTotalVariants,
+                        estimatedSeconds: typeof data.estimatedSeconds === "number" ? data.estimatedSeconds : prev.estimatedSeconds,
+                        startedAt: prev.startedAt || Date.now(),
+                    }));
                 },
                 onImage: (data) => {
                     if (requestId !== requestIdRef.current) return;
@@ -319,12 +351,21 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                         return next;
                     });
 
+                    if (data.imageId && !streamedIdsRef.current.has(data.imageId)) {
+                        streamedIdsRef.current.add(data.imageId);
+                        setMultiProgress((prev) => ({
+                            ...prev,
+                            completedVariants: prev.completedVariants + 1,
+                        }));
+                    }
+
                     setSelectedImageIdx(0);
                 },
                 onError: (err) => {
                     if (requestId !== requestIdRef.current) return;
                     setError(err?.message || "Failed to start multi-image staging");
                     setLoading(false);
+                    setMultiProgress((prev) => ({ ...prev, active: false }));
                     if (typeof window !== 'undefined') {
                         localStorage.removeItem('elevate_pending_staging_recovery');
                     }
@@ -333,8 +374,23 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
                 onDone: async (data) => {
                     if (requestId !== requestIdRef.current) return;
                     setLoading(false);
+                    setMultiProgress((prev) => ({
+                        ...prev,
+                        active: false,
+                        completedVariants: typeof data?.totalStreamed === "number" ? data.totalStreamed : prev.completedVariants,
+                        expectedTotalVariants: typeof data?.expectedTotalVariants === "number" ? data.expectedTotalVariants : prev.expectedTotalVariants,
+                        failedOrMissing: typeof data?.failedOrMissing === "number" ? data.failedOrMissing : prev.failedOrMissing,
+                    }));
                     if (typeof window !== 'undefined') {
                         localStorage.removeItem('elevate_pending_staging_recovery');
+                        window.dispatchEvent(
+                            new CustomEvent('elevate:recent-uploads-refresh', {
+                                detail: {
+                                    source: 'multi-stage',
+                                    total: files.length,
+                                },
+                            })
+                        );
                     }
                     if (onSuccess) {
                         await onSuccess();
@@ -378,6 +434,7 @@ export function useDemoApi(props?: { selectedImageIdx: number, setSelectedImageI
         handleStageImage,
         handleStageMultipleImages,
         handleRestageImage,
+        multiProgress,
         selectedImageIdx,
         setSelectedImageIdx,
     };

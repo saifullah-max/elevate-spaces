@@ -52,14 +52,6 @@ export function TeamCreditsSelector({
               setTeams(parsedTeams);
               setLoading(false);
               setError(null);
-              
-              // Update remaining credits for currently selected team if any
-              if (selectedTeamId) {
-                const updatedTeam = parsedTeams.find((t: Team) => t.id === selectedTeamId);
-                if (updatedTeam) {
-                  onTeamSelect(updatedTeam.id, updatedTeam.remaining);
-                }
-              }
               return; // Use cache, don't fetch
             } catch (e) {
               console.error('Failed to parse cached teams:', e);
@@ -101,14 +93,6 @@ export function TeamCreditsSelector({
           localStorage.setItem(TEAMS_CACHE_KEY, JSON.stringify(teamsData));
           localStorage.setItem(TEAMS_CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION_MS).toString());
         }
-        
-        // Update remaining credits for currently selected team if any
-        if (selectedTeamId) {
-          const updatedTeam = teamsData.find((t: Team) => t.id === selectedTeamId);
-          if (updatedTeam) {
-            onTeamSelect(updatedTeam.id, updatedTeam.remaining);
-          }
-        }
       }
     } catch (err: any) {
       console.error("Failed to fetch teams:", err);
@@ -117,7 +101,7 @@ export function TeamCreditsSelector({
       setLoading(false);
       setIsFetching(false);
     }
-  }, [selectedTeamId, onTeamSelect]);
+  }, []);
 
   useEffect(() => {
     fetchTeams();

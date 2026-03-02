@@ -308,6 +308,8 @@ export interface StageMultipleImagesParams {
   prompt?: string;
   roomType?: RoomType;
   stagingStyle?: StagingStyle;
+  roomTypes?: RoomType[]; // Per-image room types
+  stagingStyles?: StagingStyle[]; // Per-image styling styles
   removeFurniture?: boolean;
   deviceId?: string;
   teamId?: string;
@@ -326,6 +328,8 @@ export function stageMultipleImagesSSE({
   prompt,
   roomType = "living-room",
   stagingStyle = "modern",
+  roomTypes,
+  stagingStyles,
   removeFurniture,
   deviceId,
   teamId,
@@ -344,6 +348,15 @@ export function stageMultipleImagesSSE({
   files.forEach((file) => formData.append("files", file));
   formData.append("roomType", roomType);
   formData.append("stagingStyle", stagingStyle);
+  
+  // Send per-image settings if provided (as JSON strings)
+  if (roomTypes && roomTypes.length > 0) {
+    formData.append("roomTypes", JSON.stringify(roomTypes));
+  }
+  if (stagingStyles && stagingStyles.length > 0) {
+    formData.append("stagingStyles", JSON.stringify(stagingStyles));
+  }
+  
   if (prompt) formData.append("prompt", prompt);
   if (typeof removeFurniture !== "undefined") formData.append("removeFurniture", String(removeFurniture));
   if (teamId) formData.append("teamId", teamId);
