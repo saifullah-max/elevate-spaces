@@ -132,6 +132,7 @@ export default function RecentUploads() {
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
+                      size="sm"
                       onClick={(e) => {
                         e.preventDefault();
                         setCurrentPage((prev) => Math.max(1, prev - 1));
@@ -175,6 +176,7 @@ export default function RecentUploads() {
                   <PaginationItem>
                     <PaginationNext
                       href="#"
+                      size="sm"
                       onClick={(e) => {
                         e.preventDefault();
                         setCurrentPage((prev) => Math.min(totalPages, prev + 1));
