@@ -161,6 +161,7 @@ export default function RecentUploads() {
                       <PaginationItem key={page}>
                         <PaginationLink
                           href="#"
+                          size="sm"
                           isActive={page === clampedCurrentPage}
                           onClick={(e) => {
                             e.preventDefault();
