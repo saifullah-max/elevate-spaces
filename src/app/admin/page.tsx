@@ -1,7 +1,7 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+import { redirect } from "next/navigation";
 
-export default config;
+export default function AdminRootPage() {
+  // Always redirect /admin to /admin/dashboard
+  redirect("/admin/dashboard");
+  return null;
+}

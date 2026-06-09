@@ -1,7 +1,9 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+"use client";
 
-export default config;
+import dynamic from "next/dynamic";
+
+const Navbar = dynamic(() => import("@/components/navbar"), { ssr: false });
+
+export function ClientNavbar() {
+  return <Navbar />;
+}

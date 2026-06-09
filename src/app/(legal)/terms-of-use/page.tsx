@@ -1,7 +1,5 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+import LegalDocumentPage from "@/components/legal/LegalDocumentPage";
 
-export default config;
+export default function TermsOfUse() {
+  return <LegalDocumentPage slug="terms-of-use" />;
+}

@@ -1,7 +1,5 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+import LegalDocumentPage from "@/components/legal/LegalDocumentPage";
 
-export default config;
+export default function CancellationRefund() {
+  return <LegalDocumentPage slug="cancellation-policy" />;
+}

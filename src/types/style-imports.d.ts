@@ -1,7 +1,2 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
-
-export default config;
+declare module "*.css";
+declare module "react-toastify/dist/ReactToastify.css";

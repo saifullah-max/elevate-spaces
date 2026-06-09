@@ -1,7 +1,441 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+'use client';
 
-export default config;
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Camera, Loader, User, BadgeCheck, FileUp, ShieldCheck, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAuthFromStorage, saveAuthToStorage } from '@/lib/auth.storage';
+import type { User as AuthUser } from '@/store/slices/authSlice';
+import { deleteProfileImage, updateProfileImage } from '@/services/auth.service';
+import {
+  getMyPhotographerProfile,
+  submitPhotographerApplication,
+  uploadPhotographerDocument,
+  updateMyPhotographerProfile,
+  setMyAvailability,
+  type PhotographerDirectoryItem,
+} from '@/services/photographer.service';
+import { showError, showSuccess } from '@/components/toastUtils';
+import { ProfileImageCropDialog } from '@/components/ProfileImageCropDialog';
+import { PaymentsTab } from '@/components/PaymentsTab';
+
+export default function SettingsPage() {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
+  const [photographerProfile, setPhotographerProfile] = useState<PhotographerDirectoryItem | null>(null);
+  const [isPhotographerLoading, setIsPhotographerLoading] = useState(false);
+  const [photographerApplication, setPhotographerApplication] = useState({
+    bio: '',
+    availability: '',
+    photographerType: '',
+    yearsExperience: '',
+    serviceArea: '',
+    portfolioUrl: '',
+    instagramUrl: '',
+    websiteUrl: '',
+    gearDescription: '',
+    businessName: '',
+    shortPitch: '',
+  });
+  const [profileBioInput, setProfileBioInput] = useState('');
+  const [profileAvailabilityInput, setProfileAvailabilityInput] = useState('');
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    const auth = getAuthFromStorage();
+    if (!auth?.user) {
+      router.replace('/sign-in');
+      return;
+    }
+
+    setUser(auth.user);
+    setIsLoading(false);
+  }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadPhotographerProfile = async () => {
+      try {
+        setIsPhotographerLoading(true);
+        const profile = await getMyPhotographerProfile();
+        setPhotographerProfile(profile);
+        if (profile) {
+          setPhotographerApplication({
+            bio: profile.bio || '',
+            availability: profile.availability || '',
+            photographerType: profile.photographer_type || '',
+            yearsExperience: profile.years_experience || '',
+            serviceArea: profile.service_area || '',
+            portfolioUrl: profile.portfolio_url || '',
+            instagramUrl: profile.instagram_url || '',
+            websiteUrl: profile.website_url || '',
+            gearDescription: profile.gear_description || '',
+            businessName: profile.business_name || '',
+            shortPitch: profile.short_pitch || '',
+          });
+        }
+        setProfileBioInput(profile?.bio || '');
+        setProfileAvailabilityInput(profile?.availability || '');
+      } catch (error: any) {
+        showError(error?.message || 'Failed to load photographer profile');
+      } finally {
+        setIsPhotographerLoading(false);
+      }
+    };
+
+    loadPhotographerProfile();
+  }, [user]);
+
+  const getInitials = (name?: string | null) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  };
+
+  const handlePickFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setSelectedFile(file);
+    setIsCropOpen(true);
+    event.target.value = '';
+  };
+
+  const handleConfirmCroppedImage = async (croppedFile: File) => {
+    if (!user) return;
+
+    try {
+      setIsUploading(true);
+      const result = await updateProfileImage(croppedFile);
+      const currentAuth = getAuthFromStorage();
+      if (currentAuth?.token) {
+        saveAuthToStorage(result.user, currentAuth.token);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'elevate_spaces_auth' }));
+      }
+      setUser(result.user);
+      setIsCropOpen(false);
+      setSelectedFile(null);
+      showSuccess(result.message || 'Profile image updated successfully');
+    } catch (error: any) {
+      showError(error?.message || 'Failed to update profile image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteProfileImage = async () => {
+    if (!user?.avatarUrl) return;
+
+    try {
+      setIsUploading(true);
+      const result = await deleteProfileImage();
+      const currentAuth = getAuthFromStorage();
+      if (currentAuth?.token) {
+        saveAuthToStorage(result.user, currentAuth.token);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'elevate_spaces_auth' }));
+      }
+      setUser(result.user);
+      showSuccess(result.message || 'Profile image removed successfully');
+    } catch (error: any) {
+      showError(error?.message || 'Failed to remove profile image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmitPhotographerApplication = async () => {
+    if (!photographerApplication.bio.trim()) {
+      showError('Please add a short professional bio before applying.');
+      return;
+    }
+
+    try {
+      setIsPhotographerLoading(true);
+      await submitPhotographerApplication({
+        bio: photographerApplication.bio.trim(),
+        availability: photographerApplication.availability.trim() || undefined,
+        photographerType: photographerApplication.photographerType.trim() || undefined,
+        yearsExperience: photographerApplication.yearsExperience.trim() || undefined,
+        serviceArea: photographerApplication.serviceArea.trim() || undefined,
+        portfolioUrl: photographerApplication.portfolioUrl.trim() || undefined,
+        instagramUrl: photographerApplication.instagramUrl.trim() || undefined,
+        websiteUrl: photographerApplication.websiteUrl.trim() || undefined,
+        gearDescription: photographerApplication.gearDescription.trim() || undefined,
+        businessName: photographerApplication.businessName.trim() || undefined,
+        shortPitch: photographerApplication.shortPitch.trim() || undefined,
+        document: documentFile,
+      });
+      showSuccess('Your profile has been submitted for review.');
+      const profile = await getMyPhotographerProfile();
+      setPhotographerProfile(profile);
+      setDocumentFile(null);
+    } catch (error: any) {
+      showError(error?.message || 'Failed to submit photographer application');
+    } finally {
+      setIsPhotographerLoading(false);
+    }
+  };
+
+  const handleSavePhotographerProfile = async () => {
+    if (!photographerProfile) {
+      showError('Submit your application first to create a photographer profile.');
+      return;
+    }
+
+    try {
+      setIsPhotographerLoading(true);
+      await updateMyPhotographerProfile({
+        bio: profileBioInput.trim(),
+        availability: profileAvailabilityInput.trim(),
+      });
+      await setMyAvailability(profileAvailabilityInput.trim());
+      showSuccess('Photographer profile updated.');
+      const profile = await getMyPhotographerProfile();
+      setPhotographerProfile(profile);
+    } catch (error: any) {
+      showError(error?.message || 'Failed to update photographer profile');
+    } finally {
+      setIsPhotographerLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-24">
+        <div className="mx-auto flex max-w-4xl items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-indigo-600" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-24">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
+          <p className="mt-2 text-slate-600">Manage your profile settings and subscription billing.</p>
+        </div>
+
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            {/* <TabsTrigger value="photographer">Become a Photographer</TabsTrigger> */}
+            <TabsTrigger value="payments">Subscriptions</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name || 'User'}
+                      className="h-20 w-20 rounded-full border-4 border-indigo-100 object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white">
+                      {getInitials(user.name) || <User className="h-8 w-8" />}
+                    </div>
+                  )}
+
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">{user.name}</h2>
+                    <p className="text-sm text-slate-500">{user.email}</p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-wide text-indigo-600">{user.role}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:items-end">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <Button
+                    onClick={handlePickFile}
+                    disabled={isUploading}
+                    className="bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    {isUploading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                    Update profile image
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteProfileImage}
+                    disabled={isUploading || !user.avatarUrl}
+                  >
+                    Remove profile image
+                  </Button>
+                  <p className="text-xs text-slate-500">Supported formats: JPG, PNG, GIF, WebP. Max size: 10MB.</p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payments" className="space-y-4">
+            <PaymentsTab />
+          </TabsContent>
+
+          <TabsContent value="photographer" className="space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Become a Photographer</h2>
+                  <p className="text-sm text-slate-600">
+                    Already signed up as a normal user? You can apply here to join the photographer marketplace.
+                  </p>
+                </div>
+              </div>
+
+              {photographerProfile ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <BadgeCheck className="h-4 w-4 text-indigo-600" />
+                    Status: {String(photographerProfile.application_status || (photographerProfile.approved ? 'APPROVED' : 'SUBMITTED')).replace(/_/g, ' ').toLowerCase()}
+                  </div>
+
+                  <div className="grid gap-4">
+                    <label className="grid gap-2">
+                      <span className="text-sm font-medium text-slate-700">Bio</span>
+                      <textarea
+                        value={photographerApplication.bio}
+                        onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, bio: e.target.value }))}
+                        className="min-h-28 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500"
+                        placeholder="Tell clients about your experience, photography style, and coverage area"
+                      />
+                    </label>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <input value={photographerApplication.businessName} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, businessName: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Business name" />
+                      <input value={photographerApplication.photographerType} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, photographerType: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Photographer type" />
+                      <input value={photographerApplication.yearsExperience} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, yearsExperience: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Years of experience" />
+                      <input value={photographerApplication.serviceArea} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, serviceArea: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Service area" />
+                      <input value={photographerApplication.portfolioUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, portfolioUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Portfolio URL" />
+                      <input value={photographerApplication.instagramUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, instagramUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Instagram URL" />
+                      <input value={photographerApplication.websiteUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, websiteUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Website URL" />
+                      <input value={photographerApplication.availability} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, availability: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Availability" />
+                    </div>
+
+                    <textarea value={photographerApplication.shortPitch} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, shortPitch: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Why should clients hire you?" />
+                    <textarea value={photographerApplication.gearDescription} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, gearDescription: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Gear / camera / equipment details" />
+                  </div>
+
+                  <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <FileUp className="h-4 w-4 text-indigo-600" />
+                      Verification document
+                    </div>
+                    <input
+                      type="file"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button onClick={handleSubmitPhotographerApplication} disabled={isPhotographerLoading} className="bg-indigo-600 hover:bg-indigo-700">
+                      {isPhotographerLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-2 h-4 w-4" />}
+                      Apply as Photographer
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                  <div className="grid gap-4">
+                    <label className="grid gap-2">
+                      <span className="text-sm font-medium text-slate-700">Professional Bio</span>
+                      <textarea
+                        value={photographerApplication.bio}
+                        onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, bio: e.target.value }))}
+                        className="min-h-28 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500"
+                        placeholder="Tell clients about your experience, photography style, and coverage area"
+                      />
+                    </label>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <input value={photographerApplication.businessName} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, businessName: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Business name" />
+                      <input value={photographerApplication.photographerType} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, photographerType: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Photographer type" />
+                      <input value={photographerApplication.yearsExperience} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, yearsExperience: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Years of experience" />
+                      <input value={photographerApplication.serviceArea} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, serviceArea: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Service area" />
+                      <input value={photographerApplication.portfolioUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, portfolioUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Portfolio URL" />
+                      <input value={photographerApplication.instagramUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, instagramUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Instagram URL" />
+                      <input value={photographerApplication.websiteUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, websiteUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Website URL" />
+                      <input value={photographerApplication.availability} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, availability: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Availability" />
+                    </div>
+
+                    <textarea value={photographerApplication.shortPitch} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, shortPitch: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Why should clients hire you?" />
+                    <textarea value={photographerApplication.gearDescription} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, gearDescription: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Gear / camera / equipment details" />
+                  </div>
+
+                  <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <FileUp className="h-4 w-4 text-indigo-600" />
+                      Verification document
+                    </div>
+                    <input
+                      type="file"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                    <p className="text-xs text-slate-500">Upload it once, together with your application.</p>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button onClick={handleSubmitPhotographerApplication} disabled={isPhotographerLoading} className="bg-indigo-600 hover:bg-indigo-700">
+                      {isPhotographerLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-2 h-4 w-4" />}
+                      Apply as Photographer
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900">
+                {photographerProfile
+                  ? 'Your profile has been submitted. You can track the current status below and update the details if the admin asks for more information.'
+                  : 'Once approved, your account can participate in the photographer marketplace without needing a new signup.'}
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <ProfileImageCropDialog
+        open={isCropOpen}
+        onOpenChange={(open) => {
+          setIsCropOpen(open);
+          if (!open) {
+            setSelectedFile(null);
+          }
+        }}
+        sourceFile={selectedFile}
+        uploading={isUploading}
+        onConfirm={handleConfirmCroppedImage}
+      />
+    </div>
+  );
+}

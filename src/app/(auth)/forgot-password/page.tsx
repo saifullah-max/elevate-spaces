@@ -1,7 +1,98 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+"use client";
 
-export default config;
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+
+export default function ForgotPassword() {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await fetch(`${API_BASE}/api/auth/forgot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+    } catch (err) {
+      // ignore network errors for UX; still show success message
+      console.error('forgot password request failed', err);
+    } finally {
+      setLoading(false);
+      setSubmitted(true);
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-background">
+      <div className="w-full max-w-md p-8 space-y-8 rounded-xl shadow-xl bg-card border border-border">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight lg:text-5xl text-foreground">
+            Forgot Password?
+          </h1>
+        </div>
+
+        {/* Success Message (shown after submission) */}
+        {submitted ? (
+          <div className="text-center space-y-4">
+            <p className="text-foreground">
+              If an account exists with the email "{email}", we've sent reset
+              instructions.
+            </p>
+            <Button asChild className="w-full h-11 font-medium">
+              <Link href="/sign-in">Back to Sign In</Link>
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <p className="text-muted-foreground">
+              No worries! Enter your email and we'll send you a link to reset
+              it.
+            </p>
+            <br />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-11"
+              />
+
+              <Button
+                type="submit"
+                className="w-full h-11 font-medium bg-primary hover:bg-primary/90 text-primary-foreground"
+                disabled={loading}
+              >
+                {loading ? "Sending…" : "Send Reset Link"}
+              </Button>
+            </form>
+          </div>
+        )}
+
+        {/* Back to Sign In Link */}
+        {!submitted && (
+          <div className="text-center text-sm text-muted-foreground">
+            <p>
+              Remembered your password?{" "}
+              <Link
+                href="/sign-in"
+                className="font-medium text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
