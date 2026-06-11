@@ -2,6 +2,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Loader, Trash2 } from 'lucide-react';
 import { getMyProjects } from '@/services/projects.service';
 import { getTeams, getTeamsByUserId } from '@/services/teams.service';
@@ -21,6 +23,7 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
   const [project, setProject] = useState<any | null>(null);
   const [team, setTeam] = useState<any | null>(null);
   const [selectedPhotographerId, setSelectedPhotographerId] = useState<string>('');
+  const [photographerEmail, setPhotographerEmail] = useState<string>('');
   const [actionLoading, setActionLoading] = useState(false);
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
 
@@ -52,13 +55,13 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
         setTeam(null);
       }
 
-      // If project already has a photographer member, prefill
       const photographerMember = proj?.members?.find((m: any) => m.role === 'PHOTOGRAPHER' || m.role === 'TEAM_PHOTOGRAPHER');
       if (photographerMember) {
         setSelectedPhotographerId(photographerMember.user?.id || photographerMember.user_id || '');
       } else {
         setSelectedPhotographerId('');
       }
+      setPhotographerEmail('');
     } catch (err: any) {
       showError(err?.message || 'Failed to load project data');
     } finally {
@@ -82,8 +85,8 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
       .filter((opt: PhotographerOption) => Boolean(opt.id) && Boolean(opt.email));
   }, [team]);
 
+  const isPersonalProject = Boolean(project && !project.team_id);
   const resolvedTeamName = team?.name || project?.team?.name || '—';
-  const hasResolvedTeam = Boolean(project?.team_id || team);
 
   const currentPhotographer = useMemo(() => {
     return project?.members?.find((m: any) => (m.role === 'PHOTOGRAPHER' || m.role === 'TEAM_PHOTOGRAPHER')) || null;
@@ -94,22 +97,22 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
   const currentUserRoleInTeam = useMemo(() => {
     if (!team || !currentUserId) return null;
     if (team.owner_id === currentUserId) return 'TEAM_OWNER';
-
     const membership = team.members?.find((member: any) => member.user_id === currentUserId);
     return String(membership?.role?.name || '').toUpperCase() || null;
   }, [team, currentUserId]);
 
   const canManage = useMemo(() => {
     if (!project) return false;
-    // Allow if project belongs to a team and current user is team owner or project creator
-    if (!project.team_id) return false;
+    if (isPersonalProject) {
+      return project.created_by_user_id === currentUserId;
+    }
     const isOwner = team?.owner_id && currentUserId && team.owner_id === currentUserId;
     const isCreator = project.created_by_user_id && currentUserId && project.created_by_user_id === currentUserId;
     const isAdminOrMember = ["TEAM_ADMIN", "ADMIN", "TEAM_MEMBER", "MEMBER"].includes(currentUserRoleInTeam || "");
     return Boolean(isOwner || isCreator || isAdminOrMember);
-  }, [project, team, currentUserId, currentUserRoleInTeam]);
+  }, [project, team, currentUserId, currentUserRoleInTeam, isPersonalProject]);
 
-  const handleAdd = async () => {
+  const handleAddTeamPhotographer = async () => {
     if (!selectedPhotographerId) return;
     if (currentPhotographer) {
       showError('A photographer is already assigned. Remove them first.');
@@ -117,11 +120,30 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
     }
     setActionLoading(true);
     try {
-      await addProjectPhotographer({
-        projectId,
-        photographerId: selectedPhotographerId,
-      });
+      await addProjectPhotographer({ projectId, photographerId: selectedPhotographerId });
       showInfo('Photographer added to project');
+      await loadData();
+    } catch (err: any) {
+      showError(err?.message || 'Failed to add photographer');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAddPersonalPhotographer = async () => {
+    const email = photographerEmail.trim();
+    if (!email) {
+      showError('Please enter a photographer email');
+      return;
+    }
+    if (currentPhotographer) {
+      showError('A photographer is already assigned. Remove them first.');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const result = await addProjectPhotographer({ projectId, photographerEmail: email });
+      showInfo(result.message || 'Photographer added');
       await loadData();
     } catch (err: any) {
       showError(err?.message || 'Failed to add photographer');
@@ -167,19 +189,21 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
               <div className="p-4 bg-amber-50 border border-amber-200 rounded">Project not found</div>
             )}
 
-            {project && !project.team_id && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded">This project is not under a team</div>
+            {project && !canManage && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded">
+                {isPersonalProject
+                  ? 'Only the project creator can manage photographers'
+                  : 'Only the team owner or project creator can manage photographers'}
+              </div>
             )}
 
-            {project && project.team_id && !canManage && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded">Only the team owner or project creator can manage photographers</div>
-            )}
-
-            {project && project.team_id && canManage && (
+            {project && canManage && (
               <>
-                <div>
-                  <p className="text-sm font-semibold">Team: {resolvedTeamName}</p>
-                </div>
+                {!isPersonalProject && (
+                  <div>
+                    <p className="text-sm font-semibold">Team: {resolvedTeamName}</p>
+                  </div>
+                )}
 
                 <div>
                   <p className="text-sm font-semibold">Current photographer</p>
@@ -189,35 +213,64 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
                         <div className="font-semibold">{currentPhotographer.user?.name || currentPhotographer.user?.email}</div>
                         <div className="text-xs text-slate-500">{currentPhotographer.user?.email}</div>
                       </div>
-                      <div>
-                        <Button variant="outline" onClick={confirmRemove} disabled={actionLoading}>
-                          {actionLoading ? 'Removing...' : <Trash2 className="w-4 h-4" />}
-                        </Button>
-                      </div>
+                      <Button variant="outline" onClick={confirmRemove} disabled={actionLoading}>
+                        {actionLoading ? 'Removing...' : <Trash2 className="w-4 h-4" />}
+                      </Button>
                     </div>
                   ) : (
                     <div className="p-2 text-sm text-slate-600">No photographer assigned yet.</div>
                   )}
                 </div>
 
-                <div>
-                  <PhotographerSearchSelect
-                    options={teamPhotographers}
-                    value={selectedPhotographerId}
-                    onValueChange={setSelectedPhotographerId}
-                    label="Photographer (optional)"
-                    placeholder="Search team photographers"
-                    searchPlaceholder="Search photographers by name or email"
-                    disabled={actionLoading || !!currentPhotographer}
-                    emptyText={hasResolvedTeam ? "No photographers available in this team" : "Select a team first"}
-                    helperText={hasResolvedTeam && teamPhotographers.length > 0 ? "Only photographers who already belong to this team appear here." : undefined}
-                  />
-                </div>
+                {isPersonalProject ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="personal-photographer-email">Add photographer by email</Label>
+                    <Input
+                      id="personal-photographer-email"
+                      type="email"
+                      placeholder="photographer@email.com"
+                      value={photographerEmail}
+                      onChange={(e) => setPhotographerEmail(e.target.value)}
+                      disabled={actionLoading || !!currentPhotographer}
+                    />
+                    <p className="text-xs text-slate-500">
+                      If the person already has an account they'll be added immediately and notified by email. Otherwise an invitation email will be sent.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <PhotographerSearchSelect
+                      options={teamPhotographers}
+                      value={selectedPhotographerId}
+                      onValueChange={setSelectedPhotographerId}
+                      label="Photographer (optional)"
+                      placeholder="Search team photographers"
+                      searchPlaceholder="Search photographers by name or email"
+                      disabled={actionLoading || !!currentPhotographer}
+                      emptyText="No photographers available in this team"
+                      helperText={teamPhotographers.length > 0 ? "Only photographers who already belong to this team appear here." : undefined}
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-2">
-                  <Button onClick={handleAdd} disabled={!selectedPhotographerId || !!currentPhotographer || actionLoading} className="flex-1">
-                    {actionLoading ? 'Adding...' : 'Add Photographer'}
-                  </Button>
+                  {isPersonalProject ? (
+                    <Button
+                      onClick={handleAddPersonalPhotographer}
+                      disabled={!photographerEmail.trim() || !!currentPhotographer || actionLoading}
+                      className="flex-1"
+                    >
+                      {actionLoading ? 'Saving...' : 'Add Photographer'}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleAddTeamPhotographer}
+                      disabled={!selectedPhotographerId || !!currentPhotographer || actionLoading}
+                      className="flex-1"
+                    >
+                      {actionLoading ? 'Adding...' : 'Add Photographer'}
+                    </Button>
+                  )}
                   <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Close</Button>
                 </div>
               </>
@@ -246,4 +299,3 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
     </Dialog>
   );
 }
-

@@ -197,6 +197,7 @@ export async function submitPhotographerApplication(data: {
   drivingLicense?: File | null;
   utilityBill?: File | null;
   portfolioImages?: File[];
+  document?: File | null;
 }): Promise<{ profileId: string; approved: boolean; status: string }> {
   try {
     const base = requireApiBase();
@@ -224,6 +225,7 @@ export async function submitPhotographerApplication(data: {
     if (data.shortPitch) formData.append("shortPitch", data.shortPitch);
     if (data.drivingLicense) formData.append("drivingLicense", data.drivingLicense);
     if (data.utilityBill) formData.append("utilityBill", data.utilityBill);
+    if (data.document) formData.append("document", data.document);
     if (data.portfolioImages?.length) {
       data.portfolioImages.forEach((file) => formData.append("portfolioImages", file));
     }

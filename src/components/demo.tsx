@@ -101,6 +101,7 @@ export default function Demo() {
   // Credit source selection
   const [creditSource, setCreditSource] = useState<'personal' | 'team'>('personal');
   const [personalBalance, setPersonalBalance] = useState<number>(0);
+  const [personalCreditsRefreshTrigger, setPersonalCreditsRefreshTrigger] = useState<number>(0);
 
   // Confirmation modal state
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -992,6 +993,8 @@ export default function Demo() {
             async () => {
               if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
                 await refreshTeamCredits();
+              } else if (isLoggedIn && resolvedCreditSource === 'personal') {
+                setPersonalCreditsRefreshTrigger((prev) => prev + 1);
               }
             },
             projectId,
@@ -1015,6 +1018,7 @@ export default function Demo() {
       return;
     }
 
+    const singleResolvedCreditSource = selectedTeamId ? 'team' : creditSource;
     await handleStageImage(
       file,
       roomType,
@@ -1024,10 +1028,12 @@ export default function Demo() {
       areaType,
       removeFurniture,
       (isLoggedIn && selectedTeamId) ? selectedTeamId : undefined,
-      selectedTeamId ? 'team' : creditSource,
+      singleResolvedCreditSource,
       async () => {
         if (isLoggedIn && selectedTeamId && refreshTeamCredits) {
           await refreshTeamCredits();
+        } else if (isLoggedIn && singleResolvedCreditSource === 'personal') {
+          setPersonalCreditsRefreshTrigger((prev) => prev + 1);
         }
       },
       projectId
@@ -1499,7 +1505,10 @@ export default function Demo() {
                         )}
 
                         <div className="hidden">
-                          <CreditBalance onBalanceChange={setPersonalBalance} />
+                          <CreditBalance
+                            onBalanceChange={setPersonalBalance}
+                            refreshTrigger={personalCreditsRefreshTrigger}
+                          />
                         </div>
                       </div>
 

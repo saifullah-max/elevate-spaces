@@ -107,7 +107,7 @@ export function SupportRequestDialog({ open, onOpenChange, defaultFullName = "",
         screenshots: attachments,
       });
 
-      setCaseNumber(response.caseNumber);
+      setCaseNumber(response.caseNumber ?? null);
     } catch (submitError: any) {
       setError(submitError?.message || "Failed to send support request");
     } finally {

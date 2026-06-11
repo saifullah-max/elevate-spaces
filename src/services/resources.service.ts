@@ -11,6 +11,8 @@ export interface ResourceItem {
   youtube_url: string | null;
   pdf_filename: string | null;
   pdf_mime: string | null;
+  video_filename: string | null;
+  video_mime: string | null;
   updated_by: string | null;
   created_at: string;
   updated_at: string;
@@ -88,6 +90,6 @@ export async function saveResource(
   }
 }
 
-export function getResourceAssetUrl(slug: string) {
-  return `${API_BASE_URL}/resources/${slug}/pdf`;
+export function getResourceAssetUrl(slug: string, kind: "pdf" | "video" = "pdf") {
+  return `${API_BASE_URL}/resources/${slug}/${kind}`;
 }

@@ -116,7 +116,7 @@ export const updateProjectName = async (data: UpdateProjectNameData): Promise<Pr
     }
 };
 
-export const getProjectImages = async (projectId: string): Promise<unknown> => {
+export const getProjectImages = async (projectId: string): Promise<any> => {
     try {
         if (!API_BASE_URL) {
             throw new Error("Backend API URL is not configured");

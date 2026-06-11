@@ -429,6 +429,7 @@ export function stageMultipleImagesSSE({
   if (typeof removeFurniture !== "undefined") formData.append("removeFurniture", String(removeFurniture));
   if (teamId) formData.append("teamId", teamId);
   if (projectId) formData.append("projectId", projectId);
+  if (creditSource) formData.append("creditSource", creditSource);
 
   let token: string | null = null;
   if (typeof window !== "undefined") {
@@ -558,9 +559,9 @@ export async function stageMultipleImages({
     if (typeof removeFurniture !== 'undefined') formData.append("removeFurniture", String(removeFurniture));
     if (teamId) formData.append("teamId", teamId);
     if (projectId) formData.append("projectId", projectId);
+    if (creditSource) formData.append("creditSource", creditSource);
 
     let token: string | null = null;
-  if (creditSource) formData.append("creditSource", creditSource);
     if (typeof window !== 'undefined') {
       const authRaw = localStorage.getItem('elevate_spaces_auth');
       if (authRaw) {

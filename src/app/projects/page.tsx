@@ -293,6 +293,11 @@ export default function ProjectsPage() {
                                                                 Rename
                                                             </DropdownMenuItem>
                                                         )}
+                                                        {project.created_by_user_id === currentUserId && (
+                                                            <DropdownMenuItem onClick={() => { setManageProjectId(project.id); setShowManagePhotographer(true); }}>
+                                                                Manage photographer
+                                                            </DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
