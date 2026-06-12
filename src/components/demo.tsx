@@ -293,10 +293,13 @@ export default function Demo() {
   const displayPersonalCredits = personalBalance + demoCreditsRemaining;
   const canCustomizePerImageStyles = canUserCustomizeStyling(creditSource, selectedTeamData, paymentSummary, teamEligibility);
   const openCustomStylingModal = () => setShowCustomStylingModal(true);
-  const shouldShowProjectSelector = useMemo(
-    () => PROJECT_SELECTOR_PLANS.has(`plan_${planTier}`) || planTier === 'enterprise',
-    [planTier]
-  );
+  // Project selection should follow the same eligibility rules used for
+  // saving to projects: for personal credits the user needs an active Pro+
+  // subscription; for team credits the team must have an active purchase,
+  // or the team owner / current user must have an active personal Pro+.
+  // `isEligibleToLink` is already kept in sync with these rules via the
+  // computeEligibility effect (uses getTeamEligibility on the server).
+  const shouldShowProjectSelector = isEligibleToLink;
 
   const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState<string | null>(null);
 
