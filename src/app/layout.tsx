@@ -7,6 +7,7 @@ import { RootClientLayout } from "@/components/RootClientLayout";
 import { MainWrapper } from "@/components/MainWrapper";
 import { ClientNavbar } from "../components/ClientNavbar";
 import { PWAInstall } from "@/components/PWAInstall";
+import { PageviewTracker } from "@/components/PageviewTracker";
 import { AppToastContainer } from "@/components/AppToastContainer";
 
 const geistSans = Geist({
@@ -98,6 +99,7 @@ export default function RootLayout({
               {children}
               <AppToastContainer />
               <PWAInstall />
+              <PageviewTracker />
             </MainWrapper>
           </RootClientLayout>
         </ReduxProvider>

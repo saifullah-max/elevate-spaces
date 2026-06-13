@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
 export default function ForgotPassword() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:3003';
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
