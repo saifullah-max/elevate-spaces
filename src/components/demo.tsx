@@ -301,23 +301,25 @@ export default function Demo() {
   // computeEligibility effect (uses getTeamEligibility on the server).
   const shouldShowProjectSelector = isEligibleToLink;
 
-  const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState<string | null>(null);
+  const [uploadedPreviewUrls, setUploadedPreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    const sourceFile = selectedFiles[0] ?? file;
-
-    if (!sourceFile) {
-      setUploadedPreviewUrl(null);
+    const sourceFiles = selectedFiles.length > 0 ? selectedFiles : file ? [file] : [];
+    if (sourceFiles.length === 0) {
+      setUploadedPreviewUrls([]);
       return;
     }
 
-    const objectUrl = URL.createObjectURL(sourceFile);
-    setUploadedPreviewUrl(objectUrl);
+    const objectUrls = sourceFiles.map((sourceFile) => URL.createObjectURL(sourceFile));
+    setUploadedPreviewUrls(objectUrls);
 
     return () => {
-      URL.revokeObjectURL(objectUrl);
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [file, selectedFiles]);
+
+  const uploadedPreviewUrl =
+    uploadedPreviewUrls[isMultiImageMode ? selectedPhotoIdx : 0] || uploadedPreviewUrls[0] || null;
 
   const leftPreviewImageUrl = uploadedPreviewUrl || currentBeforePreviewUrl;
 
@@ -632,8 +634,8 @@ export default function Demo() {
       console.log(`[demo.tsx] Setting imageDimensions state:`, valid);
       setImageDimensions(valid);
 
-      // Check if all images have good resolution (>= 1600x1200)
-      const allHighQuality = valid.every(item => item.width * item.height >= 1600 * 1200);
+      // Check if all images meet the minimum resolution (>= 1024x768)
+      const allHighQuality = valid.every(item => item.width * item.height >= 1024 * 768);
 
       if (allHighQuality) {
         setResolutionInsight("Your uploaded images have good resolution.");
@@ -643,7 +645,7 @@ export default function Demo() {
         setResolutionInsight(`Some of your uploaded images are of low quality (${minItem.width}x${minItem.height}).`);
 
         // Provide a clear recommended resolution and actions
-        const recommended = label === 'High' ? '1600x1200' : label === 'Medium' ? '1280x720' : '1600x1200';
+        const recommended = '1280x720';
         setRecommendedResolution(recommended);
       }
     };
@@ -673,13 +675,11 @@ export default function Demo() {
   // Only reset selectedImageIdx to 0 when a new generation occurs (when array is cleared and refilled)
   const prevUrlsRef = useRef<string[]>([]);
   useEffect(() => {
-    // If the array was just cleared and refilled (new generation), reset index to 0
-    if (
-      prevUrlsRef.current.length > 1 &&
-      stagedImageUrls.length > 0 &&
-      stagedImageUrls.length < prevUrlsRef.current.length
-    ) {
+    const justArrived = prevUrlsRef.current.length === 0 && stagedImageUrls.length > 0;
+    const shrunk = prevUrlsRef.current.length > 1 && stagedImageUrls.length > 0 && stagedImageUrls.length < prevUrlsRef.current.length;
+    if (justArrived || shrunk) {
       setSelectedImageIdx(0);
+      setSliderPosition(50);
     }
     // Update ref for next render
     prevUrlsRef.current = stagedImageUrls;
@@ -1339,13 +1339,13 @@ export default function Demo() {
               <Monitor className="w-4 h-4" />
               <span id="workspace-title">Instant AI Staging</span>
             </span>
-            {shouldShowDemoNotice && (
+            {/* {shouldShowDemoNotice && (
               <div className="flex flex-col">
                 <span className="text-lg font-mono text-indigo-200 ml-auto">
                   Demo Used: {demoCount} / {demoLimit}
                 </span>
               </div>
-            )}
+            )} */}
           </div>
 
           <div className="grid lg:grid-cols-3 relative">
@@ -1542,9 +1542,29 @@ export default function Demo() {
                               <p className="text-xs text-green-600">Auto-linked ✓</p>
                             </div>
                           </div>
-                        ) : (
+                        ) : ineligibilityReason ? null : (
                           <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-lg">
                             <p className="text-xs text-amber-700">You’ll be prompted to create a project when you click Generate.</p>
+                          </div>
+                        )}
+
+                        {!hasAnyActiveSubscription && (
+                          <div className="mt-2 rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-3">
+                            <div className="flex items-start gap-2">
+                              <Sparkles className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-indigo-900">Unlock full staging power</p>
+                                <p className="mt-1 text-xs text-indigo-800 leading-relaxed">
+                                  Pick a plan pro or up to remove watermarks, get higher-quality renders, save unlimited projects, and stage at full resolution.
+                                </p>
+                                <a
+                                  href="/#pricing"
+                                  className="mt-2 inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 transition"
+                                >
+                                  See plans →
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1724,7 +1744,7 @@ export default function Demo() {
                 <div className="mb-2 flex items-center justify-start">
                   <label className="text-sm font-medium text-slate-700">Prompt</label>
                   <InfoHint
-                    text="Keep prompts short — short, clear instructions work best. You can restate repeatedly; there's no need to write one long message."
+                    text="Custom prompts are applied very literally. To get the best results, keep your prompt short and focused, but make sure it includes all essential instructions. The AI will primarily follow the changes you specify, so avoid long or repetitive prompts."
                     className="inline-flex"
                     iconClassName="text-indigo-500 h-4 w-4 ml-4"
                     position="right"
@@ -1830,7 +1850,7 @@ export default function Demo() {
                     imagesToStageCount === 0 ||
                     imagesToStageCount > maxMultiImages ||
                     shouldRequireTeamSelectionForStaging ||
-                    (isLoggedIn && creditSource === 'personal' && personalBalance < creditsToUseCount) ||
+                    (isLoggedIn && creditSource === 'personal' && !isDemo && personalBalance < creditsToUseCount) ||
                     shouldEnforceDemoLimit ||
                     // (!removeFurniture && areaType === "interior" && !roomType) ||
                     // (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||

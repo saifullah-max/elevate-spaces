@@ -313,9 +313,9 @@ export function CustomStylingModal({
                 // Use ref as source of truth (updated synchronously), fallback to state
                 const dims = imageDimensionsRef?.current || imageDimensions;
                 
-                // Check if this image has low resolution (below 1600x1200)
-                  const isLowResolution = dims && dims.length > index && dims[index] && 
-                  (dims[index].width * dims[index].height < 1600 * 1200);
+                // Check if this image has low resolution (below 1024x768)
+                  const isLowResolution = dims && dims.length > index && dims[index] &&
+                  (dims[index].width * dims[index].height < 1024 * 768);
                 
                 // Debug logging
                 if (index === 0) {
@@ -458,7 +458,7 @@ export function CustomStylingModal({
                       <label className="flex text-sm font-semibold text-slate-700 mb-2 items-center gap-2">
                         <span>Custom Prompt</span>
                         <InfoHint
-                          text="Keep prompts short — short, clear instructions work best. You can restate repeatedly; there's no need to write one long message."
+                          text="Custom prompts are applied very literally. To get the best results, keep your prompt short and focused, but make sure it includes all essential instructions. The AI will primarily follow the changes you specify, so avoid long or repetitive prompts."
                           className="ml-auto"
                           iconClassName="text-indigo-500"
                         />
