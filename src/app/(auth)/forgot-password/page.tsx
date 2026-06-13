@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch(`${API_BASE}/api/auth/forgot`, {
+      await fetch(`${API_BASE}/auth/forgot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
