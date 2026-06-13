@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function ResetPasswordClient({ token }: { token: string }) {
   const router = useRouter();
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3003";
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:3003";
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,7 +37,7 @@ export default function ResetPasswordClient({ token }: { token: string }) {
 
     setLoading(true);
     try {
-      const resp = await fetch(`${API_BASE}/api/auth/reset`, {
+      const resp = await fetch(`${API_BASE}/auth/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword }),
