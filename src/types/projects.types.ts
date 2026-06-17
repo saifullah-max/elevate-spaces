@@ -35,7 +35,7 @@ export interface Project {
 }
 
 export interface CreateProjectData {
-    teamId: string;
+    teamId?: string; // Optional — omit for personal projects
     name: string;
     address?: string;
     description?: string;

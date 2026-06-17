@@ -15,6 +15,11 @@ export interface AdminUserRow {
   name: string | null;
   email: string;
   avatarUrl: string | null;
+  manualAvatarUrl?: string | null;
+  googleAvatarUrl?: string | null;
+  authProvider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK' | 'APPLE' | string | null;
+  demoBonusClaimed?: boolean;
+  demoBonusClaimedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   roles: string[];

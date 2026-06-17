@@ -9,8 +9,13 @@ import {
 } from "@/lib/errors";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
-// Extended timeout: 120 seconds (2 minutes) to allow for slow Gemini processing
-const STAGE_SSE_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_STAGE_SSE_TIMEOUT_MS || "120000");
+// Total wall-clock ceiling for a staging request. Raised from 120s → 240s because
+// running multiple stagings in parallel pushes Phase 1 + Phase 2 past 2 minutes
+// per tab even when each variant is healthy.
+const STAGE_SSE_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_STAGE_SSE_TIMEOUT_MS || "240000");
+// Inactivity timeout: abort only if NO bytes arrive for this long. The total ceiling
+// above still applies, but as long as the server is actively streaming we keep going.
+const STAGE_SSE_INACTIVITY_MS = Number(process.env.NEXT_PUBLIC_STAGE_SSE_INACTIVITY_MS || "90000");
 // Show "taking too long" message after 25 seconds
 const SLOW_STAGING_THRESHOLD_MS = 25000;
 
@@ -111,6 +116,17 @@ export function stageImageSSE({
     controller.abort(new Error(`Staging request timed out after ${STAGE_SSE_TIMEOUT_MS}ms`));
   }, STAGE_SSE_TIMEOUT_MS);
 
+  // Inactivity watchdog: aborts only if the stream goes silent. Refreshed below
+  // every time bytes arrive from the SSE response.
+  let inactivityHandle: ReturnType<typeof setTimeout> | null = null;
+  const armInactivity = () => {
+    if (inactivityHandle) clearTimeout(inactivityHandle);
+    inactivityHandle = setTimeout(() => {
+      controller.abort(new Error(`Staging request idle for ${STAGE_SSE_INACTIVITY_MS}ms`));
+    }, STAGE_SSE_INACTIVITY_MS);
+  };
+  armInactivity();
+
   // Show slow processing message after threshold
   const slowProcessingHandle = setTimeout(() => {
     if (onProgress && !progressMessageShown) {
@@ -144,6 +160,8 @@ export function stageImageSSE({
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+        // Any bytes from the server count as activity — keeps the stream alive.
+        armInactivity();
         buffer += decoder.decode(value, { stream: true });
         let eventIdx;
         while ((eventIdx = buffer.indexOf('\n\n')) !== -1) {
@@ -185,6 +203,7 @@ export function stageImageSSE({
     .finally(() => {
       clearTimeout(timeoutHandle);
       clearTimeout(slowProcessingHandle);
+      if (inactivityHandle) clearTimeout(inactivityHandle);
     });
 }
 export async function stageImage({

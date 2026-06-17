@@ -416,7 +416,7 @@ export function ProjectSelectorModal({
                   <SelectContent>
                     {visibleProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
-                        {project.name}{project.team?.name ? ` — ${project.team.name}` : ' — Personal'}
+                        {project.name}{project.team?.name ? ` — ${project.team.name}` : ' — Personal'}{project.address ? ` · ${project.address}` : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>

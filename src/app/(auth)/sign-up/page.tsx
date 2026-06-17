@@ -171,6 +171,11 @@ function SignUpForm() {
       intent: "signup",
       agreementsAccepted: "true",
     });
+    // Carry the demo-bonus claim through the OAuth round-trip so the backend
+    // can grant +5 credits when this Google signup creates a new account.
+    if (fromDemoBonus) {
+      query.set("fromDemoBonus", "true");
+    }
     window.location.href = `${baseUrl}/auth/google?${query.toString()}`;
   };
 

@@ -132,6 +132,8 @@ export default function AdminUsersPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">User</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Signed up via</th>
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Bonus claimed</th>
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Role</th>
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Summary</th>
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">AI consent</th>
@@ -142,7 +144,7 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-slate-100 bg-white">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-500">
                     No users found.
                   </td>
                 </tr>
@@ -159,6 +161,31 @@ export default function AdminUsersPage() {
                           <p className="text-sm text-slate-500">{user.email}</p>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-700">
+                      {(() => {
+                        const provider = String(user.authProvider || 'LOCAL').toUpperCase();
+                        const label = provider === 'LOCAL' ? 'Email (manual)' : provider.charAt(0) + provider.slice(1).toLowerCase();
+                        const cls = provider === 'LOCAL'
+                          ? 'bg-slate-100 text-slate-700'
+                          : provider === 'GOOGLE'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'bg-purple-50 text-purple-700';
+                        return (
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>
+                            {label}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-700">
+                      {user.demoBonusClaimed ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700" title={user.demoBonusClaimedAt ? formatDate(user.demoBonusClaimedAt) : undefined}>
+                          +5 claimed
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-700">
                       {user.roles.length ? user.roles.join(", ") : "USER"}

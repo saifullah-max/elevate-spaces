@@ -86,6 +86,8 @@ export default function Demo() {
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState<number>(0);
   const [isBatchProcessing, setIsBatchProcessing] = useState(false); // Track overall batch status
+  const [singleStageStartTs, setSingleStageStartTs] = useState<number | null>(null); // Per-image stage timer (all users)
+  const SINGLE_STAGE_ESTIMATE_SEC = 35; // Approx wall-clock time for a single image generation
 
   // Multi-image custom styling state
   const [useCustomStyling, setUseCustomStyling] = useState(false);
@@ -276,6 +278,8 @@ export default function Demo() {
   const elapsedSeconds = multiProgress.startedAt
     ? Math.floor((nowTs - multiProgress.startedAt) / 1000)
     : 0;
+  const singleElapsedSec = singleStageStartTs ? Math.floor((nowTs - singleStageStartTs) / 1000) : 0;
+  const singleRemainingSec = Math.max(0, SINGLE_STAGE_ESTIMATE_SEC - singleElapsedSec);
   const progressPct = multiProgress.expectedTotalVariants > 0
     ? Math.min(100, Math.round((multiProgress.completedVariants / multiProgress.expectedTotalVariants) * 100))
     : 0;
@@ -446,10 +450,20 @@ export default function Demo() {
     // Mark component as mounted to avoid SSR/CSR hydration mismatches
     setMounted(true);
 
-    if (!multiProgress.active && !isBatchProcessing) return;
+    if (!multiProgress.active && !isBatchProcessing && !singleStageStartTs) return;
     const timer = window.setInterval(() => setNowTs(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [multiProgress.active, isBatchProcessing]);
+  }, [multiProgress.active, isBatchProcessing, singleStageStartTs]);
+
+  // Track single-image stage start/stop so demo + subscribed users both see the timer
+  useEffect(() => {
+    const isStaging = (loading || restageLoading) && !isMultiImageMode;
+    if (isStaging && !singleStageStartTs) {
+      setSingleStageStartTs(Date.now());
+    } else if (!isStaging && singleStageStartTs) {
+      setSingleStageStartTs(null);
+    }
+  }, [loading, restageLoading, isMultiImageMode, singleStageStartTs]);
 
   useEffect(() => {
     setSelectedImageIdx(0);
@@ -1859,6 +1873,21 @@ export default function Demo() {
                 >
                   {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : `Generate & Use ${creditsToUseCount || 1} Credit${(creditsToUseCount || 1) > 1 ? 's' : ''}`)}
                 </Button>
+
+                {/* Single-image stage timer: shown to all users (demo + subscribed) */}
+                {singleStageStartTs && !isMultiImageMode && (
+                  <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
+                    <p className="text-xs font-semibold text-indigo-800">
+                      {mode === 'restage' ? 'Restaging your image…' : 'Staging your image…'}
+                    </p>
+                    <p className="text-[11px] text-indigo-700 mt-1">
+                      Estimated time: ~{SINGLE_STAGE_ESTIMATE_SEC}s (remaining {singleRemainingSec}s, elapsed {singleElapsedSec}s)
+                    </p>
+                    <p className="text-[11px] text-indigo-700 mt-1">
+                      Please keep this page open while staging runs.
+                    </p>
+                  </div>
+                )}
 
                 {(multiProgress.active || isBatchProcessing) && imagesToStageCount > 1 && (
                   <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">

@@ -159,6 +159,9 @@ function PhotographerSignUpForm() {
       intent: "signup",
       agreementsAccepted: "true",
     });
+    if (fromDemoBonus) {
+      query.set("fromDemoBonus", "true");
+    }
     window.location.href = `${baseUrl}/auth/google?${query.toString()}`;
   };
 

@@ -43,6 +43,7 @@ export default function ProjectsPage() {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [projectMode, setProjectMode] = useState<'personal' | 'team'>('team');
     const currentUserId = useMemo(() => getAuthFromStorage()?.user?.id || null, []);
 
     const teamOptions = useMemo(() => teams, [teams]);
@@ -196,7 +197,7 @@ export default function ProjectsPage() {
         setError(null);
         setMessage(null);
 
-        if (!teamId) {
+        if (projectMode === 'team' && !teamId) {
             setError("Team is required");
             return;
         }
@@ -206,22 +207,32 @@ export default function ProjectsPage() {
             return;
         }
 
-        // Client-side duplicate name check (team scope)
+        // Client-side duplicate name check (scoped to team or to personal projects)
         const normalizedName = name.trim().replace(/\s+/g, " ");
-        const existingInTeam = (projects?.projects || []).find(p => p.team_id === teamId && (p.name || '').trim().toLowerCase() === normalizedName.toLowerCase());
-        if (existingInTeam) {
-            setError("A project with this name already exists in this team. Please choose a different name.");
-            return;
+        if (projectMode === 'team') {
+            const existingInTeam = (projects?.projects || []).find(p => p.team_id === teamId && (p.name || '').trim().toLowerCase() === normalizedName.toLowerCase());
+            if (existingInTeam) {
+                setError("A project with this name already exists in this team. Please choose a different name.");
+                return;
+            }
+        } else {
+            const existingPersonal = (projects?.projects || []).find(p => !p.team_id && p.created_by_user_id === currentUserId && (p.name || '').trim().toLowerCase() === normalizedName.toLowerCase());
+            if (existingPersonal) {
+                setError("You already have a personal project with this name. Please choose a different name.");
+                return;
+            }
         }
 
         try {
             setLoading(true);
             const res = await createProject({
-                teamId,
+                teamId: projectMode === 'team' ? teamId : undefined,
                 name,
                 address: address.trim() || undefined,
                 description: description.trim() || undefined,
-                photographerEmail: photographerEmail.trim() || selectedPhotographer?.email || undefined,
+                photographerEmail: projectMode === 'team'
+                    ? (photographerEmail.trim() || selectedPhotographer?.email || undefined)
+                    : (photographerEmail.trim() || undefined),
             });
             setMessage(res.message || "Project created successfully");
             setName("");
@@ -251,8 +262,20 @@ export default function ProjectsPage() {
         <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 py-12">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <div className="flex justify-end mb-8">
-                    <Button className="py-6" onClick={() => setShowModal(true)}><Plus /> Add Project</Button>
+                <div className="flex flex-wrap justify-end gap-3 mb-8">
+                    <Button
+                        className="py-6"
+                        variant="outline"
+                        onClick={() => { setProjectMode('personal'); setShowModal(true); }}
+                    >
+                        <Plus /> Add Personal Project
+                    </Button>
+                    <Button
+                        className="py-6"
+                        onClick={() => { setProjectMode('team'); setShowModal(true); }}
+                    >
+                        <Plus /> Add Project to the Team
+                    </Button>
                 </div>
                 <div className="space-y-6">
                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
@@ -456,28 +479,31 @@ export default function ProjectsPage() {
                         </button>
 
                         <h1 className="text-2xl font-bold text-slate-900 mb-6">
-                            Projects
+                            {projectMode === 'personal' ? 'Add Personal Project' : 'Add Project to the Team'}
                         </h1>
 
                         <form
                             onSubmit={handleCreateProject}
                             className="grid grid-cols-1 md:grid-cols-2 gap-4"
                         >
-                            <div>
-                                <Label htmlFor="project-team">Team</Label>
-                                <select
-                                    id="project-team"
-                                    value={teamId}
-                                    onChange={(e) => setTeamId(e.target.value)}
-                                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white"
-                                >
-                                    {teamOptions.map((team) => (
-                                        <option key={team.id} value={team.id}>
-                                            {team.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {projectMode === 'team' && (
+                                <div>
+                                    <Label htmlFor="project-team">Team</Label>
+                                    <select
+                                        id="project-team"
+                                        value={teamId}
+                                        onChange={(e) => setTeamId(e.target.value)}
+                                        className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white"
+                                    >
+                                        <option value="">Select a team…</option>
+                                        {teamOptions.map((team) => (
+                                            <option key={team.id} value={team.id}>
+                                                {team.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
                                 <Label htmlFor="project-name">Project Name</Label>
@@ -501,36 +527,57 @@ export default function ProjectsPage() {
                                 />
                             </div>
 
-                            <div className="md:col-span-2">
-                                <PhotographerSearchSelect
-                                    label="Photographer (optional)"
-                                    options={teamPhotographers}
-                                    value={photographerId}
-                                    onValueChange={setPhotographerId}
-                                    placeholder="Search team photographers"
-                                    searchPlaceholder="Type a name or email"
-                                    emptyText={selectedTeam ? "No photographers available in this team" : "Select a team first"}
-                                    helperText={selectedTeam && teamPhotographers.length > 0
-                                        ? "Only photographers who already belong to this team appear here."
-                                        : undefined}
-                                    disabled={!selectedTeam || teamPhotographers.length === 0}
-                                />
-                            </div>
+                            {projectMode === 'team' && (
+                                <>
+                                    <div className="md:col-span-2">
+                                        <PhotographerSearchSelect
+                                            label="Photographer (optional)"
+                                            options={teamPhotographers}
+                                            value={photographerId}
+                                            onValueChange={setPhotographerId}
+                                            placeholder="Search team photographers"
+                                            searchPlaceholder="Type a name or email"
+                                            emptyText={selectedTeam ? "No photographers available in this team" : "Select a team first"}
+                                            helperText={selectedTeam && teamPhotographers.length > 0
+                                                ? "Only photographers who already belong to this team appear here."
+                                                : undefined}
+                                            disabled={!selectedTeam || teamPhotographers.length === 0}
+                                        />
+                                    </div>
 
-                            <div className="md:col-span-2">
-                                <Label htmlFor="project-photographer-email">Or invite photographer by email</Label>
-                                <Input
-                                    id="project-photographer-email"
-                                    type="email"
-                                    value={photographerEmail}
-                                    onChange={(e) => setPhotographerEmail(e.target.value)}
-                                    placeholder="photographer@email.com"
-                                    className="mt-1"
-                                />
-                                <p className="mt-1 text-xs text-slate-500">
-                                    If the email is not already on the team, a team invite and restricted project invite will be created.
-                                </p>
-                            </div>
+                                    <div className="md:col-span-2">
+                                        <Label htmlFor="project-photographer-email">Or invite photographer by email</Label>
+                                        <Input
+                                            id="project-photographer-email"
+                                            type="email"
+                                            value={photographerEmail}
+                                            onChange={(e) => setPhotographerEmail(e.target.value)}
+                                            placeholder="photographer@email.com"
+                                            className="mt-1"
+                                        />
+                                        <p className="mt-1 text-xs text-slate-500">
+                                            If the email is not already on the team, a team invite and restricted project invite will be created.
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+
+                            {projectMode === 'personal' && (
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="personal-project-photographer-email">Invite photographer by email (optional)</Label>
+                                    <Input
+                                        id="personal-project-photographer-email"
+                                        type="email"
+                                        value={photographerEmail}
+                                        onChange={(e) => setPhotographerEmail(e.target.value)}
+                                        placeholder="photographer@email.com"
+                                        className="mt-1"
+                                    />
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Anyone can be invited to a personal project. If the email belongs to an existing user they&apos;ll be added immediately; otherwise they&apos;ll receive an invitation to join the project.
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="md:col-span-2">
                                 <Label htmlFor="project-description">
