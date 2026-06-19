@@ -976,11 +976,8 @@ export default function Demo() {
     }
 
     if (imagesToStageCount > 1) {
-      if (!isLoggedIn) {
-        setError('Multiple image staging requires login. Please sign up or log in first.');
-        return;
-      }
-
+      // Guest + logged-in demo users may stage multiple images; demo credit
+      // accounting is enforced server-side by the multi-stage endpoint.
       setIsBatchProcessing(true);
       try {
         const totalBatches = Math.ceil(selectedFiles.length / MAX_BATCH_SIZE);
