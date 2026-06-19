@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -9,7 +9,7 @@ import { verifyEmailToken } from "@/services/auth.service";
 
 type Status = "pending" | "success" | "already" | "expired" | "error";
 
-export default function VerifyEmailPage() {
+function VerifyEmailInner() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
   const [status, setStatus] = useState<Status>("pending");
@@ -87,5 +87,22 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-indigo-50 via-white to-purple-50">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
+            <Loader2 className="w-10 h-10 mx-auto animate-spin text-indigo-600" />
+            <h1 className="text-xl font-semibold">Loading…</h1>
+          </div>
+        </div>
+      }
+    >
+      <VerifyEmailInner />
+    </Suspense>
   );
 }
