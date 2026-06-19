@@ -955,7 +955,15 @@ export default function Demo() {
       return;
     }
 
-    if (isLoggedIn && creditSource === 'personal' && personalBalance < creditsToUseCount) {
+    // Logged-in users on the personal credit source: only block if they're
+    // NOT eligible for demo credits. Logged-in demo users fall through to
+    // backend demo accounting (fingerprint-based DEMO_LIMIT), same as guests.
+    if (
+      isLoggedIn &&
+      creditSource === 'personal' &&
+      personalBalance < creditsToUseCount &&
+      !(isDemo && demoCreditsRemaining >= creditsToUseCount)
+    ) {
       setError(`You need ${creditsToUseCount} personal credits, but only ${personalBalance} are available.`);
       return;
     }
@@ -976,8 +984,9 @@ export default function Demo() {
     }
 
     if (imagesToStageCount > 1) {
-      // Guest + logged-in demo users may stage multiple images; demo credit
-      // accounting is enforced server-side by the multi-stage endpoint.
+      // Guest + logged-in demo users may stage multiple images; the multi-stage
+      // backend endpoint is guest-aware and falls back to fingerprint-based
+      // demo tracking when there is no req.user.
       setIsBatchProcessing(true);
       try {
         const totalBatches = Math.ceil(selectedFiles.length / MAX_BATCH_SIZE);
@@ -1795,7 +1804,12 @@ export default function Demo() {
                       return;
                     }
 
-                    if (isLoggedIn && creditSource === 'personal' && personalBalance < creditsToUseCount) {
+                    if (
+                      isLoggedIn &&
+                      creditSource === 'personal' &&
+                      personalBalance < creditsToUseCount &&
+                      !(isDemo && demoCreditsRemaining >= creditsToUseCount)
+                    ) {
                       setError(`You need ${creditsToUseCount} personal credits, but only ${personalBalance} are available.`);
                       return;
                     }

@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getAuthFromStorage, saveAuthToStorage } from '@/lib/auth.storage';
 import type { User as AuthUser } from '@/store/slices/authSlice';
-import { deleteProfileImage, updateProfileImage } from '@/services/auth.service';
+import {
+  deleteProfileImage,
+  updateProfileImage,
+  updateSecondaryEmail,
+  deleteSecondaryEmail,
+} from '@/services/auth.service';
 import {
   getMyPhotographerProfile,
   submitPhotographerApplication,
@@ -18,6 +23,8 @@ import {
 } from '@/services/photographer.service';
 import { showError, showSuccess } from '@/components/toastUtils';
 import { ProfileImageCropDialog } from '@/components/ProfileImageCropDialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertCircle } from 'lucide-react';
 import { PaymentsTab } from '@/components/PaymentsTab';
 
 export default function SettingsPage() {
@@ -47,6 +54,16 @@ export default function SettingsPage() {
   const [profileAvailabilityInput, setProfileAvailabilityInput] = useState('');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
 
+  // Secondary email state — loaded via fresh /auth/me call because the cached
+  // auth payload in localStorage may pre-date this field.
+  const [secondaryEmail, setSecondaryEmail] = useState<string | null>(null);
+  const [secondaryEmailInput, setSecondaryEmailInput] = useState('');
+  const [secondaryEmailEditing, setSecondaryEmailEditing] = useState(false);
+  const [secondaryEmailSaving, setSecondaryEmailSaving] = useState(false);
+  const [secondaryEmailError, setSecondaryEmailError] = useState<string | null>(null);
+  const [secondaryEmailRemoveOpen, setSecondaryEmailRemoveOpen] = useState(false);
+  const [secondaryEmailRemoving, setSecondaryEmailRemoving] = useState(false);
+
   useEffect(() => {
     const auth = getAuthFromStorage();
     if (!auth?.user) {
@@ -56,6 +73,24 @@ export default function SettingsPage() {
 
     setUser(auth.user);
     setIsLoading(false);
+
+    // Pull fresh profile to populate secondary_email (not stored in cached auth).
+    (async () => {
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_BACKEND_API;
+        if (!apiBase) return;
+        const res = await fetch(`${apiBase}/auth/me`, {
+          headers: { Authorization: `Bearer ${auth.token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.user?.secondary_email !== undefined) {
+          setSecondaryEmail(data.user.secondary_email || null);
+        }
+      } catch {
+        // Non-blocking — user can still edit and save.
+      }
+    })();
   }, [router]);
 
   useEffect(() => {
@@ -290,6 +325,150 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Secondary email — optional sign-in alternative */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Secondary email</h3>
+                <p className="text-sm text-slate-600">
+                  Add an optional secondary email you can also sign in with. It must not already be in use by another account. We&apos;ll send a heads-up to your primary email whenever this is added or changed.
+                </p>
+              </div>
+
+              {secondaryEmailEditing ? (
+                <div className="space-y-3">
+                  <input
+                    type="email"
+                    value={secondaryEmailInput}
+                    onChange={(e) => { setSecondaryEmailInput(e.target.value); setSecondaryEmailError(null); }}
+                    placeholder="alternate@example.com"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  />
+                  {secondaryEmailError && (
+                    <p className="text-xs text-red-600">{secondaryEmailError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      disabled={secondaryEmailSaving || !secondaryEmailInput.trim()}
+                      onClick={async () => {
+                        setSecondaryEmailSaving(true);
+                        setSecondaryEmailError(null);
+                        try {
+                          const result = await updateSecondaryEmail(secondaryEmailInput.trim());
+                          setSecondaryEmail(result.secondaryEmail);
+                          setSecondaryEmailEditing(false);
+                          setSecondaryEmailInput('');
+                          showSuccess(result.message || 'Secondary email saved');
+                        } catch (err: any) {
+                          const msg = err?.response?.data?.error || err?.message || 'Failed to save secondary email';
+                          setSecondaryEmailError(msg);
+                        } finally {
+                          setSecondaryEmailSaving(false);
+                        }
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      {secondaryEmailSaving ? <Loader className="h-4 w-4 animate-spin mr-2" /> : null}
+                      {secondaryEmail ? 'Save changes' : 'Add email'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSecondaryEmailEditing(false);
+                        setSecondaryEmailInput('');
+                        setSecondaryEmailError(null);
+                      }}
+                      disabled={secondaryEmailSaving}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : secondaryEmail ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">{secondaryEmail}</p>
+                    <p className="text-xs text-slate-500">You can sign in with this email.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSecondaryEmailInput(secondaryEmail || '');
+                        setSecondaryEmailEditing(true);
+                      }}
+                    >
+                      Replace
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSecondaryEmailRemoveOpen(true)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => setSecondaryEmailEditing(true)}
+                >
+                  Add secondary email
+                </Button>
+              )}
+            </div>
+
+            {/* Remove-secondary-email confirmation modal — matches the
+                DeleteTeamModal pattern used elsewhere in the app. */}
+            <Dialog open={secondaryEmailRemoveOpen} onOpenChange={(open) => {
+              if (!secondaryEmailRemoving) setSecondaryEmailRemoveOpen(open);
+            }}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    Remove secondary email
+                  </DialogTitle>
+                  <DialogDescription>
+                    {secondaryEmail ? (
+                      <>Remove <b>{secondaryEmail}</b> from this account? You&apos;ll no longer be able to sign in with it.</>
+                    ) : (
+                      "Remove the secondary email from this account?"
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSecondaryEmailRemoveOpen(false)}
+                    disabled={secondaryEmailRemoving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    disabled={secondaryEmailRemoving}
+                    onClick={async () => {
+                      setSecondaryEmailRemoving(true);
+                      try {
+                        const result = await deleteSecondaryEmail();
+                        setSecondaryEmail(null);
+                        setSecondaryEmailRemoveOpen(false);
+                        showSuccess(result.message || 'Secondary email removed');
+                      } catch (err: any) {
+                        showError(err?.response?.data?.error || err?.message || 'Failed to remove secondary email');
+                      } finally {
+                        setSecondaryEmailRemoving(false);
+                      }
+                    }}
+                  >
+                    {secondaryEmailRemoving ? 'Removing…' : 'Remove'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           <TabsContent value="payments" className="space-y-4">

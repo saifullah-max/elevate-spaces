@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
-import { Plus } from "lucide-react";
+import { Plus, Info } from "lucide-react";
 import { ProjectImagesViewer } from "@/components/projects/ProjectImagesViewer";
 import { PhotographerSearchSelect, type PhotographerOption } from "@/components/projects/PhotographerSearchSelect";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -243,10 +243,20 @@ export default function ProjectsPage() {
             setShowModal(false)
             await loadProjects();
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Failed to create project");
+            // Service throws `{ message }` plain objects; cover both shapes.
+            const errAny = err as any;
+            const message =
+                (errAny && typeof errAny === "object" && "message" in errAny && typeof errAny.message === "string"
+                    ? errAny.message
+                    : err instanceof Error
+                        ? err.message
+                        : "Failed to create project");
+            setError(message);
         } finally {
+            // Important: leave the modal open if an error was raised so the user
+            // can read it and fix their inputs. Closing only happens on success
+            // (the setShowModal(false) above in the success branch).
             setLoading(false);
-            setShowModal(false)
         }
     };
 
@@ -262,17 +272,36 @@ export default function ProjectsPage() {
         <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 py-12">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <div className="flex flex-wrap justify-end gap-3 mb-8">
+                <div className="flex flex-wrap items-center justify-end gap-3 mb-8">
+                    <div className="relative group mr-auto">
+                        <button
+                            type="button"
+                            aria-label="Project rules"
+                            className="text-slate-500 hover:text-indigo-600 transition flex items-center gap-2"
+                        >
+                            <Info className="w-5 h-5" />
+                            <span>How projects work</span>
+                        </button>
+
+                        <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition absolute left-0 top-full mt-2 z-30 w-80 rounded-lg border border-slate-200 bg-white p-3 shadow-lg text-xs text-slate-700">
+                            <p className="mb-2">
+                                <span className="font-semibold">Team projects</span> are created inside a team and are visible to the team owner and any team admins — not just the person who created them.
+                            </p>
+                            <p>
+                                <span className="font-semibold">Personal projects</span> are private — only you can see them. They require an active personal plan. If you're only a member of someone else's team, that team's subscription doesn't cover personal projects.
+                            </p>
+                        </div>
+                    </div>
                     <Button
                         className="py-6"
                         variant="outline"
-                        onClick={() => { setProjectMode('personal'); setShowModal(true); }}
+                        onClick={() => { setProjectMode('personal'); setShowModal(true); setError(null); setMessage(null); }}
                     >
                         <Plus /> Add Personal Project
                     </Button>
                     <Button
                         className="py-6"
-                        onClick={() => { setProjectMode('team'); setShowModal(true); }}
+                        onClick={() => { setProjectMode('team'); setShowModal(true); setError(null); setMessage(null); }}
                     >
                         <Plus /> Add Project to the Team
                     </Button>
@@ -336,7 +365,7 @@ export default function ProjectsPage() {
                             </TableBody>
                         </Table>
                     </div>
-                    
+
                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-200">
                             <h2 className="text-xl font-semibold text-slate-900">Projects linked to a team</h2>
@@ -478,9 +507,25 @@ export default function ProjectsPage() {
                             ✕
                         </button>
 
-                        <h1 className="text-2xl font-bold text-slate-900 mb-6">
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2">
                             {projectMode === 'personal' ? 'Add Personal Project' : 'Add Project to the Team'}
                         </h1>
+
+                        {projectMode === 'team' ? (
+                            <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                                <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                                <p>
+                                    Team projects are visible to the <strong>team owner</strong> and any <strong>team admins</strong>, in addition to whoever you invite. They&apos;re not private.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="mb-4 flex items-start gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
+                                <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                                <p>
+                                    Personal projects are private — only you can see them. They require your own active personal plan (team subscriptions don&apos;t cover personal projects).
+                                </p>
+                            </div>
+                        )}
 
                         <form
                             onSubmit={handleCreateProject}

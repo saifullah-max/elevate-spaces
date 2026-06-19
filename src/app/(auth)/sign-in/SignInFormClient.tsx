@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import Link from "next/link";
-import { signIn } from "@/services/auth.service";
+import { signIn, resendVerificationEmail } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setAuth } from "@/store/slices/authSlice";
@@ -42,6 +42,8 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialErrorMessage);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, value, checked } = e.target;
@@ -75,11 +77,15 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
         router.push("/");
       }
     } catch (err: unknown) {
-      const errorMessage =
-        typeof err === "object" && err !== null && "message" in err
-          ? (err as { message: string }).message
-          : "Sign in failed. Please try again.";
+      const e = (typeof err === "object" && err !== null ? err : {}) as { message?: string; code?: string; email?: string };
+      const errorMessage = e.message || "Sign in failed. Please try again.";
       setError(errorMessage);
+      if (e.code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(e.email || form.email);
+        setResendState("idle");
+      } else {
+        setUnverifiedEmail(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -108,6 +114,32 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
               <p>{error}</p>
               {showCreateAccountFirstText && (
                 <p className="">Create account first.</p>
+              )}
+              {unverifiedEmail && (
+                <div className="pt-2 border-t border-red-200">
+                  {resendState === "sent" ? (
+                    <p className="text-xs">
+                      A new confirmation link has been sent to <strong>{unverifiedEmail}</strong>.
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={resendState === "sending"}
+                      onClick={async () => {
+                        setResendState("sending");
+                        try {
+                          await resendVerificationEmail(unverifiedEmail);
+                          setResendState("sent");
+                        } catch {
+                          setResendState("idle");
+                        }
+                      }}
+                      className="text-xs underline font-semibold disabled:opacity-60"
+                    >
+                      {resendState === "sending" ? "Sending…" : "Resend confirmation email"}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}

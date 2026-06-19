@@ -45,6 +45,7 @@ interface SignUpResponse {
   message: string;
   token?: string;
   user?: User;
+  requiresEmailVerification?: boolean;
 }
 
 interface SignInData {
@@ -76,32 +77,42 @@ export const signUp = async (data: SignUpData): Promise<SignUpResponse> => {
       throw new Error("Backend API URL is not configured");
     }
 
-    const response = await axios.post<SignUpAPIResponse>(
+    const response = await axios.post<SignUpAPIResponse & { requiresEmailVerification?: boolean; message?: string }>(
       `${API_BASE_URL}/auth/signup`,
       data
     );
 
-    const { token, user: apiUser } = response.data;
+    // New flow: signup returns no auth token; the account is pending email
+    // verification. The user must confirm the email before they can sign in.
+    if ((response.data as any).requiresEmailVerification) {
+      const apiUser = response.data.user;
+      return {
+        success: true,
+        message: response.data.message || "Please check your email to confirm your account.",
+        requiresEmailVerification: true,
+        user: apiUser ? {
+          id: apiUser.id,
+          email: apiUser.email,
+          name: apiUser.name,
+          role: isValidUserRole(apiUser.role) ? apiUser.role : "USER",
+          avatarUrl: apiUser.avatar_url || null,
+        } : undefined,
+      };
+    }
 
-    // Validate and cast role to UserRole type
+    // Fallback for legacy responses that still return a token.
+    const { token, user: apiUser } = response.data;
     if (!isValidUserRole(apiUser.role)) {
       throw new Error(`Invalid user role received: ${apiUser.role}`);
     }
-
     const user: User = {
       id: apiUser.id,
       email: apiUser.email,
       name: apiUser.name,
-      role: apiUser.role, // Now guaranteed to be UserRole type
-      avatarUrl: apiUser.avatar_url || null, // Map snake_case to camelCase
+      role: apiUser.role,
+      avatarUrl: apiUser.avatar_url || null,
     };
-
-    return {
-      success: true,
-      message: "Sign up successful",
-      token,
-      user,
-    };
+    return { success: true, message: "Sign up successful", token, user };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw {
@@ -151,11 +162,15 @@ export const signIn = async (data: SignInData): Promise<SignInResponse> => {
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      const data = error.response?.data || {};
       throw {
         message:
-          error.response?.data?.message ||
+          data.error ||
+          data.message ||
           error.message ||
           "Sign in failed. Please try again.",
+        code: data.code,
+        email: data.email,
       };
     }
     throw {
@@ -206,6 +221,38 @@ export const getCurrentUserProfile = async (): Promise<User> => {
       message: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
     };
   }
+};
+
+export const verifyEmailToken = async (token: string): Promise<{ success: boolean; message: string; alreadyVerified?: boolean; code?: string }> => {
+  if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/verify-email`, { token });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data || {};
+      return { success: false, message: data.error || "Failed to confirm email", code: data.code };
+    }
+    throw error;
+  }
+};
+
+export const resendVerificationEmail = async (email: string): Promise<{ success: boolean; message: string }> => {
+  if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
+  const response = await axios.post(`${API_BASE_URL}/auth/resend-verification`, { email });
+  return response.data;
+};
+
+export const updateSecondaryEmail = async (secondaryEmail: string): Promise<{ success: boolean; message: string; secondaryEmail: string | null }> => {
+  if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
+  const response = await axios.patch(`${API_BASE_URL}/auth/secondary-email`, { secondaryEmail }, { headers: getAuthHeaders() });
+  return response.data;
+};
+
+export const deleteSecondaryEmail = async (): Promise<{ success: boolean; message: string; secondaryEmail: string | null }> => {
+  if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
+  const response = await axios.delete(`${API_BASE_URL}/auth/secondary-email`, { headers: getAuthHeaders() });
+  return response.data;
 };
 
 export const updateProfileImage = async (file: File): Promise<{ success: boolean; message: string; user: User }> => {

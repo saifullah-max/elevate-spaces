@@ -217,7 +217,20 @@ function SignUpForm() {
         },
       });
 
-      if (response.success && response.user && response.token) {
+      if (response.success && response.requiresEmailVerification) {
+        // New flow: account exists but is unverified. Don't sign the user in;
+        // show "check your email" state. Bonus credits are reserved server-side
+        // and remain attached to the account when they confirm and sign in.
+        if (!localStorage.getItem('elevate_spaces_signup_at')) {
+          localStorage.setItem('elevate_spaces_signup_at', String(Date.now()));
+        }
+        if (fromDemoBonus) {
+          localStorage.removeItem('demo_bonus_offer_date');
+        }
+        setSuccess(true);
+        // Leave email visible so the success state can show "we emailed
+        // <email>" without re-reading the form.
+      } else if (response.success && response.user && response.token) {
         dispatch(setAuth({
           user: response.user,
           token: response.token,
@@ -330,18 +343,36 @@ function SignUpForm() {
           )}
 
           {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              {fromDemoBonus ? (
-                <>
-                  <p className="font-semibold flex items-center gap-1">
-                    <Sparkles className="w-4 h-4" />
-                    Account created! 5 bonus credits added to your account!
-                  </p>
-                  <p className="text-xs mt-1">Redirecting...</p>
-                </>
-              ) : (
-                "Account created successfully! Redirecting..."
+            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-900 text-sm space-y-2">
+              <p className="font-semibold flex items-center gap-1">
+                <Sparkles className="w-4 h-4" />
+                Almost there — check your email
+              </p>
+              <p>
+                We&apos;ve sent a confirmation link to <strong>{form.email}</strong>. Click the link in that email to activate your account, then come back and sign in.
+              </p>
+              {fromDemoBonus && (
+                <p className="text-xs">Your 5 bonus credits are reserved and will appear after you confirm and sign in.</p>
               )}
+              <p className="text-xs">
+                Didn&apos;t get it? Check your spam folder, or{" "}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const { resendVerificationEmail } = await import("@/services/auth.service");
+                      await resendVerificationEmail(form.email);
+                      setError(null);
+                    } catch {
+                      setError("Could not resend the confirmation email. Please try again later.");
+                    }
+                  }}
+                  className="underline font-semibold"
+                >
+                  resend the confirmation
+                </button>
+                .
+              </p>
             </div>
           )}
 
