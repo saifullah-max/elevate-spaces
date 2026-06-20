@@ -10,57 +10,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setAuth } from "@/store/slices/authSlice";
 import { saveAuthToStorage } from "@/lib/auth.storage";
-import { AgreementChecklistModal, AgreementItem } from "@/components/AgreementChecklistModal";
+import { AgreementChecklistModal } from "@/components/AgreementChecklistModal";
+import { REGISTRATION_AGREEMENTS, initialRegistrationAgreements } from "@/lib/registrationAgreements";
 
 function SignUpForm() {
   type PendingAgreementAction = "none" | "google-signup" | "manual-signup";
-
-  const REGISTRATION_AGREEMENTS: AgreementItem[] = [
-    {
-      id: "acceptTermsAndPrivacy",
-      required: true,
-      label: (
-        <>
-          I agree to the <Link href="/terms-of-use" className="text-indigo-600 hover:underline">Terms of Service</Link> and <Link href="/privacy-policy" className="text-indigo-600 hover:underline">Privacy Policy</Link> and acknowledge that they constitute a legally binding agreement.
-        </>
-      ),
-    },
-    {
-      id: "confirmAgeAndCapacity",
-      required: true,
-      label: "I confirm that I am at least eighteen (18) years old and legally capable of entering into a binding contract.",
-    },
-    {
-      id: "confirmUploadRights",
-      required: true,
-      label: "I confirm that I have all necessary legal rights to upload any content submitted to the platform.",
-    },
-    {
-      id: "acknowledgeAiLimitations",
-      required: true,
-      label: "I understand that AI-generated results may contain inaccuracies and are provided solely for marketing visualization purposes.",
-    },
-    {
-      id: "acknowledgeCreditsPolicy",
-      required: true,
-      label: "I understand that subscription credits reset monthly, do not roll over, and expire if unused.",
-    },
-    {
-      id: "acceptArbitrationWaiver",
-      required: true,
-      label: "I agree that any disputes will be resolved exclusively through binding arbitration on an individual basis and waive any right to participate in class actions or jury trials.",
-    },
-    {
-      id: "acknowledgePhotographerDisclaimer",
-      required: true,
-      label: "I acknowledge that photographers are independent contractors and Elevate Spaces is not responsible for their services.",
-    },
-    {
-      id: "promotionalCommunicationsOptIn",
-      required: false,
-      label: "I agree to receive promotional communications.",
-    },
-  ];
 
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
@@ -99,16 +53,7 @@ function SignUpForm() {
       setForm((previous) => ({ ...previous, email: emailFromQuery }));
     }
   }, [searchParams, form.email]);
-  const [registrationAgreements, setRegistrationAgreements] = useState<Record<string, boolean>>({
-    acceptTermsAndPrivacy: false,
-    confirmAgeAndCapacity: false,
-    confirmUploadRights: false,
-    acknowledgeAiLimitations: false,
-    acknowledgeCreditsPolicy: false,
-    acceptArbitrationWaiver: false,
-    acknowledgePhotographerDisclaimer: false,
-    promotionalCommunicationsOptIn: false,
-  });
+  const [registrationAgreements, setRegistrationAgreements] = useState<Record<string, boolean>>({ ...initialRegistrationAgreements });
 
   // Check if user is coming from demo bonus offer
   useEffect(() => {

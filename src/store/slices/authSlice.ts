@@ -5,9 +5,11 @@ export type UserRole = "USER" | "PHOTOGRAPHER" | "ADMIN";
 export interface User {
   id: string;
   email: string;
+  secondary_email?: string | null;
   name: string;
   role: UserRole;
   avatarUrl?: string | null;
+  manualAvatarUrl?: string | null;
 }
 
 interface AuthState {

@@ -401,22 +401,21 @@ export default function Demo() {
         let graceExpiryDate: Date | null = null;
 
         if (paymentSummary?.activeSubscriptions && paymentSummary.activeSubscriptions.length > 0) {
-          const proSubscription = paymentSummary.activeSubscriptions.find(
-            (s: any) => String(s.package).toLowerCase().includes('pro')
-          );
+          // Match the same packages the rest of the app treats as project-eligible
+          // (Pro, Pro+, Team, Team+, Enterprise). Previously this only looked for
+          // a substring of "pro", so Team/Enterprise accounts silently failed
+          // eligibility and the project picker was skipped on staging.
+          const eligibleSubscription = paymentSummary.activeSubscriptions.find((s: any) => {
+            const pkg = String(s.package || "").toLowerCase();
+            return pkg === "plan_pro" || pkg === "plan_team" || pkg === "enterprise" || pkg.includes("pro") || pkg.includes("team");
+          });
 
-          console.log('[DEBUG] Looking for Pro subscription in:', paymentSummary.activeSubscriptions.map((s: any) => ({ package: s.package, autoRenew: s.autoRenewEnabled, cancelled: s.cancelledAt })));
-          console.log('[DEBUG] Found Pro subscription:', proSubscription);
-
-          if (proSubscription) {
+          if (eligibleSubscription) {
             const now = new Date();
-            // Check if subscription is active or within grace period
-            if (!proSubscription.cancelledAt && proSubscription.autoRenewEnabled) {
-              console.log('[DEBUG] Pro subscription is active (not cancelled, auto-renew enabled)');
+            if (!eligibleSubscription.cancelledAt && eligibleSubscription.autoRenewEnabled) {
               userHasPersonal = true;
-            } else if (proSubscription.completedAt) {
-              const graceExpiry = new Date(new Date(proSubscription.completedAt).getTime() + GRACE_PERIOD_MS);
-              console.log('[DEBUG] Checking grace period - completedAt:', proSubscription.completedAt, 'graceExpiry:', graceExpiry, 'now:', now, 'withinGrace:', now < graceExpiry);
+            } else if (eligibleSubscription.completedAt) {
+              const graceExpiry = new Date(new Date(eligibleSubscription.completedAt).getTime() + GRACE_PERIOD_MS);
               if (now < graceExpiry) {
                 userHasPersonal = true;
                 graceExpiryDate = graceExpiry;
@@ -1568,7 +1567,11 @@ export default function Demo() {
                           </div>
                         )}
 
-                        {!hasAnyActiveSubscription && (
+                        {/* Only relevant for users paying out of personal credits.
+                            When the user picks team credits they're piggybacking on
+                            the team owner's plan, so prompting them to upgrade is
+                            both noisy and misleading. */}
+                        {creditSource !== 'team' && !hasAnyActiveSubscription && (
                           <div className="mt-2 rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-3">
                             <div className="flex items-start gap-2">
                               <Sparkles className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
@@ -1578,7 +1581,14 @@ export default function Demo() {
                                   Pick a plan pro or up to remove watermarks, get higher-quality renders, save unlimited projects, and stage at full resolution.
                                 </p>
                                 <a
-                                  href="/#pricing"
+                                  href="#pricing"
+                                  onClick={(event) => {
+                                    const pricingSection = typeof document !== 'undefined' ? document.getElementById('pricing') : null;
+                                    if (pricingSection) {
+                                      event.preventDefault();
+                                      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
+                                  }}
                                   className="mt-2 inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 transition"
                                 >
                                   See plans →

@@ -59,9 +59,12 @@ interface AuthAPIResponse {
   user: {
     id: string;
     email: string;
+    secondary_email?: string | null;
     name: string;
     role: string; // Backend returns string
     avatar_url?: string | null; // Backend uses snake_case
+    manual_avatar_url?: string | null;
+    google_avatar_url?: string | null;
   };
 }
 
@@ -150,10 +153,14 @@ export const signIn = async (data: SignInData): Promise<SignInResponse> => {
 
     const user: User = {
       id: apiUser.id,
+      // PRIMARY email — the backend always returns the primary even if the
+      // login form's value was the user's secondary address.
       email: apiUser.email,
+      secondary_email: apiUser.secondary_email ?? null,
       name: apiUser.name,
       role: apiUser.role, // Now guaranteed to be UserRole type
-      avatarUrl: apiUser.avatar_url || null, // Map snake_case to camelCase
+      avatarUrl: apiUser.avatar_url || null,
+      manualAvatarUrl: apiUser.manual_avatar_url ?? null,
     };
 
     return {
@@ -203,9 +210,11 @@ export const getCurrentUserProfile = async (): Promise<User> => {
     return {
       id: apiUser.id,
       email: apiUser.email,
+      secondary_email: apiUser.secondary_email ?? null,
       name: apiUser.name,
       role: apiUser.role,
       avatarUrl: apiUser.avatar_url || null,
+      manualAvatarUrl: apiUser.manual_avatar_url ?? null,
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -243,15 +252,35 @@ export const resendVerificationEmail = async (email: string): Promise<{ success:
   return response.data;
 };
 
-export const updateSecondaryEmail = async (secondaryEmail: string): Promise<{ success: boolean; message: string; secondaryEmail: string | null }> => {
+export const updateSecondaryEmail = async (secondaryEmail: string): Promise<{ success: boolean; message: string; secondaryEmail: string | null; pendingSecondaryEmail: string | null; requiresVerification: boolean }> => {
   if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
   const response = await axios.patch(`${API_BASE_URL}/auth/secondary-email`, { secondaryEmail }, { headers: getAuthHeaders() });
   return response.data;
 };
 
-export const deleteSecondaryEmail = async (): Promise<{ success: boolean; message: string; secondaryEmail: string | null }> => {
+export const deleteSecondaryEmail = async (): Promise<{ success: boolean; message: string; secondaryEmail: string | null; pendingSecondaryEmail: string | null }> => {
   if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
   const response = await axios.delete(`${API_BASE_URL}/auth/secondary-email`, { headers: getAuthHeaders() });
+  return response.data;
+};
+
+export const verifySecondaryEmailToken = async (token: string): Promise<{ success: boolean; message: string; secondaryEmail?: string; code?: string }> => {
+  if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/verify-secondary-email`, { token });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data || {};
+      return { success: false, message: data.error || "Failed to confirm secondary email", code: data.code };
+    }
+    throw error;
+  }
+};
+
+export const resendSecondaryEmailVerification = async (): Promise<{ success: boolean; message: string }> => {
+  if (!API_BASE_URL) throw new Error("Backend API URL is not configured");
+  const response = await axios.post(`${API_BASE_URL}/auth/resend-secondary-verification`, {}, { headers: getAuthHeaders() });
   return response.data;
 };
 

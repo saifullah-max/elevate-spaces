@@ -713,7 +713,7 @@ const PricingPage = () => {
         : null;
   const extraCreditsProductKey = hasActiveSubscription ? 'subscription_topup' : 'pay_per_image';
   return (
-    <div id='#pricing' className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 font-sans">
+    <div id="pricing" className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-350uto">
 
         {/* Header */}

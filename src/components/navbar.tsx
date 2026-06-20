@@ -17,6 +17,7 @@ interface UserData {
   name: string | null;
   role: UserType["role"] | string | string[] | null;
   avatarUrl?: string | null;
+  manualAvatarUrl?: string | null;
 }
 
 export default function Navbar() {
@@ -25,6 +26,10 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isRemovingProfileImage, setIsRemovingProfileImage] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  // Tracks whether the current avatarUrl failed to load (CORS, 403 from a
+  // hotlink-protected CDN, broken upload, etc.) so we can fall back to the
+  // initials bubble instead of rendering a broken image.
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin');
@@ -48,7 +53,10 @@ export default function Navbar() {
           email: apiUser.email,
           name: apiUser.name,
           role: apiUser.role,
-          avatarUrl: apiUser.avatarUrl || null,
+          // Prefer the user's manually-uploaded avatar; fall back to the
+          // OAuth/provider avatar when no manual one has been set.
+          avatarUrl: apiUser.manualAvatarUrl || apiUser.avatarUrl || null,
+          manualAvatarUrl: apiUser.manualAvatarUrl || null,
         });
       } catch {
         setUser({
@@ -56,7 +64,8 @@ export default function Navbar() {
           email: authData.user.email,
           name: authData.user.name,
           role: authData.user.role,
-          avatarUrl: null,
+          avatarUrl: authData.user.manualAvatarUrl || authData.user.avatarUrl || null,
+          manualAvatarUrl: authData.user.manualAvatarUrl || null,
         });
       }
     };
@@ -87,6 +96,10 @@ export default function Navbar() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [user?.avatarUrl]);
 
   const handleLogout = () => {
     clearAuthFromStorage();
@@ -271,11 +284,13 @@ export default function Navbar() {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-slate-100 transition-colors"
                 >
-                  {user.avatarUrl ? (
+                  {user.avatarUrl && !avatarLoadFailed ? (
                     <img
                       src={user.avatarUrl}
                       alt={user.name || "User"}
                       className="w-8 h-8 rounded-full object-cover border-2 border-indigo-600"
+                      referrerPolicy="no-referrer"
+                      onError={() => setAvatarLoadFailed(true)}
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
@@ -390,11 +405,13 @@ export default function Navbar() {
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-4 py-3 bg-slate-200 rounded-xl">
-                    {user.avatarUrl && typeof user.avatarUrl === 'string' ? (
+                    {user.avatarUrl && typeof user.avatarUrl === 'string' && !avatarLoadFailed ? (
                       <img
                         src={user.avatarUrl}
                         alt={user.name || "User"}
                         className="w-10 h-10 rounded-full object-cover border-2 border-indigo-600"
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarLoadFailed(true)}
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">

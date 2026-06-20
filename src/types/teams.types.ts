@@ -48,6 +48,16 @@ export interface acceptInviteData {
     token: string;
     name?: string;
     password?: string;
+    registrationAgreements?: {
+        acceptTermsAndPrivacy: boolean;
+        confirmAgeAndCapacity: boolean;
+        confirmUploadRights: boolean;
+        acknowledgeAiLimitations: boolean;
+        acknowledgeCreditsPolicy: boolean;
+        acceptArbitrationWaiver: boolean;
+        acknowledgePhotographerDisclaimer: boolean;
+        promotionalCommunicationsOptIn?: boolean;
+    };
 }
 
 export interface acceptInviteResponse {
@@ -58,6 +68,20 @@ export interface acceptInviteResponse {
     email?: string;
     teamId?: string;
     userId?: string;
+    // Present only when the accept-invite flow created a brand-new account.
+    // The frontend uses these to sign the user straight into the app rather
+    // than bouncing them back through the sign-in page.
+    token?: string;
+    user?: {
+        id: string;
+        email: string;
+        name: string | null;
+        role: string;
+        avatarUrl?: string | null;
+        manualAvatarUrl?: string | null;
+        googleAvatarUrl?: string | null;
+        created_at?: string;
+    };
 }
 
 export interface removeTeamMemberData {

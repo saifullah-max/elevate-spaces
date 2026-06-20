@@ -12,6 +12,7 @@ import {
   updateProfileImage,
   updateSecondaryEmail,
   deleteSecondaryEmail,
+  resendSecondaryEmailVerification,
 } from '@/services/auth.service';
 import {
   getMyPhotographerProfile,
@@ -57,12 +58,14 @@ export default function SettingsPage() {
   // Secondary email state — loaded via fresh /auth/me call because the cached
   // auth payload in localStorage may pre-date this field.
   const [secondaryEmail, setSecondaryEmail] = useState<string | null>(null);
+  const [pendingSecondaryEmail, setPendingSecondaryEmail] = useState<string | null>(null);
   const [secondaryEmailInput, setSecondaryEmailInput] = useState('');
   const [secondaryEmailEditing, setSecondaryEmailEditing] = useState(false);
   const [secondaryEmailSaving, setSecondaryEmailSaving] = useState(false);
   const [secondaryEmailError, setSecondaryEmailError] = useState<string | null>(null);
   const [secondaryEmailRemoveOpen, setSecondaryEmailRemoveOpen] = useState(false);
   const [secondaryEmailRemoving, setSecondaryEmailRemoving] = useState(false);
+  const [secondaryEmailResending, setSecondaryEmailResending] = useState(false);
 
   useEffect(() => {
     const auth = getAuthFromStorage();
@@ -74,7 +77,11 @@ export default function SettingsPage() {
     setUser(auth.user);
     setIsLoading(false);
 
-    // Pull fresh profile to populate secondary_email (not stored in cached auth).
+    // Pull fresh profile from /auth/me. The cached auth payload in localStorage
+    // can lag the real user record — e.g. when the user signed in via their
+    // secondary email and the stored snapshot is older. Always trust the
+    // server's PRIMARY email + secondary_email here so settings can't display
+    // a stale identity.
     (async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_BACKEND_API;
@@ -84,9 +91,41 @@ export default function SettingsPage() {
         });
         if (!res.ok) return;
         const data = await res.json();
-        if (data?.user?.secondary_email !== undefined) {
-          setSecondaryEmail(data.user.secondary_email || null);
+        const apiUser = data?.user;
+        if (!apiUser) return;
+
+        if (apiUser.secondary_email !== undefined) {
+          setSecondaryEmail(apiUser.secondary_email || null);
         }
+        if (apiUser.secondary_email_pending !== undefined) {
+          setPendingSecondaryEmail(apiUser.secondary_email_pending || null);
+        }
+
+        // Reconcile the local user state with the server's truth. The primary
+        // `email` is what the profile header shows; cached snapshots are
+        // overridden so logging in via secondary never displays it as primary.
+        setUser((current) => {
+          const merged = {
+            ...(current || {}),
+            id: apiUser.id ?? current?.id,
+            email: apiUser.email ?? current?.email,
+            secondary_email: apiUser.secondary_email ?? null,
+            name: apiUser.name ?? current?.name,
+            role: apiUser.role ?? current?.role,
+            avatarUrl: apiUser.avatar_url ?? current?.avatarUrl ?? null,
+            manualAvatarUrl: apiUser.manual_avatar_url ?? current?.manualAvatarUrl ?? null,
+          } as AuthUser;
+
+          // Keep localStorage in sync so other tabs / the navbar pick up the
+          // corrected primary email on the next read.
+          try {
+            saveAuthToStorage(merged, auth.token);
+          } catch {
+            // Non-fatal — UI still has the right state in memory.
+          }
+
+          return merged;
+        });
       } catch {
         // Non-blocking — user can still edit and save.
       }
@@ -331,7 +370,7 @@ export default function SettingsPage() {
               <div>
                 <h3 className="text-lg font-semibold text-slate-900">Secondary email</h3>
                 <p className="text-sm text-slate-600">
-                  Add an optional secondary email you can also sign in with. It must not already be in use by another account. We&apos;ll send a heads-up to your primary email whenever this is added or changed.
+                  Add an optional secondary email you can also sign in with. It must not already be in use by another account. We&apos;ll send a confirmation link to that address — it only becomes active once you click the link. Your primary email is notified after confirmation.
                 </p>
               </div>
 
@@ -356,9 +395,10 @@ export default function SettingsPage() {
                         try {
                           const result = await updateSecondaryEmail(secondaryEmailInput.trim());
                           setSecondaryEmail(result.secondaryEmail);
+                          setPendingSecondaryEmail(result.pendingSecondaryEmail);
                           setSecondaryEmailEditing(false);
                           setSecondaryEmailInput('');
-                          showSuccess(result.message || 'Secondary email saved');
+                          showSuccess(result.message || 'Confirmation email sent. Check your inbox.');
                         } catch (err: any) {
                           const msg = err?.response?.data?.error || err?.message || 'Failed to save secondary email';
                           setSecondaryEmailError(msg);
@@ -384,39 +424,81 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                 </div>
-              ) : secondaryEmail ? (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3">
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">{secondaryEmail}</p>
-                    <p className="text-xs text-slate-500">You can sign in with this email.</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSecondaryEmailInput(secondaryEmail || '');
-                        setSecondaryEmailEditing(true);
-                      }}
-                    >
-                      Replace
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSecondaryEmailRemoveOpen(true)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
               ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => setSecondaryEmailEditing(true)}
-                >
-                  Add secondary email
-                </Button>
+                <div className="space-y-3">
+                  {secondaryEmail && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{secondaryEmail}</p>
+                        <p className="text-xs text-emerald-700">Confirmed — you can sign in with this email.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSecondaryEmailInput(secondaryEmail || '');
+                            setSecondaryEmailEditing(true);
+                          }}
+                        >
+                          Replace
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSecondaryEmailRemoveOpen(true)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {pendingSecondaryEmail && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{pendingSecondaryEmail}</p>
+                        <p className="text-xs text-amber-700">Pending confirmation — open the link we sent to this address.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={secondaryEmailResending}
+                          onClick={async () => {
+                            setSecondaryEmailResending(true);
+                            try {
+                              const result = await resendSecondaryEmailVerification();
+                              showSuccess(result.message || 'Confirmation email resent.');
+                            } catch (err: any) {
+                              showError(err?.response?.data?.error || err?.message || 'Failed to resend confirmation');
+                            } finally {
+                              setSecondaryEmailResending(false);
+                            }
+                          }}
+                        >
+                          {secondaryEmailResending ? 'Resending…' : 'Resend link'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSecondaryEmailRemoveOpen(true)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!secondaryEmail && !pendingSecondaryEmail && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setSecondaryEmailEditing(true)}
+                    >
+                      Add secondary email
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
 
@@ -434,6 +516,8 @@ export default function SettingsPage() {
                   <DialogDescription>
                     {secondaryEmail ? (
                       <>Remove <b>{secondaryEmail}</b> from this account? You&apos;ll no longer be able to sign in with it.</>
+                    ) : pendingSecondaryEmail ? (
+                      <>Cancel the pending confirmation for <b>{pendingSecondaryEmail}</b>? The link we sent will stop working.</>
                     ) : (
                       "Remove the secondary email from this account?"
                     )}
@@ -455,6 +539,7 @@ export default function SettingsPage() {
                       try {
                         const result = await deleteSecondaryEmail();
                         setSecondaryEmail(null);
+                        setPendingSecondaryEmail(null);
                         setSecondaryEmailRemoveOpen(false);
                         showSuccess(result.message || 'Secondary email removed');
                       } catch (err: any) {

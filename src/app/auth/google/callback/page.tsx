@@ -35,8 +35,14 @@ function GoogleCallbackHandler() {
         // Save persistently in localStorage
         saveAuthToStorage(user, params.token as string);
 
-        // Redirect immediately after saving
-        router.replace("/");
+        // If the OAuth flow originated from a team-invite link, send the user
+        // back to accept-invite so their freshly-created (or linked) account
+        // gets added to the team automatically.
+        if (params.inviteToken) {
+          router.replace(`/accept-invite?token=${encodeURIComponent(params.inviteToken)}`);
+        } else {
+          router.replace("/");
+        }
       } catch (err) {
         router.replace("/sign-in?error=oauth_failed");
       }
