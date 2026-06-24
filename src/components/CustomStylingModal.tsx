@@ -46,11 +46,13 @@ function ImageComparisonSlider({
   alt: string;
 }) {
   const [position, setPosition] = useState(50);
-  const [dragging, setDragging] = useState(false);
+  const draggingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const endDrag = () => setDragging(false);
+    const endDrag = () => {
+      draggingRef.current = false;
+    };
     window.addEventListener("pointerup", endDrag);
     window.addEventListener("pointercancel", endDrag);
     return () => {
@@ -71,16 +73,27 @@ function ImageComparisonSlider({
       ref={containerRef}
       className="relative h-52 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 select-none touch-none"
       onPointerDown={(event) => {
-        setDragging(true);
+        event.preventDefault();
+        draggingRef.current = true;
         updatePosition(event.clientX);
-        event.currentTarget.setPointerCapture(event.pointerId);
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        } catch {}
       }}
       onPointerMove={(event) => {
-        if (!dragging) return;
+        if (!draggingRef.current) return;
+        event.preventDefault();
         updatePosition(event.clientX);
       }}
-      onPointerUp={() => setDragging(false)}
-      onPointerLeave={() => setDragging(false)}
+      onPointerUp={(event) => {
+        draggingRef.current = false;
+        try {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        } catch {}
+      }}
+      onPointerCancel={() => {
+        draggingRef.current = false;
+      }}
     >
       <img src={previewSrc} alt={alt} className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 overflow-hidden" style={{ width: `${position}%` }}>
