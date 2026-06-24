@@ -160,7 +160,6 @@ export default function ProjectsPage() {
             const res = await getMyProjects();
             setProjects(res);
         } catch (err) {
-            console.error("Failed to fetch projects", err);
         }
     }, []);
 
@@ -177,7 +176,6 @@ export default function ProjectsPage() {
             setTeams(unique);
             setTeamId((currentTeamId) => currentTeamId || unique[0]?.id || "");
         } catch (err) {
-            console.error("Failed to fetch teams", err);
         }
     }, []);
 

@@ -104,10 +104,8 @@ export function PWAInstall() {
       navigator.serviceWorker
         .register('/sw.js', { scope: '/' })
         .then((registration) => {
-          console.log('[PWA] Service Worker registered:', registration);
         })
         .catch((error) => {
-          console.error('[PWA] Service Worker registration failed:', error);
         });
     }
 
@@ -127,7 +125,6 @@ export function PWAInstall() {
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`[PWA] User response: ${outcome}`);
     setDeferredPrompt(null);
 
     if (outcome === 'accepted') {

@@ -81,7 +81,6 @@ export default function AdminLogsPage() {
     'Authorization': `Bearer ${auth?.token}`,
     'Content-Type': 'application/json',
   };
-  console.log('[Admin Logs] Auth headers:', { token: auth?.token ? 'Present' : 'Missing', tokenLength: auth?.token?.length || 0, auth });
   const router = useRouter();
 
   // Helper to safely parse responses (handles non-JSON like HTML Unauthorized)
@@ -109,7 +108,6 @@ export default function AdminLogsPage() {
     try {
       const res = await fetch(`${API_URL}/admin/logs/months`, { headers });
       const data = await parseResponseSafely(res);
-      console.log('[Admin Logs] fetchMonths response:', { status: res.status, data });
       if (res.status === 401) {
         clearAuthFromStorage();
         router.push('/sign-in');
@@ -122,7 +120,6 @@ export default function AdminLogsPage() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch months:', error);
     }
   };
 
@@ -133,7 +130,6 @@ export default function AdminLogsPage() {
         : `${API_URL}/admin/logs/stats`;
       const res = await fetch(url, { headers });
       const data = await parseResponseSafely(res);
-      console.log('[Admin Logs] fetchStats response:', { status: res.status, data, headers: Object.fromEntries(res.headers) });
       if (res.status === 401) {
         clearAuthFromStorage();
         router.push('/sign-in');
@@ -142,10 +138,8 @@ export default function AdminLogsPage() {
       if (data && data.success) {
         setStats(data.data);
       } else if (data && data.error) {
-        console.error('Failed to fetch stats:', data);
       }
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
     }
   };
 
@@ -164,7 +158,6 @@ export default function AdminLogsPage() {
       const url = `${API_URL}/admin/logs/requests?${params.toString()}`;
       const res = await fetch(url, { headers });
       const data = await parseResponseSafely(res);
-      console.log('[Admin Logs] fetchRequestLogs response:', { status: res.status, data });
       if (res.status === 401) {
         clearAuthFromStorage();
         router.push('/sign-in');
@@ -176,7 +169,6 @@ export default function AdminLogsPage() {
         setCurrentPage(page);
       }
     } catch (error) {
-      console.error('Failed to fetch request logs:', error);
     } finally {
       setLoading(false);
     }
@@ -207,7 +199,6 @@ export default function AdminLogsPage() {
         : `${API_URL}/admin/logs/payments?page=${page}&limit=20`;
       const res = await fetch(url, { headers });
       const data = await parseResponseSafely(res);
-      console.log('[Admin Logs] fetchPaymentLogs response:', { status: res.status, data });
       if (res.status === 401) {
         clearAuthFromStorage();
         router.push('/sign-in');
@@ -219,7 +210,6 @@ export default function AdminLogsPage() {
         setCurrentPage(page);
       }
     } catch (error) {
-      console.error('Failed to fetch payment logs:', error);
     } finally {
       setLoading(false);
     }
@@ -233,7 +223,6 @@ export default function AdminLogsPage() {
         : `${API_URL}/admin/logs/multi-image?page=${page}&limit=20`;
       const res = await fetch(url, { headers });
       const data = await parseResponseSafely(res);
-      console.log('[Admin Logs] fetchMultiImageLogs response:', { status: res.status, data });
       if (res.status === 401) {
         clearAuthFromStorage();
         router.push('/sign-in');
@@ -245,7 +234,6 @@ export default function AdminLogsPage() {
         setCurrentPage(page);
       }
     } catch (error) {
-      console.error('Failed to fetch multi-image logs:', error);
     } finally {
       setLoading(false);
     }

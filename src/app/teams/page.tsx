@@ -143,7 +143,6 @@ export default function Teams() {
                 setSelectedTeam(refreshed);
             }
         } catch (error) {
-            console.error("Failed to fetch teams", error);
         }
     }
 
@@ -286,7 +285,6 @@ export default function Teams() {
         } catch (err: any) {
             const errorMsg = err?.message || "Failed to cancel invitation";
             setCancelError(errorMsg);
-            console.error("Failed to cancel invitation", errorMsg);
         } finally {
             setRemovingMemberId(null);
         }
@@ -302,7 +300,6 @@ export default function Teams() {
             });
             await getAllTeams();
         } catch (err: any) {
-            console.error("Failed to remove member", err?.message || err);
             throw err;
         } finally {
             setRemovingMemberId(null);
@@ -387,7 +384,6 @@ export default function Teams() {
         } catch (err: any) {
             const errorMsg = err?.message || "Failed to cancel invitation";
             setCancelError(errorMsg);
-            console.error("Failed to cancel invitation", errorMsg);
         } finally {
             setCancelingInviteId(null);
         }

@@ -356,7 +356,6 @@ export default function Demo() {
             eligibility.userHasActivePersonal ||
             eligibility.userHasProjectInTeam
           );
-          console.log('[DEBUG] Team eligibility computed:', eligibility);
           setIsEligibleToLink(eligible);
           if (!eligible) {
             setIneligibilityReason('Saving staged images to projects is available on Pro plans and above. Upgrade to Pro to save and organize staged images into projects.');
@@ -424,7 +423,6 @@ export default function Demo() {
           }
         }
 
-        console.log('[DEBUG] Personal eligibility result:', { userHasPersonal, graceExpiryDate });
         setIsEligibleToLink(userHasPersonal);
         if (!userHasPersonal) {
           setIneligibilityReason('Saving staged images to projects is available on Pro plans and above. Upgrade to Pro to save and organize staged images into projects.');
@@ -442,7 +440,6 @@ export default function Demo() {
   }, [selectedTeamId, creditSource, paymentSummary, isLoggedIn]);
 
   useEffect(() => {
-    console.log('[DEBUG] planTier:', planTier, 'canCustomizePerImageStyles:', canCustomizePerImageStyles);
   }, [planTier]);
 
   useEffect(() => {
@@ -515,9 +512,6 @@ export default function Demo() {
         setPaymentSummary(summary);
 
         const activePackages = (summary.activeSubscriptions || []).map((subscription) => subscription.package.toLowerCase());
-        console.log('[DEBUG] Payment Summary received:', summary);
-        console.log('[DEBUG] Active subscriptions:', summary.activeSubscriptions);
-        console.log('[DEBUG] Active package names (lowercase):', activePackages);
 
         // Check tiers in order: enterprise > team > pro > starter > free
         const nextTier = activePackages.some((packageName) => packageName.includes('enterprise'))
@@ -530,7 +524,6 @@ export default function Demo() {
                 ? 'starter'
                 : 'free';
 
-        console.log('[DEBUG] Detected tier:', nextTier);
         setPlanTier(nextTier);
 
         // Also fetch teams data for subscription eligibility checks
@@ -548,10 +541,8 @@ export default function Demo() {
             setTeamsData(uniqueTeams);
           }
         } catch (teamsError) {
-          console.error('[DEBUG] Error loading teams:', teamsError);
         }
       } catch (error) {
-        console.error('[DEBUG] Error loading plan tier:', error);
         if (!cancelled) setPlanTier('free');
       } finally {
         if (!cancelled) setSubscriptionStatusLoaded(true);
@@ -620,9 +611,7 @@ export default function Demo() {
       if (cancelled) return;
 
       const valid = dimensions.filter((item) => item.width > 0 && item.height > 0);
-      console.log(`[demo.tsx] Loaded ${valid.length} valid images from ${dimensions.length} total`);
       valid.forEach((dim, i) => {
-        console.log(`  Image ${i}: ${dim.width}x${dim.height} (${dim.width * dim.height} pixels)`);
       });
 
       if (valid.length === 0) {
@@ -644,7 +633,6 @@ export default function Demo() {
 
       // Store dimensions for CustomStylingModal (in both ref and state)
       imageDimensionsRef.current = valid;
-      console.log(`[demo.tsx] Setting imageDimensions state:`, valid);
       setImageDimensions(valid);
 
       // Check if all images meet the minimum resolution (>= 1024x768)
@@ -1131,7 +1119,6 @@ export default function Demo() {
       // Cleanup
       setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
     } catch (error) {
-      console.error('Download failed:', error);
       showError('Failed to download image. Please try again.');
     }
   }, []);
@@ -2367,7 +2354,6 @@ export default function Demo() {
             try {
               setDefaultProject(JSON.parse(stored));
             } catch (error: any) {
-              console.warn('Failed to parse stored default project', error);
             }
           }
 

@@ -22,7 +22,6 @@ export default function ForgotPassword() {
       });
     } catch (err) {
       // ignore network errors for UX; still show success message
-      console.error('forgot password request failed', err);
     } finally {
       setLoading(false);
       setSubmitted(true);

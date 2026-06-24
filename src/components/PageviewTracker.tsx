@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { trackPageView } from "@/lib/analytics";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 
@@ -10,10 +11,16 @@ export function PageviewTracker() {
   const lastReportedRef = useRef<string>("");
 
   useEffect(() => {
-    if (!API_BASE_URL || !pathname) return;
+    if (!pathname) return;
     if (pathname.startsWith("/admin")) return;
     if (lastReportedRef.current === pathname) return;
     lastReportedRef.current = pathname;
+
+    // Forward route changes to Meta Pixel + GA4. The base scripts fire an
+    // initial PageView on first load; this catches client-side navigations.
+    trackPageView(pathname);
+
+    if (!API_BASE_URL) return;
 
     const payload = JSON.stringify({
       path: pathname,

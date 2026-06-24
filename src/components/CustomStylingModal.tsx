@@ -117,7 +117,6 @@ export function CustomStylingModal({
   const isStyleLocked = forceSameStyleForAll;
   // Debug logging
   React.useEffect(() => {
-    console.log('[DEBUG CustomStylingModal] forceSameStyleForAll:', forceSameStyleForAll, 'isStyleLocked:', isStyleLocked, 'enableCustomStyling:', enableCustomStyling, 'applySameStyleForAll:', applySameStyleForAll);
   }, [forceSameStyleForAll, isStyleLocked, enableCustomStyling, applySameStyleForAll]);
 
   const [uploadedPreviewUrls, setUploadedPreviewUrls] = useState<string[]>([]);
@@ -319,16 +318,10 @@ export function CustomStylingModal({
                 
                 // Debug logging
                 if (index === 0) {
-                  console.log(`[CustomStylingModal] imageDimensions from state:`, imageDimensions);
-                  console.log(`[CustomStylingModal] imageDimensions from ref:`, imageDimensionsRef?.current);
-                  console.log(`[CustomStylingModal] Using dims:`, dims);
-                  console.log(`[CustomStylingModal] selectedFiles.length:`, selectedFiles.length);
                   dims?.forEach((dim: { width: number; height: number }, i: number) => {
-                    console.log(`  Image ${i}: ${dim.width}x${dim.height} (${dim.width * dim.height} pixels)`);
                   });
                 }
                 
-                console.log(`[CustomStylingModal] Image ${index} - isLowResolution: ${isLowResolution}`);
                 
                 return (
                   <div

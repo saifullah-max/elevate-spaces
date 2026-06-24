@@ -9,6 +9,7 @@ import { ClientNavbar } from "../components/ClientNavbar";
 import { PWAInstall } from "@/components/PWAInstall";
 import { PageviewTracker } from "@/components/PageviewTracker";
 import { AppToastContainer } from "@/components/AppToastContainer";
+import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,22 +21,35 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://elevate-spaces.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Elevate Spaces",
-    template: "%s | Elevate Spaces"
+    default: "Elevate Spaces AI - AI Virtual Staging",
+    template: "%s | Elevate Spaces AI"
   },
   description: "Transform your spaces with AI-powered virtual staging. Upload images, get instant professional staging suggestions.",
-  keywords: ["virtual staging", "AI staging", "interior design", "home staging", "photographercopyright"],
-  authors: [{ name: "Elevate Spaces" }],
-  creator: "Elevate Spaces",
-  publisher: "Elevate Spaces",
+  keywords: ["virtual staging", "AI staging", "interior design", "home staging", "real estate photography"],
+  authors: [{ name: "Elevate Spaces AI" }],
+  creator: "Elevate Spaces AI",
+  publisher: "Elevate Spaces AI",
   robots: "index, follow",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.jpg", sizes: "192x192", type: "image/jpeg" },
+      { url: "/icon-512.jpg", sizes: "512x512", type: "image/jpeg" },
+    ],
+    apple: [
+      { url: "/icon-192.jpg", sizes: "192x192", type: "image/jpeg" },
+    ],
+    shortcut: "/icon-192.jpg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Elevate Spaces",
+    title: "Elevate Spaces AI",
   },
   formatDetection: {
     telephone: false,
@@ -43,24 +57,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://elevate-spaces.com",
-    siteName: "Elevate Spaces",
-    title: "Elevate Spaces - AI Virtual Staging",
-    description: "Transform your spaces with AI-powered virtual staging",
+    url: SITE_URL,
+    siteName: "Elevate Spaces AI",
+    title: "Elevate Spaces AI - AI Virtual Staging",
+    description: "Transform your spaces with AI-powered virtual staging. Upload images, get instant professional staging suggestions.",
     images: [
       {
-        url: "https://elevate-spaces.com/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Elevate Spaces - AI Virtual Staging",
+        url: "/icon-512.jpg",
+        width: 512,
+        height: 512,
+        alt: "Elevate Spaces AI",
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Elevate Spaces",
-    description: "Transform your spaces with AI-powered virtual staging",
-    images: ["https://elevate-spaces.com/twitter-image.png"],
+    title: "Elevate Spaces AI - AI Virtual Staging",
+    description: "Transform your spaces with AI-powered virtual staging.",
+    images: ["/icon-512.jpg"],
   },
 };
 
@@ -80,14 +94,9 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Elevate Spaces" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Elevate Spaces" />
-        <meta name="twitter:description" content="Transform your spaces with AI-powered virtual staging" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><path d='M50 20 L80 40 L80 70 L50 90 L20 70 L20 40 Z M50 35 L70 48 L70 62 L50 75 L30 62 L30 48 Z' fill='%23ffffff'/></svg>" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="apple-mobile-web-app-title" content="Elevate Spaces AI" />
         <link rel="mask-icon" href="/icon-maskable-192.png" color="#6366f1" />
+        <AnalyticsScripts />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

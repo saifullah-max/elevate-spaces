@@ -12,6 +12,7 @@ import { setAuth } from "@/store/slices/authSlice";
 import { saveAuthToStorage } from "@/lib/auth.storage";
 import { AgreementChecklistModal } from "@/components/AgreementChecklistModal";
 import { REGISTRATION_AGREEMENTS, initialRegistrationAgreements } from "@/lib/registrationAgreements";
+import { trackSignUp } from "@/lib/analytics";
 
 function SignUpForm() {
   type PendingAgreementAction = "none" | "google-signup" | "manual-signup";
@@ -162,6 +163,9 @@ function SignUpForm() {
         },
       });
 
+      if (response.success) {
+        trackSignUp("email");
+      }
       if (response.success && response.requiresEmailVerification) {
         // New flow: account exists but is unverified. Don't sign the user in;
         // show "check your email" state. Bonus credits are reserved server-side
@@ -220,6 +224,7 @@ function SignUpForm() {
     }
 
     setPendingAgreementAction("none");
+    trackSignUp("google");
     startGoogleSignupFlow();
   };
 

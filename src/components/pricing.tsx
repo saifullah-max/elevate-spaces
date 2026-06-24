@@ -250,7 +250,6 @@ const PricingPage = () => {
           const summary = await getPaymentSummary();
           hasCurrentActiveSubscription = (summary.activeSubscriptions?.length || 0) > 0;
         } catch (summaryError) {
-          console.warn('Failed to fetch payment summary, falling back to purchase history.', summaryError);
         }
 
         const hasStagingPurchaseHistory = credits.recentPurchases?.some((purchase) => {
@@ -286,7 +285,6 @@ const PricingPage = () => {
           }
           return;
         }
-        console.error('Failed to check subscription status:', error);
       } finally {
         if (isMounted) {
           setEligibilityLoading(false);
@@ -578,7 +576,6 @@ const PricingPage = () => {
       }));
       showInfo('Invitation cancelled');
     } catch (e: any) {
-      console.error('Cancel invite failed', e);
       showInfo(e?.message || 'Failed to cancel invite');
     } finally {
       setCancelingInviteId(null);
@@ -1278,7 +1275,7 @@ const PricingPage = () => {
           </div>
 
           <div className="text-center mt-8 text-slate-400 text-sm">
-            Prices are in USD. Standard taxes apply. Need help? <SupportModalTrigger className="text-blue-500 hover:underline">Contact Support</SupportModalTrigger> or email <a href="mailto:elevatespacesai@gmail.com" className="text-blue-500 hover:underline">elevatespacesai@gmail.com</a> - typical response time within 24 hours.
+            Prices are in USD. Standard taxes apply. Need help? <SupportModalTrigger className="text-blue-500 hover:underline">Contact Support</SupportModalTrigger> or email <a href="mailto:hello@elevatespacesai.com" className="text-blue-500 hover:underline">hello@elevatespacesai.com</a> - typical response time within 24 hours.
           </div>
         </div>
         <Dialog open={showPlanChangeConfirmDialog} onOpenChange={setShowPlanChangeConfirmDialog}>

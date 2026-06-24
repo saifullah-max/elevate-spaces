@@ -154,7 +154,6 @@ export function ProjectSelectorModal({
         const unique = merged.filter((team, index, self) => self.findIndex((item) => item.id === team.id) === index);
         setTeams(unique as any[]);
       } catch (error) {
-        console.error("Failed to fetch teams for project selector", error);
         setTeams([]);
       } finally {
         setTeamsLoading(false);
@@ -209,12 +208,10 @@ export function ProjectSelectorModal({
           previous && allProjects.some((project) => project.id === previous) ? previous : null
         );
       } else {
-        console.error('Failed to fetch projects');
         setProjects([]);
         setSelectedProjectId(null);
       }
     } catch (error) {
-      console.error('Error fetching projects:', error);
       setProjects([]);
       setSelectedProjectId(null);
     } finally {
@@ -278,7 +275,6 @@ export function ProjectSelectorModal({
         onOpenChange(false);
       }
     } catch (error) {
-      console.error('Error creating project:', error);
       setCreateError((error as any)?.message || 'Network error. Please try again.');
     } finally {
       setCreateLoading(false);

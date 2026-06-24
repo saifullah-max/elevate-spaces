@@ -56,6 +56,12 @@ const nextConfig = {
   // React strict mode for development
   reactStrictMode: true,
 
+  // Strip all console.* calls from production bundles as a safety net so
+  // accidental future additions can't leak data to end users' devtools.
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+
   // Enable experimental features if needed
   experimental: {
     // Enable granular chunks

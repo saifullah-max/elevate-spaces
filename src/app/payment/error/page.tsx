@@ -123,8 +123,8 @@ function PaymentErrorHandler() {
                 Contact Support
               </SupportModalTrigger>
               {" "}or email{" "}
-              <a href="mailto:elevatespacesai@gmail.com" className="text-blue-600 hover:underline font-medium">
-                elevatespacesai@gmail.com
+              <a href="mailto:hello@elevatespacesai.com" className="text-blue-600 hover:underline font-medium">
+                hello@elevatespacesai.com
               </a>
             </p>
           </div>

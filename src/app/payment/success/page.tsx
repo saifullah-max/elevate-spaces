@@ -5,6 +5,7 @@ import { Check, Loader, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { jsPDF } from "jspdf";
 import SupportModalTrigger from "@/components/support/SupportModalTrigger";
+import { trackPurchase } from "@/lib/analytics";
 
 interface SessionStatus {
   status: string;
@@ -23,7 +24,7 @@ interface SessionStatus {
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:5000/api";
-const PHYSICAL_STAGING_CONTACT_EMAIL = "elevatespacesai@gmail.com";
+const PHYSICAL_STAGING_CONTACT_EMAIL = "hello@elevatespacesai.com";
 
 function PaymentSuccessHandler() {
   const searchParams = useSearchParams();
@@ -32,6 +33,7 @@ function PaymentSuccessHandler() {
   const [session, setSession] = useState<SessionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const purchaseReportedRef = React.useRef(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -50,7 +52,6 @@ function PaymentSuccessHandler() {
             const auth = JSON.parse(authRaw);
             token = auth.token;
           } catch (e) {
-            console.error("Failed to parse auth data:", e);
           }
         }
 
@@ -75,8 +76,23 @@ function PaymentSuccessHandler() {
 
         const data = await response.json();
         setSession(data);
+
+        // Fire conversion exactly once per session_id, gated on Stripe marking
+        // the session paid. This is best-effort: ad-blockers may drop it.
+        const alreadyReported = sessionStorage.getItem(`purchase_tracked_${sessionId}`);
+        const paid = (data?.payment_status || "").toLowerCase() === "paid"
+          || (data?.status || "").toLowerCase() === "complete";
+        if (paid && !alreadyReported && !purchaseReportedRef.current) {
+          purchaseReportedRef.current = true;
+          sessionStorage.setItem(`purchase_tracked_${sessionId}`, "1");
+          trackPurchase({
+            value: typeof data?.amount_total === "number" ? data.amount_total / 100 : 0,
+            currency: (data?.currency || "USD").toUpperCase(),
+            transactionId: sessionId || undefined,
+            productName: data?.resolvedProductName || data?.metadata?.productName,
+          });
+        }
       } catch (err: any) {
-        console.error("Failed to fetch session details:", err);
         setError(err?.message || "Failed to fetch session details");
       } finally {
         setLoading(false);

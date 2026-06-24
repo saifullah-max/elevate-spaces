@@ -30,12 +30,9 @@ export interface GuestResponse {
  * For guests, returns guest_tracking
  */
 export async function initGuestSession(deviceId?: string): Promise<GuestResponse> {
-    console.log('[guest.service] initGuestSession called with deviceId:', deviceId);
-    console.log('[guest.service] API_BASE_URL:', API_BASE_URL);
     
     try {
         const url = `${API_BASE_URL}/guest/init`;
-        console.log('[guest.service] Fetching:', url);
         
         // Get token from localStorage if available
         let token: string | null = null;
@@ -59,12 +56,9 @@ export async function initGuestSession(deviceId?: string): Promise<GuestResponse
             credentials: "include", // Important: Include cookies
         });
 
-        console.log('[guest.service] Response status:', response.status);
         const data = await response.json();
-        console.log("[guest.service] Response data:", data);
         return data;
     } catch (error) {
-        console.error("[initGuestSession] Error:", error);
         return {
             success: false,
             error: { message: "Failed to initialize guest session" },
@@ -103,7 +97,6 @@ export async function getGuestStatus(deviceId?: string): Promise<GuestResponse> 
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("[getGuestStatus] Error:", error);
         return {
             success: false,
             error: { message: "Failed to get guest status" },

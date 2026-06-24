@@ -18,6 +18,5 @@ export const handleLogout = (dispatch: Function, router: any): void => {
     // Redirect to sign-in
     router.push("/sign-in");
   } catch (error) {
-    console.error("Logout failed:", error);
   }
 };

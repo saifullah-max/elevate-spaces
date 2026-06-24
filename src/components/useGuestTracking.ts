@@ -66,7 +66,6 @@ export function useGuestTracking(): UseGuestTrackingReturn {
 
             // Initialize session with backend
             const response = await initGuestSession(existingDeviceId || undefined);
-            console.log("data:", response)
 
             if (response.success && response.data) {
                 updateStateFromData(response.data);
@@ -75,7 +74,6 @@ export function useGuestTracking(): UseGuestTrackingReturn {
                 setError(response.error?.message || "Failed to initialize guest session");
             }
         } catch (err) {
-            console.error("[useGuestTracking] Init error:", err);
             setError("Failed to initialize guest tracking");
         } finally {
             setLoading(false);
@@ -96,7 +94,6 @@ export function useGuestTracking(): UseGuestTrackingReturn {
                 setError(response.error?.message || "Failed to refresh guest status");
             }
         } catch (err) {
-            console.error("[useGuestTracking] Refresh error:", err);
             setError("Failed to refresh guest tracking");
         } finally {
             setLoading(false);

@@ -281,7 +281,6 @@ export function PaymentsTab() {
           setTransactions(historyData.transactions || []);
           setSummary(summaryData);
         } catch (reloadError) {
-          console.error("Failed to reload after cancellation:", reloadError);
         }
         setCancelDialog({ open: false, subscriptionId: null, packageName: null, loading: false, creditExpiresAt: null });
       } else {

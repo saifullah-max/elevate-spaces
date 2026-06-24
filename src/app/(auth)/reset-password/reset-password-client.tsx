@@ -50,7 +50,6 @@ export default function ResetPasswordClient({ token }: { token: string }) {
         setMessage(data?.message || "Reset failed. The link may be expired.");
       }
     } catch (err) {
-      console.error(err);
       setMessage("Network error. Please try again.");
     } finally {
       setLoading(false);

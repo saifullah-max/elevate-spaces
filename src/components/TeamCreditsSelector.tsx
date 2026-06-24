@@ -54,7 +54,6 @@ export function TeamCreditsSelector({
               setError(null);
               return; // Use cache, don't fetch
             } catch (e) {
-              console.error('Failed to parse cached teams:', e);
             }
           }
         }
@@ -95,7 +94,6 @@ export function TeamCreditsSelector({
         }
       }
     } catch (err: any) {
-      console.error("Failed to fetch teams:", err);
       setError(err.response?.data?.message || "Failed to load teams");
     } finally {
       setLoading(false);

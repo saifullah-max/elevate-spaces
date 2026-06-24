@@ -84,14 +84,11 @@ export function stageImageSSE({
   // Only append teamId if it's a non-empty string
   if (teamId && typeof teamId === 'string' && teamId.trim() !== '') {
     formData.append("teamId", teamId);
-    console.log('Image generation will use team credits for team:', teamId);
   } else {
-    console.log('Image generation will use personal credits (no team selected)');
   }
   // Only append projectId if it's a non-empty string
   if (projectId && typeof projectId === 'string' && projectId.trim() !== '') {
     formData.append("projectId", projectId);
-    console.log('Image will be linked to project:', projectId);
   }
   if (creditSource) {
     formData.append("creditSource", creditSource);

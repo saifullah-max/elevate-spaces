@@ -124,7 +124,6 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
       const response = (await initGuestSession(id)) as GuestSessionResponse;
       applyGuestSessionResponse(response);
     } catch (error) {
-      console.error("[useDemoApi] Failed to refresh demo status:", error);
     }
   }, [applyGuestSessionResponse, deviceId]);
 
@@ -144,7 +143,6 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
         const response = (await initGuestSession(id)) as GuestSessionResponse;
         applyGuestSessionResponse(response);
       } catch (err) {
-        console.error("[useDemoApi] Failed to init guest session:", err);
       } finally {
         setDemoSessionReady(true);
       }

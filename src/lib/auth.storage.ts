@@ -66,7 +66,6 @@ export const saveAuthToStorage = (user: User, token: string): void => {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
     window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
   } catch (error) {
-    console.error("Failed to save auth to localStorage:", error);
   }
 };
 
@@ -89,7 +88,6 @@ export const getAuthFromStorage = (): StoredAuthData | null => {
 
     return authData;
   } catch (error) {
-    console.error("Failed to retrieve auth from localStorage:", error);
     return null;
   }
 };
@@ -107,7 +105,6 @@ export const clearAuthFromStorage = (): void => {
     sessionStorage.removeItem("adminInitialRedirect");
     window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
   } catch (error) {
-    console.error("Failed to clear auth from localStorage:", error);
   }
 };
 
@@ -129,7 +126,6 @@ export const updateStoredAuthUser = (user: User): void => {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuthData));
     window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
   } catch (error) {
-    console.error("Failed to update stored auth user:", error);
   }
 };
 
