@@ -8,7 +8,7 @@ export const REGISTRATION_AGREEMENTS: AgreementItem[] = [
     label: (
       <>
         By continuing, I confirm I am 18+, have the right to upload content, and agree to the{" "}
-        <Link href="https://www.elevatespacesai.com/terms-of-service" className="text-teal-500 hover:underline" target="_blank">
+        <Link href="https://www.elevatespacesai.com/terms-of-use" className="text-teal-500 hover:underline" target="_blank">
           Terms of Service
         </Link>{" "}
         and{" "}
