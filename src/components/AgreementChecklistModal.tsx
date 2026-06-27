@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,6 @@ export function AgreementChecklistModal({
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
-
         <div className="max-h-[55vh] overflow-y-auto pr-1">
           <div className="space-y-4">
             {agreements.map((agreement) => (
@@ -57,19 +55,21 @@ export function AgreementChecklistModal({
                 />
                 <span>
                   {agreement.label}
-                  {agreement.required ? <span className="ml-1 text-red-600">*</span> : null}
+                  {agreement.required ? (
+                    <span className="ml-1 text-red-600">*</span>
+                  ) : (
+                    <span className="ml-2 text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Optional</span>
+                  )}
                 </span>
               </label>
             ))}
           </div>
         </div>
-
         {error ? (
           <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </div>
         ) : null}
-
         <div className="flex justify-end">
           <Button onClick={onConfirm} disabled={Boolean(confirmDisabled)}>{confirmLabel}</Button>
         </div>
