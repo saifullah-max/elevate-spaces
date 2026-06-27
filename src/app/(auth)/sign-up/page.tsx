@@ -200,7 +200,7 @@ function SignUpForm() {
         }
 
         setTimeout(() => {
-          router.push('/');
+          router.push('/thank-you');
         }, 1500);
       }
     } catch (err: unknown) {
