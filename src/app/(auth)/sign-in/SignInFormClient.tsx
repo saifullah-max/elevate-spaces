@@ -105,7 +105,7 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
             </div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-          <p className="text-slate-600 mt-2">Sign in to your ElevateSpaces account</p>
+          <p className="text-slate-600 mt-2">Sign in to your Elevate Spaces AI account</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-5">
@@ -245,7 +245,7 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
               </svg>
             </Button>
 
-            <Button variant="outline" className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400" aria-label="Sign in with Facebook">
+            <Button variant="outline" className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate.400" aria-label="Sign in with Facebook">
               <svg className="w-5 h-5" viewBox="0 0 16 16" fill="#1877F2">
                 <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
               </svg>
@@ -257,9 +257,6 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
           <p className="text-slate-600 text-sm">
             Don't have an account? <Link href="/sign-up" className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors">Sign up</Link>
           </p>
-          {/* <p className="mt-2 text-xs text-slate-500">
-            Want to join the marketplace? <Link href="/sign-up?role=photographer" className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors">Sign up as photographer</Link>
-          </p> */}
           <p className="text-xs text-slate-500 mt-3">By signing in, you agree to our Terms and Privacy Policy</p>
         </div>
       </div>
