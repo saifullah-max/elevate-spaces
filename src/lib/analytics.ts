@@ -35,7 +35,7 @@ export function trackPageView(path: string) {
   gtag("event", "page_view", { page_path: path });
 }
 
-export function trackSignUp(method: "email" | "google" = "email") {
+export function trackSignUp(method: "email" | "google" | "facebook" | "apple" = "email") {
   fbq("track", "CompleteRegistration", { method });
   gtag("event", "sign_up", { method });
 }
