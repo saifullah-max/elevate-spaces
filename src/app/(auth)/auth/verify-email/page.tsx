@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { verifyEmailToken } from "@/services/auth.service";
@@ -11,6 +11,7 @@ type Status = "pending" | "success" | "already" | "expired" | "error";
 
 function VerifyEmailInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get("token") || "";
   const [status, setStatus] = useState<Status>("pending");
   const [message, setMessage] = useState<string>("");
@@ -29,6 +30,9 @@ function VerifyEmailInner() {
         setStatus("already");
       } else if (result.success) {
         setStatus("success");
+        setTimeout(() => {
+          router.push("/thank-you");
+        }, 2000);
       } else if (result.code === "VERIFICATION_TOKEN_EXPIRED") {
         setStatus("expired");
       } else {
@@ -37,7 +41,7 @@ function VerifyEmailInner() {
       setMessage(result.message || "");
     })();
     return () => { cancelled = true; };
-  }, [token]);
+  }, [token, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-indigo-50 via-white to-purple-50">
@@ -53,16 +57,27 @@ function VerifyEmailInner() {
           <>
             <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-600" />
             <h1 className="text-xl font-semibold">
-              {status === "already" ? "Already confirmed" : "Email confirmed"}
+              {status === "already" ? "Already confirmed" : "Email confirmed!"}
             </h1>
             <p className="text-sm text-slate-600">
-              {message || (status === "already"
+              {status === "already"
                 ? "Your account is already active — go ahead and sign in."
-                : "Your account is active. You can sign in now.")}
+                : "Your account is active. Taking you to get started…"}
             </p>
-            <Link href="/sign-in" className="inline-block">
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Sign in</Button>
-            </Link>
+            {status === "success" && (
+              <Link href="/thank-you" className="inline-block">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                  Get Started
+                </Button>
+              </Link>
+            )}
+            {status === "already" && (
+              <Link href="/sign-in" className="inline-block">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                  Sign in
+                </Button>
+              </Link>
+            )}
           </>
         )}
         {status === "expired" && (
