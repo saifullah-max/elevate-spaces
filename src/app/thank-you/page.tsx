@@ -14,7 +14,7 @@ export default function ThankYou() {
       <p style={{ color: "#ccc", fontSize: "18px", margin: "20px 0" }}>
         You're all set. Let's start staging.
       </p>
-      <a href="/dashboard" style={{
+      <a href="/login" style={{
         color: "#00B4B4",
         fontSize: "18px",
         textDecoration: "none"
