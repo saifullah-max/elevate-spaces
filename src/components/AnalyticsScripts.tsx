@@ -1,11 +1,7 @@
 "use client";
-
 import Script from "next/script";
 import { META_PIXEL_ID, GA_MEASUREMENT_ID } from "@/lib/analytics";
 
-// Injects the Meta Pixel + GA4 base snippets once at the root.
-// Each script only renders when its env var is set, so missing IDs
-// leave zero network requests behind.
 export function AnalyticsScripts() {
   return (
     <>
@@ -37,7 +33,6 @@ export function AnalyticsScripts() {
           </noscript>
         </>
       ) : null}
-
       {GA_MEASUREMENT_ID ? (
         <>
           <Script
@@ -52,6 +47,7 @@ export function AnalyticsScripts() {
               window.gtag = gtag;
               gtag('js', new Date());
               gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: true });
+              gtag('config', 'AW-18276220135');
             `}
           </Script>
         </>
