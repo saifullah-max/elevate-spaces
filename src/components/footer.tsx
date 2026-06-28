@@ -6,10 +6,10 @@ import Image from "next/image";
 export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-8">
         
         {/* Logo */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="p-1 rounded-md">
             <Image
               src='/logo-navbar-upd.png'
@@ -25,19 +25,19 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="flex items-center gap-2 text-sm text-center">
+        <div className="flex items-center gap-2 text-sm text-center shrink-0">
           <Copyright className="w-4 h-4" />
           <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
           ElevateSpaces. All rights reserved.
         </div>
 
         {/* Legal Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-3 text-sm text-center md:text-left">
+        <div className="flex flex-wrap justify-end gap-x-8 gap-y-3 text-sm flex-1">
           {FOOTER_LEGAL_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="hover:text-white py-2 px-1 block"
+              className="hover:text-white py-1 block whitespace-nowrap"
             >
               {link.label}
             </Link>
