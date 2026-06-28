@@ -24,8 +24,15 @@ export default function Footer() {
           </span>
         </div>
 
+        {/* Copyright */}
+        <div className="flex items-center gap-2 text-sm text-center">
+          <Copyright className="w-4 h-4" />
+          <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
+          ElevateSpaces. All rights reserved.
+        </div>
+
         {/* Legal Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 text-sm text-center md:text-left">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-3 text-sm text-center md:text-left">
           {FOOTER_LEGAL_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -35,13 +42,6 @@ export default function Footer() {
               {link.label}
             </Link>
           ))}
-        </div>
-
-        {/* Copyright */}
-        <div className="flex items-center gap-2 text-sm text-center">
-          <Copyright className="w-4 h-4" />
-          <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
-          ElevateSpaces. All rights reserved.
         </div>
 
       </div>
