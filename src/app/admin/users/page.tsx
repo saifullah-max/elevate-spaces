@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { hasRole } from "@/lib/role.helpers";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { getAdminUsers, type AdminUserRow } from "@/services/admin.service";
-import { showError } from "@/components/toastUtils";
-import { Search, RefreshCw, CheckCircle2, Clock3, Users } from "lucide-react";
+import { showError, showSuccess } from "@/components/toastUtils";
+import { Search, RefreshCw, CheckCircle2, Clock3, Users, ShieldAlert, RotateCcw } from "lucide-react";
+import { listPendingDeletions, revertAccountDeletion, type PendingDeletionUser } from "@/services/accountDeletion.service";
 
 function formatDate(value: string | null) {
   if (!value) return "-";
@@ -19,6 +20,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [query, setQuery] = useState("");
+  const [pendingDeletions, setPendingDeletions] = useState<PendingDeletionUser[]>([]);
+  const [reverting, setReverting] = useState<string | null>(null);
 
   useEffect(() => {
     const auth = getAuthFromStorage();
@@ -30,15 +33,37 @@ export default function AdminUsersPage() {
     setChecked(true);
   }, [router]);
 
+  const loadPendingDeletions = async () => {
+    try {
+      const rows = await listPendingDeletions();
+      setPendingDeletions(rows);
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Failed to load pending deletions");
+    }
+  };
+
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const rows = await getAdminUsers();
+      const [rows] = await Promise.all([getAdminUsers(), loadPendingDeletions()]);
       setUsers(rows);
     } catch (error) {
       showError(error instanceof Error ? error.message : "Failed to load users");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRevert = async (userId: string) => {
+    setReverting(userId);
+    try {
+      await revertAccountDeletion(userId);
+      showSuccess("Account restored.");
+      await loadPendingDeletions();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Failed to revert deletion");
+    } finally {
+      setReverting(null);
     }
   };
 
@@ -121,6 +146,52 @@ export default function AdminUsersPage() {
           />
         </div>
       </div>
+
+      {pendingDeletions.length > 0 ? (
+        <div className="overflow-hidden rounded-2xl border border-rose-200 bg-rose-50 shadow-sm">
+          <div className="flex items-center justify-between border-b border-rose-200 px-6 py-4">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-rose-900">
+              <ShieldAlert className="h-5 w-5" /> Pending account deletions ({pendingDeletions.length})
+            </h2>
+            <p className="text-xs text-rose-900/70">Users below are inactive. Restore before the purge date to keep their data.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-rose-200 text-left">
+              <thead className="bg-rose-100/50">
+                <tr>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-rose-900">User</th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-rose-900">Requested at</th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-rose-900">Purge at</th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-rose-900">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-rose-200 bg-white">
+                {pendingDeletions.map((row) => (
+                  <tr key={row.id}>
+                    <td className="px-6 py-3">
+                      <p className="text-sm font-semibold text-slate-900">{row.name || "—"}</p>
+                      <p className="text-xs text-slate-500">{row.email}</p>
+                    </td>
+                    <td className="px-6 py-3 text-sm text-slate-700">{formatDate(row.deletion_requested_at)}</td>
+                    <td className="px-6 py-3 text-sm text-slate-700">{formatDate(row.deletion_purge_at)}</td>
+                    <td className="px-6 py-3">
+                      <button
+                        type="button"
+                        onClick={() => handleRevert(row.id)}
+                        disabled={reverting === row.id}
+                        className="inline-flex items-center gap-2 rounded-md bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        {reverting === row.id ? "Restoring..." : "Restore access"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-6 py-4">
