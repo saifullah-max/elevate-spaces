@@ -41,7 +41,7 @@ function GoogleCallbackHandler() {
         if (params.inviteToken) {
           router.replace(`/accept-invite?token=${encodeURIComponent(params.inviteToken)}`);
         } else {
-          router.replace("/");
+          router.replace(params.isNewUser === "true" ? "/thank-you" : "/");
         }
       } catch (err) {
         router.replace("/sign-in?error=oauth_failed");
