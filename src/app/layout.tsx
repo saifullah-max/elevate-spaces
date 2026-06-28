@@ -112,6 +112,7 @@ export default function RootLayout({
             </MainWrapper>
           </RootClientLayout>
         </ReduxProvider>
+        <script src="//code.tidio.co/trht4vitzty4fc77wnvpa8ctjr6t3tyw.js" async></script>
       </body>
     </html>
   );
