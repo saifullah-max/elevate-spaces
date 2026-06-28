@@ -224,7 +224,7 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="mt-6 grid grid-cols-1 gap-3">
             <Button
               variant="outline"
               className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400"
@@ -239,7 +239,7 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
               </svg>
             </Button>
 
-            <Button variant="outline" className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400" aria-label="Sign in with Apple">
+            {/* <Button variant="outline" className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400" aria-label="Sign in with Apple">
               <svg className="w-5 h-5" viewBox="0 0 16 16" fill="#000000">
                 <path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516s1.52.087 2.475-1.258.762-2.391.728-2.43m3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422s1.675-2.789 1.698-2.854-.597-.79-1.254-1.157a3.7 3.7 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56s.625 1.924 1.273 2.796c.576.984 1.34 1.667 1.659 1.734.319.067 1.162-.173 1.954-.483.792-.31 1.356-.515 1.693-.515.337 0 .911.205 1.703.515.792.31 1.636.45 1.955.483.318-.067 1.077-.75 1.653-1.734.576-.984 1.022-1.845 1.022-2.796 0-1.518-.623-3.053-1.698-3.422-.374-.126-.92-.215-1.51-.215-.59 0-1.236.089-1.51.215z" />
               </svg>
@@ -249,7 +249,7 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
               <svg className="w-5 h-5" viewBox="0 0 16 16" fill="#1877F2">
                 <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
               </svg>
-            </Button>
+            </Button> */}
           </div>
         </div>
 
