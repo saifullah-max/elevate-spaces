@@ -148,10 +148,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-@media (max-width: 768px) {
-  body {
-    overflow-x: clip;
-    max-width: 100vw;
-  }
-}
