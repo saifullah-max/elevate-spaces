@@ -461,9 +461,15 @@ export default function Demo() {
     }
   }, [loading, restageLoading, isMultiImageMode, singleStageStartTs]);
 
-  useEffect(() => {
-    setSelectedImageIdx(0);
-  }, [selectedStagingStyle]);
+ const prevStagingStyleRef = useRef<StagingStyle | undefined>(undefined);
+useEffect(() => {
+  if (prevStagingStyleRef.current !== selectedStagingStyle) {
+    prevStagingStyleRef.current = selectedStagingStyle;
+    if (stagedImageUrls.length > 0) {
+      setSelectedImageIdx(0);
+    }
+  }
+}, [selectedStagingStyle, stagedImageUrls.length]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
