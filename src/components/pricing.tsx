@@ -657,7 +657,7 @@ const PricingPage = () => {
               <span className="text-4xl font-bold text-white">${proPrice}</span>
               <span className="text-indigo-200 ml-2">{billingLabel}</span>
             </div>
-            <button onClick={() => startCheckout(proProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === proProductKey} className="w-full py-3 px-4 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors mb-8 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
+            <button onClick={() => startCheckout(proProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === proProductKey} className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === proProductKey ? 'Processing...' : 'Get Started'}
             </button>
             <ul className="space-y-4 flex-1">
@@ -682,7 +682,7 @@ const PricingPage = () => {
               <span className="text-4xl font-bold text-slate-900">${teamPrice}</span>
               <span className="text-slate-500 ml-2">{billingLabel}</span>
             </div>
-            <button onClick={() => startCheckout(teamProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === teamProductKey} className="w-full py-3 px-4 bg-white border-2 border-slate-200 text-slate-900 font-semibold rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
+            <button onClick={() => startCheckout(teamProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === teamProductKey} className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === teamProductKey ? 'Processing...' : 'Get Team Plan'}
             </button>
             <ul className="space-y-4 flex-1">
@@ -708,7 +708,7 @@ const PricingPage = () => {
             <div className="mb-6 flex items-baseline">
               <span className="text-3xl font-bold text-slate-900">Custom monthly pricing</span>
             </div>
-            <button className="w-full py-3 px-4 bg-white border-2 border-slate-200 text-slate-900 font-semibold rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-colors mb-8" onClick={handleOpenContactSales}>
+            <button className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8" onClick={handleOpenContactSales}>
               Contact Sales
             </button>
             <ul className="space-y-4 flex-1">
