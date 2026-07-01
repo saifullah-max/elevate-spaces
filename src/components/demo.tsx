@@ -230,24 +230,22 @@ export default function Demo() {
   }, [currentBeforePreviewUrl, currentAfterPreviewUrl, currentDisplayImageUrl]);
 
   const warmupPreviewUrls = useMemo(() => {
-    if (areaType === "exterior") {
-      return previewImageUrls;
-    }
-
-    const resolvedRoomType = roomType || DEFAULT_DEMO_INTERIOR_TYPE;
+    const allRoomTypes = interiorOptions.map(o => o.value);
     return Array.from(
       new Set(
-        stagingStyles.map((style) =>
-          getDemoComparisonImageUrl({
-            areaType: "interior",
-            roomType: resolvedRoomType,
-            stagingStyle: style.value,
-            before: false,
-          })
+        allRoomTypes.flatMap((room) =>
+          stagingStyles.map((style) =>
+            getDemoComparisonImageUrl({
+              areaType: "interior",
+              roomType: room as RoomType,
+              stagingStyle: style.value,
+              before: false,
+            })
+          )
         )
       )
     );
-  }, [areaType, roomType, previewImageUrls]);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
