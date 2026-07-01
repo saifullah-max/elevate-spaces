@@ -1,4 +1,4 @@
-@import "tailwindcss";
+]@import "tailwindcss";
 @config "../../tailwind.config.js";
 
 /* Custom scrollbar for left panel in demo */
@@ -151,8 +151,10 @@
   }
 }
 
-/* Fix mobile horizontal overflow */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+/* Fix mobile horizontal overflow - mobile only */
+@media (max-width: 768px) {
+  body {
+    overflow-x: clip;
+    max-width: 100vw;
+  }
 }
