@@ -1,7 +1,6 @@
-]@import "tailwindcss";
+@import "tailwindcss";
 @config "../../tailwind.config.js";
 
-/* Custom scrollbar for left panel in demo */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #a5b4fc #f1f5f9;
@@ -19,7 +18,6 @@
   background: #6366f1;
 }
 
-/* Hide scrollbar while preserving scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -151,7 +149,6 @@
   }
 }
 
-/* Fix mobile horizontal overflow - mobile only */
 @media (max-width: 768px) {
   body {
     overflow-x: clip;
