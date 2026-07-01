@@ -6,6 +6,14 @@ export default function ThankYou() {
       <Script id="google-ads-conversion" strategy="afterInteractive">
         {`gtag('event', 'conversion', {'send_to': 'AW-18276220135/FxAZCNOI7cYcEOf544pE'});`}
       </Script>
+      <Script id="meta-pixel-purchase" strategy="afterInteractive">
+        {`
+          fbq('track', 'Purchase', {
+            value: 29.00,
+            currency: 'USD'
+          });
+        `}
+      </Script>
       <div style={{
         fontFamily: "Arial",
         textAlign: "center",
