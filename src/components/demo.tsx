@@ -1147,7 +1147,8 @@ useEffect(() => {
     handleMove(clientX);
   }, [handleMove]);
 
-  const handleDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+ const handleDrag = useCallback((e: any) => {
+    if ("touches" in e) e.preventDefault();
     setIsDragging((isDragging) => {
       if (!isDragging) return false;
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -1161,11 +1162,11 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener("mousemove", handleDrag as any);
-      window.addEventListener("mouseup", handleEnd);
-      window.addEventListener("touchmove", handleDrag as any);
-      window.addEventListener("touchend", handleEnd);
+  if (isDragging) {
+    window.addEventListener("mousemove", handleDrag as any);
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchmove", handleDrag as any, { passive: false });
+    window.addEventListener("touchend", handleEnd);
       return () => {
         window.removeEventListener("mousemove", handleDrag as any);
         window.removeEventListener("mouseup", handleEnd);
