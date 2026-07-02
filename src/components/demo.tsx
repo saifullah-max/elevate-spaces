@@ -2160,5 +2160,3 @@ export default function Demo() {
     </>
   );
 }
-
-```
