@@ -1,3 +1,8 @@
+Here is the complete, updated code for your `src/components/demo.tsx` file. It includes the variable fixes we did earlier, updates the logic to ensure watermarks apply strictly after the second upload, and includes all state variables and hooks exactly as you had them.
+
+Replace the entire contents of your **`./src/components/demo.tsx`** file with this code:
+
+```tsx
 // Remove Furniture toggle state
 "use client";
 
@@ -214,9 +219,10 @@ export default function Demo() {
   const expectedPhotoCount = isMultiImageMode ? imagesToStageCount : totalStagedPhotos;
   const hasGeneratedResults = stagedImageUrls.length > 0;
 
-  // Watermark-free for first 2 uploads (guests only)
+  // Watermark-free rules: Free for first 2 uploads (guests only)
   const demoUploadsUsed = isDemo && !hasPurchasedCredits ? Math.max(0, demoCount) : 0;
   const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed < 2;
+
   const currentGeneratedImageUrl = normalizeImageUrl(
     stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * VARIANTS_PER_IMAGE + selectedImageIdx : selectedImageIdx]
   );
@@ -299,12 +305,6 @@ export default function Demo() {
   const displayPersonalCredits = personalBalance + demoCreditsRemaining;
   const canCustomizePerImageStyles = canUserCustomizeStyling(creditSource, selectedTeamData, paymentSummary, teamEligibility);
   const openCustomStylingModal = () => setShowCustomStylingModal(true);
-  // Project selection should follow the same eligibility rules used for
-  // saving to projects: for personal credits the user needs an active Pro+
-  // subscription; for team credits the team must have an active purchase,
-  // or the team owner / current user must have an active personal Pro+.
-  // `isEligibleToLink` is already kept in sync with these rules via the
-  // computeEligibility effect (uses getTeamEligibility on the server).
   const shouldShowProjectSelector = isEligibleToLink;
 
   const [uploadedPreviewUrls, setUploadedPreviewUrls] = useState<string[]>([]);
@@ -329,7 +329,6 @@ export default function Demo() {
 
   const leftPreviewImageUrl = uploadedPreviewUrl || currentBeforePreviewUrl;
 
-  // Debug: log permission state
   useEffect(() => {
     let cancelled = false;
     const computeEligibility = async () => {
@@ -362,7 +361,6 @@ export default function Demo() {
           if (!eligible) {
             setIneligibilityReason('Saving staged images to projects is available on Pro plans and above. Upgrade to Pro to save and organize staged images into projects.');
           } else {
-            // Show grace period message if applicable
             const GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
             let reason: string | null = null;
 
@@ -402,10 +400,6 @@ export default function Demo() {
         let graceExpiryDate: Date | null = null;
 
         if (paymentSummary?.activeSubscriptions && paymentSummary.activeSubscriptions.length > 0) {
-          // Match the same packages the rest of the app treats as project-eligible
-          // (Pro, Pro+, Team, Team+, Enterprise). Previously this only looked for
-          // a substring of "pro", so Team/Enterprise accounts silently failed
-          // eligibility and the project picker was skipped on staging.
           const eligibleSubscription = paymentSummary.activeSubscriptions.find((s: any) => {
             const pkg = String(s.package || "").toLowerCase();
             return pkg === "plan_pro" || pkg === "plan_team" || pkg === "enterprise" || pkg.includes("pro") || pkg.includes("team");
@@ -445,7 +439,6 @@ export default function Demo() {
   }, [planTier]);
 
   useEffect(() => {
-    // Mark component as mounted to avoid SSR/CSR hydration mismatches
     setMounted(true);
 
     if (!multiProgress.active && !isBatchProcessing && !singleStageStartTs) return;
@@ -453,7 +446,6 @@ export default function Demo() {
     return () => window.clearInterval(timer);
   }, [multiProgress.active, isBatchProcessing, singleStageStartTs]);
 
-  // Track single-image stage start/stop so demo + subscribed users both see the timer
   useEffect(() => {
     const isStaging = (loading || restageLoading) && !isMultiImageMode;
     if (isStaging && !singleStageStartTs) {
@@ -463,15 +455,15 @@ export default function Demo() {
     }
   }, [loading, restageLoading, isMultiImageMode, singleStageStartTs]);
 
- const prevStagingStyleRef = useRef<StagingStyle | undefined>(undefined);
-useEffect(() => {
-  if (prevStagingStyleRef.current !== selectedStagingStyle) {
-    prevStagingStyleRef.current = selectedStagingStyle;
-    if (stagedImageUrls.length > 0) {
-      setSelectedImageIdx(0);
+  const prevStagingStyleRef = useRef<StagingStyle | undefined>(undefined);
+  useEffect(() => {
+    if (prevStagingStyleRef.current !== selectedStagingStyle) {
+      prevStagingStyleRef.current = selectedStagingStyle;
+      if (stagedImageUrls.length > 0) {
+        setSelectedImageIdx(0);
+      }
     }
-  }
-}, [selectedStagingStyle, stagedImageUrls.length]);
+  }, [selectedStagingStyle, stagedImageUrls.length]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -521,7 +513,6 @@ useEffect(() => {
 
         const activePackages = (summary.activeSubscriptions || []).map((subscription) => subscription.package.toLowerCase());
 
-        // Check tiers in order: enterprise > team > pro > starter > free
         const nextTier = activePackages.some((packageName) => packageName.includes('enterprise'))
           ? 'enterprise'
           : activePackages.some((packageName) => packageName.includes('team'))
@@ -534,7 +525,6 @@ useEffect(() => {
 
         setPlanTier(nextTier);
 
-        // Also fetch teams data for subscription eligibility checks
         try {
           const auth = getAuthFromStorage();
           const userId = auth?.user?.id;
@@ -619,41 +609,26 @@ useEffect(() => {
       if (cancelled) return;
 
       const valid = dimensions.filter((item) => item.width > 0 && item.height > 0);
-      valid.forEach((dim, i) => {
-      });
-
       if (valid.length === 0) {
         setResolutionInsight("Resolution check unavailable for selected image(s).");
         return;
       }
 
       const minPixels = Math.min(...valid.map((item) => item.width * item.height));
-      const label =
-        minPixels >= 1600 * 1200
-          ? "High"
-          : minPixels >= 1280 * 720
-            ? "Medium"
-            : "Low";
-
       const minItem = valid.reduce((prev, current) =>
         current.width * current.height < prev.width * prev.height ? current : prev
       );
 
-      // Store dimensions for CustomStylingModal (in both ref and state)
       imageDimensionsRef.current = valid;
       setImageDimensions(valid);
 
-      // Check if all images meet the minimum resolution (>= 1024x768)
       const allHighQuality = valid.every(item => item.width * item.height >= 1024 * 768);
 
       if (allHighQuality) {
         setResolutionInsight("Your uploaded images have good resolution.");
         setRecommendedResolution(null);
       } else {
-        // Some images are low quality
         setResolutionInsight(`Some of your uploaded images are of low quality (${minItem.width}x${minItem.height}).`);
-
-        // Provide a clear recommended resolution and actions
         const recommended = '1280x720';
         setRecommendedResolution(recommended);
       }
@@ -671,7 +646,6 @@ useEffect(() => {
   const shouldRequireTeamSelectionForStaging = creditSource === 'team' && !selectedTeamId;
   const shouldShowDemoNotice = authChecked && demoSessionReady && demoCreditsRemaining > 0 && isDemo && !hasPurchasedCredits && !hasAnyActiveSubscription;
 
-  // Show info toast when demo credits are relevant
   useEffect(() => {
     if (!shouldShowDemoNotice || hasShownDemoInfoRef.current) return;
     const demoScope = isLoggedIn ? "per account" : "per device";
@@ -681,7 +655,6 @@ useEffect(() => {
     hasShownDemoInfoRef.current = true;
   }, [shouldShowDemoNotice, demoCreditsRemaining, demoLimit, isLoggedIn]);
 
-  // Only reset selectedImageIdx to 0 when a new generation occurs (when array is cleared and refilled)
   const prevUrlsRef = useRef<string[]>([]);
   useEffect(() => {
     const justArrived = prevUrlsRef.current.length === 0 && stagedImageUrls.length > 0;
@@ -690,79 +663,15 @@ useEffect(() => {
       setSelectedImageIdx(0);
       setSliderPosition(50);
     }
-    // Update ref for next render
     prevUrlsRef.current = stagedImageUrls;
-    // Reset photo selection when new results arrive
     setSelectedPhotoIdx(0);
   }, [stagedImageUrls]);
 
-
-  // Show error toast if blocked
   useEffect(() => {
     if (isBlocked) {
       showError('Demo access has been blocked for this device due to repeated use. Please sign up or contact support for help.');
     }
   }, [isBlocked]);
-
-  // useEffect(() => {
-  //   if (!authChecked || !isLoggedIn) return;
-  //   if (stagedImageUrls.length > 0) return;
-  //   if (typeof window !== 'undefined' && !localStorage.getItem('elevate_pending_staging_recovery')) return;
-
-  //   let cancelled = false;
-
-  //   (async () => {
-  //     try {
-  //       const data = await getRecentUploads(20);
-  //       if (!data.uploads?.length || cancelled) return;
-
-  //       const seenKey = 'elevate_seen_recent_group_ids';
-  //       const seenRaw = typeof window !== 'undefined' ? localStorage.getItem(seenKey) : null;
-  //       const seenGroupIds: string[] = seenRaw ? JSON.parse(seenRaw) : [];
-
-  //       const unseenGroup = data.uploads.find((upload: any) => {
-  //         const groupId = upload.groupId || `${upload.original?.url}:${upload.createdAt}`;
-  //         const hasVariants = Array.isArray(upload.stagedVariants) && upload.stagedVariants.length > 0;
-  //         return hasVariants && !seenGroupIds.includes(groupId);
-  //       });
-
-  //       if (!unseenGroup || cancelled) {
-  //         if (typeof window !== 'undefined') {
-  //           localStorage.removeItem('elevate_pending_staging_recovery');
-  //         }
-  //         return;
-  //       }
-
-  //       const variantUrls = (unseenGroup.stagedVariants || [])
-  //         .map((variant: any) => normalizeImageUrl(variant.url))
-  //         .filter(Boolean);
-  //       const variantIds = (unseenGroup.stagedVariants || []).map((variant: any) => variant.filename || variant.id).filter(Boolean);
-
-  //       if (variantUrls.length === 0) return;
-
-  //       setStagedImageUrls(variantUrls);
-  //       setStagedIds(variantIds);
-  //       setSelectedImageIdx(0);
-  //       setSelectedPhotoIdx(0);
-
-  //       const groupId = unseenGroup.groupId || `${unseenGroup.original?.url}:${unseenGroup.createdAt}`;
-  //       if (typeof window !== 'undefined') {
-  //         localStorage.setItem(seenKey, JSON.stringify([...seenGroupIds, groupId]));
-  //         localStorage.removeItem('elevate_pending_staging_recovery');
-  //       }
-
-  //       showInfo('Recovered completed staging results from your previous session.');
-  //     } catch (recoveryError) {
-  //       console.error('Failed to recover recent staged results:', recoveryError);
-  //     }
-  //   })();
-
-  //   return () => {
-  //     cancelled = true;
-  //   };
-  // }, [authChecked, isLoggedIn, stagedImageUrls.length, setStagedImageUrls, setStagedIds]);
-
-  // Show bonus signup modal when demo limit reached
 
   useEffect(() => {
     if (!hasInitializedLimitWatcherRef.current) {
@@ -775,7 +684,6 @@ useEffect(() => {
     prevLimitReachedRef.current = limitReached;
 
     if (justReachedLimit && !bonusOfferShownToday && !isLoggedIn && demoCreditsRemaining === 0) {
-      // Check if offer was already shown today
       const today = new Date().toDateString();
       const lastOfferDate = localStorage.getItem('demo_bonus_offer_date');
 
@@ -787,8 +695,6 @@ useEffect(() => {
     }
   }, [limitReached, bonusOfferShownToday, isLoggedIn, demoCreditsRemaining]);
 
-
-  // Load default project preference with access validation for current logged-in user
   useEffect(() => {
     let cancelled = false;
 
@@ -845,7 +751,6 @@ useEffect(() => {
           return;
         }
 
-        // Migrate legacy key to user-scoped key.
         if (!localStorage.getItem(defaultKey)) {
           localStorage.setItem(defaultKey, JSON.stringify(parsed));
         }
@@ -853,7 +758,6 @@ useEffect(() => {
 
         if (!cancelled) setDefaultProject(parsed);
       } catch {
-        // On fetch failures, do not trust stale local defaults.
         localStorage.removeItem(defaultKey);
         localStorage.removeItem(legacyKey);
         if (!cancelled) setDefaultProject(null);
@@ -867,20 +771,17 @@ useEffect(() => {
     };
   }, [isLoggedIn, selectedTeamId]);
 
-  // Check if user is logged in and load selected team from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const authRaw = localStorage.getItem('elevate_spaces_auth');
       setIsLoggedIn(!!authRaw);
 
-      // Load selected team from localStorage
       const savedTeamId = localStorage.getItem('elevate_selected_team_id');
       if (savedTeamId && savedTeamId !== 'null') {
         setSelectedTeamId(savedTeamId);
-        setCreditSource('team'); // Set credit source to team if a team was previously selected
+        setCreditSource('team');
       }
 
-      // Load confirmation preference
       const savedConfirmationPref = localStorage.getItem('elevate_hide_generation_confirmation');
       if (savedConfirmationPref === 'true') {
         setDontShowConfirmationAgain(true);
@@ -890,10 +791,8 @@ useEffect(() => {
     }
   }, []);
 
-  // Initialize per-image settings when files are selected
   useEffect(() => {
     if (selectedFiles.length > 1) {
-      // Initialize modal per-image settings to default to interior (backwards compatible)
       const perImageDefaultArea: 'interior' | 'exterior' = 'interior';
       const defaultRoomType = perImageDefaultArea === "interior" ? (roomType || "living-room") : (exteriorType || "outdoor");
       const defaultStagingStyle = perImageDefaultArea === "interior" ? selectedStagingStyle : undefined;
@@ -904,7 +803,6 @@ useEffect(() => {
           areaType: perImageDefaultArea,
         }))
       );
-      // Reset custom styling flag when new files are selected
       setUseCustomStyling(false);
     }
   }, [selectedFiles, roomType, exteriorType, selectedStagingStyle, areaType]);
@@ -913,12 +811,10 @@ useEffect(() => {
     setSelectedTeamId(teamId);
     setRemainingCredits(remaining);
 
-    // If a team is selected, automatically switch to team credit source
     if (teamId) {
       setCreditSource('team');
     }
 
-    // Persist selected team to localStorage
     if (typeof window !== 'undefined') {
       if (teamId) {
         localStorage.setItem('elevate_selected_team_id', teamId);
@@ -930,7 +826,6 @@ useEffect(() => {
 
   const handleCreditSourceChange = (source: 'personal' | 'team') => {
     setCreditSource(source);
-    // If switching to personal, clear team selection
     if (source === 'personal') {
       setSelectedTeamId(null);
       setRemainingCredits(0);
@@ -950,9 +845,6 @@ useEffect(() => {
       return;
     }
 
-    // Logged-in users on the personal credit source: only block if they're
-    // NOT eligible for demo credits. Logged-in demo users fall through to
-    // backend demo accounting (fingerprint-based DEMO_LIMIT), same as guests.
     if (
       isLoggedIn &&
       creditSource === 'personal' &&
@@ -967,7 +859,6 @@ useEffect(() => {
       localStorage.setItem('elevate_pending_staging_recovery', JSON.stringify({ startedAt: Date.now() }));
     }
 
-    // Always clear old generated variants before starting a fresh generation run.
     setStagedImageUrls([]);
     setStagedIds([]);
     setSelectedImageIdx(0);
@@ -979,9 +870,6 @@ useEffect(() => {
     }
 
     if (imagesToStageCount > 1) {
-      // Guest + logged-in demo users may stage multiple images; the multi-stage
-      // backend endpoint is guest-aware and falls back to fingerprint-based
-      // demo tracking when there is no req.user.
       setIsBatchProcessing(true);
       try {
         const totalBatches = Math.ceil(selectedFiles.length / MAX_BATCH_SIZE);
@@ -1028,7 +916,6 @@ useEffect(() => {
         }
 
         showInfo(`All batches completed. Total credits used: ${totalCreditsUsed}`);
-
         setSelectedPhotoIdx(0);
       } finally {
         setIsBatchProcessing(false);
@@ -1098,10 +985,6 @@ useEffect(() => {
     setShowProjectModal(true);
   }, [defaultProject, isLoggedIn, runGenerate, shouldShowProjectSelector, subscriptionStatusLoaded]);
 
-  /**
-   * Download image directly to device
-   * Works across all browsers including Safari on mobile
-   */
   const downloadImage = useCallback(async (imageUrl: string) => {
     try {
       const response = await fetch(imageUrl, {
@@ -1114,7 +997,6 @@ useEffect(() => {
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
 
-      // Create anchor element for download
       const link = document.createElement('a');
       link.href = objectUrl;
       link.download = `staged-image-${Date.now()}.png`;
@@ -1124,7 +1006,6 @@ useEffect(() => {
       link.click();
       document.body.removeChild(link);
 
-      // Cleanup
       setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
     } catch (error) {
       showError('Failed to download image. Please try again.');
@@ -1149,7 +1030,7 @@ useEffect(() => {
     handleMove(clientX);
   }, [handleMove]);
 
- const handleDrag = useCallback((e: any) => {
+  const handleDrag = useCallback((e: any) => {
     if ("touches" in e) e.preventDefault();
     setIsDragging((isDragging) => {
       if (!isDragging) return false;
@@ -1164,11 +1045,11 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-  if (isDragging) {
-    window.addEventListener("mousemove", handleDrag as any);
-    window.addEventListener("mouseup", handleEnd);
-    window.addEventListener("touchmove", handleDrag as any, { passive: false });
-    window.addEventListener("touchend", handleEnd);
+    if (isDragging) {
+      window.addEventListener("mousemove", handleDrag as any);
+      window.addEventListener("mouseup", handleEnd);
+      window.addEventListener("touchmove", handleDrag as any, { passive: false });
+      window.addEventListener("touchend", handleEnd);
       return () => {
         window.removeEventListener("mousemove", handleDrag as any);
         window.removeEventListener("mouseup", handleEnd);
@@ -1200,7 +1081,6 @@ useEffect(() => {
     };
   }, [file, selectedFiles.length, stagedImageUrls.length, loading, restageLoading]);
 
-  // Update selectedTeamData when selectedTeamId or teamsData changes
   useEffect(() => {
     if (selectedTeamId && teamsData) {
       const team = teamsData.find(t => t.id === selectedTeamId);
@@ -1213,18 +1093,6 @@ useEffect(() => {
   return (
     <>
       <section id="try-it-free" className="pt-8 pb-12">
-        {/* DEMO LIMIT ALERT */}
-        {/* {shouldShowDemoNotice && (
-          <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
-            <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-yellow-50 text-yellow-900 text-sm font-semibold border border-yellow-200 shadow animate-slide-down">
-              <Sparkles className="w-5 h-5 text-yellow-500" />
-              <span>
-                You have <b>{demoCreditsRemaining} free demo credits</b> left {isLoggedIn ? "on this account" : "on this device"} this month.
-              </span>
-            </div>
-          </div>
-        )} */}
-        {/* BLOCKED ALERT */}
         {isBlocked && (
           <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
             <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-900 text-sm font-semibold border border-red-200 shadow animate-slide-down">
@@ -1235,7 +1103,6 @@ useEffect(() => {
             </div>
           </div>
         )}
-        {/* REPEAT DEMO USER OUTREACH */}
         {isRepeatDemoUser && !isBlocked && (
           <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
             <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-50 text-blue-900 text-sm font-semibold border border-blue-200 shadow animate-slide-down">
@@ -1247,7 +1114,6 @@ useEffect(() => {
           </div>
         )}
 
-        {/* QUICK START FLOW */}
         <div className="max-w-5xl mx-auto mb-8 animate-fade-in">
           <h3 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-center mb-8">STEPS :</h3>
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
@@ -1261,23 +1127,18 @@ useEffect(() => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Solid arrow line */}
               <path
                 d="M10 20 C 40 60, 80 60, 100 30"
                 stroke="black"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-
-              {/* Arrow head */}
               <path
                 d="M10 20 L30 20 M10 20 L10 40"
                 stroke="black"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-
-              {/* Dotted curve */}
               <path
                 d="M60 30 C 80 10, 100 40, 90 70"
                 stroke="black"
@@ -1296,23 +1157,18 @@ useEffect(() => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Solid arrow line */}
               <path
                 d="M10 20 C 40 60, 80 60, 100 30"
                 stroke="black"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-
-              {/* Arrow head */}
               <path
                 d="M10 20 L30 20 M10 20 L10 40"
                 stroke="black"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-
-              {/* Dotted curve */}
               <path
                 d="M60 30 C 80 10, 100 40, 90 70"
                 stroke="black"
@@ -1328,7 +1184,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* HERO SECTION */}
         <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold mb-6 border border-indigo-100 animate-slide-down">
             <div className="flex items-center justify-center w-4 h-4 rounded-full">
@@ -1343,8 +1198,7 @@ useEffect(() => {
             </span>
           </h1>
           <p className="text-lg text-slate-600 mb-8 animate-fade-in delay-300">
-            AI Staging, Virtual Renovation &amp; Furnishing for modern real
-            estate.
+            AI Staging, Virtual Renovation &amp; Furnishing for modern real estate.
           </p>
         </div>
 
@@ -1354,51 +1208,22 @@ useEffect(() => {
               <Monitor className="w-4 h-4" />
               <span id="workspace-title">Instant AI Staging</span>
             </span>
-            {/* {shouldShowDemoNotice && (
-              <div className="flex flex-col">
-                <span className="text-lg font-mono text-indigo-200 ml-auto">
-                  Demo Used: {demoCount} / {demoLimit}
-                </span>
-              </div>
-            )} */}
           </div>
 
           <div className="grid lg:grid-cols-3 relative">
-            {/* Controls */}
             <div
               ref={leftPanelRef}
               className="p-4 border-r border-slate-200 bg-linear-to-b from-slate-50 to-white flex flex-col gap-3 relative overflow-y-auto"
               style={imageAreaHeight ? { height: imageAreaHeight } : undefined}
             >
-              {/* Down arrow indicator for small screens */}
-              {(
-                // Show if there is a file or staged images (i.e., something to see below)
-                (file || (stagedImageUrls && stagedImageUrls.length > 0))
-              ) && (
-                  <div className="flex lg:hidden w-full  justify-center mt-2 animate-bounce" aria-hidden="true">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-down">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <polyline points="19 12 12 19 5 12"></polyline>
-                    </svg>
-                  </div>
-                )}
-              {/* Demo usage progress */}
-              {/* {shouldShowDemoNotice && (
-                <div className="mb-1 bg-white rounded-xl shadow border border-slate-100 p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-indigo-700 flex items-center gap-1">
-                      <Sparkles className="w-4 h-4" /> Demo Usage
-                    </span>
-                    <span className="text-xs text-slate-500">{demoCount} / {demoLimit}</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-2 bg-linear-to-r from-indigo-400 to-indigo-600 rounded-full transition-all"
-                      style={{ width: `${Math.min((demoCount / demoLimit) * 100, 100)}%` }}
-                    />
-                  </div>
+              {(file || (stagedImageUrls && stagedImageUrls.length > 0)) && (
+                <div className="flex lg:hidden w-full justify-center mt-2 animate-bounce" aria-hidden="true">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-down">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
                 </div>
-              )} */}
+              )}
               <span className="text-md font-medium text-indigo-700 ">
                 *Each staging provides 3 different variants
               </span>
@@ -1469,8 +1294,7 @@ useEffect(() => {
                       <div className="flex flex-col gap-2">
                         <label className="text-xs font-semibold text-slate-600 mb-1">Credit Source</label>
 
-                        <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${creditSource === 'personal' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'
-                          }`}>
+                        <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${creditSource === 'personal' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'}`}>
                           <div className="flex items-center gap-2">
                             <input
                               type="radio"
@@ -1496,8 +1320,7 @@ useEffect(() => {
                           </div>
                         </label>
 
-                        <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${creditSource === 'team' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'
-                          }`}>
+                        <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${creditSource === 'team' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'}`}>
                           <div className="flex items-center gap-2">
                             <input
                               type="radio"
@@ -1563,10 +1386,6 @@ useEffect(() => {
                           </div>
                         )}
 
-                        {/* Only relevant for users paying out of personal credits.
-                            When the user picks team credits they're piggybacking on
-                            the team owner's plan, so prompting them to upgrade is
-                            both noisy and misleading. */}
                         {creditSource !== 'team' && !hasAnyActiveSubscription && (
                           <div className="mt-2 rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-3">
                             <div className="flex items-start gap-2">
@@ -1620,19 +1439,12 @@ useEffect(() => {
                 </div>
               </details>
 
-
               {/* Area Type & Options */}
               {!isMultiImageMode && (
                 <details className="bg-white rounded-xl shadow border border-slate-100 p-3">
                   <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
                     <Settings className="w-5 h-5 text-indigo-500" />
                     <span>Step 2: Area & Style</span>
-                    {/* <span className="text-sm text-slate-500 flex items-center gap-2">
-                    <span>
-                      You have <b>{mounted ? demoCreditsRemaining : '—'} free demo credits</b> left {isLoggedIn ? "on this account" : "on this device"} this month.
-                    </span>
-                    <Info className="w-4 h-4 text-indigo-500" />
-                  </span> */}
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
                   </summary>
                   <div className="mt-3 flex flex-col gap-2">
@@ -1665,7 +1477,6 @@ useEffect(() => {
                       </button>
                     </div>
 
-                    {/* Custom Styling for Multi-Image */}
                     {isMultiImageMode && (
                       <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -1697,7 +1508,6 @@ useEffect(() => {
                         value={roomType}
                         options={interiorOptions}
                         onChange={setRoomType}
-                      // placeholder={removeFurniture ? "Select Interior Type (optional)" : "Select Interior Type (required)"}
                       />
                     )}
                     {areaType === "exterior" && (
@@ -1715,12 +1525,10 @@ useEffect(() => {
                         value={selectedStagingStyle}
                         options={stagingStyles}
                         onChange={setSelectedStagingStyle}
-                      // placeholder={removeFurniture ? "Select Staging Style (optional)" : 'Select Staging Style (required)'}
                       />
                     )}
                   </div>
                 </details>
-
               )}
 
               {isMultiImageMode && (
@@ -1734,8 +1542,8 @@ useEffect(() => {
                     modal
                   </button>
                 </div>
-                // onClick={openCustomStylingModal}
               )}
+
               {/* Prompt & Action with mode toggle */}
               <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -1747,9 +1555,6 @@ useEffect(() => {
                     iconClassName="text-indigo-500 h-4 w-4"
                   />
                 </div>
-                {/* <p className="text-[11px] text-slate-500">
-                  Single image staging may take up to 40-45 seconds on average.
-                </p> */}
                 <div className="flex gap-2 mb-2">
                   <button
                     type="button"
@@ -1820,13 +1625,11 @@ useEffect(() => {
                       return;
                     }
 
-                    // Frontend validation for logged-in users with team selected
                     if (isLoggedIn && selectedTeamId && remainingCredits < creditsToUseCount) {
                       setError(`You need ${creditsToUseCount} team credits, but only ${remainingCredits} are available.`);
                       return;
                     }
 
-                    // For new image generation, show confirmation if not disabled
                     if (mode === 'generate' && !dontShowConfirmationAgain) {
                       setPendingGenerationAction(() => startGeneration);
                       setShowConfirmation(true);
@@ -1847,7 +1650,6 @@ useEffect(() => {
                         return;
                       }
                       let stagedIdToUse = stagedIds[selectedImageIdx];
-                      // Fallback: if index is out of bounds, use first available
                       if (!stagedIdToUse) {
                         stagedIdToUse = stagedIds[0];
                         setSelectedImageIdx(0);
@@ -1869,7 +1671,6 @@ useEffect(() => {
                         setPrompt('');
                       }
                     } else {
-                      // Generate mode with confirmation disabled
                       await startGeneration();
                     }
                     if (shouldEnforceDemoLimit) {
@@ -1883,15 +1684,12 @@ useEffect(() => {
                     shouldRequireTeamSelectionForStaging ||
                     (isLoggedIn && creditSource === 'personal' && !isDemo && personalBalance < creditsToUseCount) ||
                     shouldEnforceDemoLimit ||
-                    // (!removeFurniture && areaType === "interior" && !roomType) ||
-                    // (!removeFurniture && areaType !== 'exterior' && !selectedStagingStyle) ||
                     (mode === 'restage' && (!stagedImageUrls.length && areaType !== 'exterior' && !prompt))
                   }
                 >
                   {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : `Generate & Use ${creditsToUseCount || 1} Credit${(creditsToUseCount || 1) > 1 ? 's' : ''}`)}
                 </Button>
 
-                {/* Single-image stage timer: shown to all users (demo + subscribed) */}
                 {singleStageStartTs && !isMultiImageMode && (
                   <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
                     <p className="text-xs font-semibold text-indigo-800">
@@ -1955,7 +1753,6 @@ useEffect(() => {
               className="border-t-4 border-blue-600 md:border-t-white lg:col-span-2 relative aspect-video bg-slate-100 overflow-hidden select-none min-h-80"
               style={{ minWidth: 0 }}
             >
-              {/* BEFORE Image (Empty) */}
               <img
                 src={leftPreviewImageUrl}
                 alt={uploadedPreviewUrl ? "Uploaded room preview" : "Empty room before staging"}
@@ -1966,7 +1763,6 @@ useEffect(() => {
                 style={{ zIndex: 1 }}
               />
 
-              {/* AFTER Image (Staged or local style preview) */}
               {currentDisplayImageUrl ? (
                 <>
                   <div
@@ -1989,7 +1785,6 @@ useEffect(() => {
                       style={{ userSelect: 'none' }}
                     />
                   </div>
-                  {/* Download + Fullscreen icons overlay */}
                   <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
                     <button
                       className="bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
@@ -2014,10 +1809,9 @@ useEffect(() => {
                       <Maximize2 className="w-6 h-6 text-indigo-600" />
                     </button>
                   </div>
-                  {/* Overlay to block interaction for demo images */}
                   {isDemo && !isWatermarkFreeUpload && (
-  <div
-    className="absolute inset-0 z-10"
+                    <div
+                      className="absolute inset-0 z-10"
                       style={{ cursor: 'not-allowed', background: 'rgba(255,255,255,0)', pointerEvents: 'auto' }}
                       onContextMenu={e => e.preventDefault()}
                     />
@@ -2097,7 +1891,6 @@ useEffect(() => {
                   <p className="font-semibold text-indigo-900">
                     {imagesToStageCount || 1} upload{(imagesToStageCount || 1) > 1 ? 's' : ''} = {creditsToUseCount || 1} credit{(creditsToUseCount || 1) > 1 ? 's' : ''}
                   </p>
-
                   <p className="text-indigo-800 mt-1">
                     Each image you upload is transformed into 3 staged/furnished versions.
                     Credits are charged per upload, not per generated image.
@@ -2230,7 +2023,6 @@ useEffect(() => {
       )}
 
       <div className="max-w-2xl mx-auto mt-4 flex flex-col gap-4 px-4">
-        {/* Photo Selector for Multi-Image */}
         {isMultiImageMode && totalStagedPhotos > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm font-semibold text-slate-700">
@@ -2238,7 +2030,6 @@ useEffect(() => {
             </div>
 
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-              {/* Prev Button */}
               <button
                 onClick={() => setSelectedPhotoIdx(Math.max(0, selectedPhotoIdx - 1))}
                 disabled={selectedPhotoIdx === 0}
@@ -2247,7 +2038,6 @@ useEffect(() => {
                 ← Prev
               </button>
 
-              {/* Photo Thumbnails */}
               <div className="flex gap-1">
                 {visiblePhotoIndices.map((photoIdx) => {
                   const photoStartIdx = photoIdx * VARIANTS_PER_IMAGE;
@@ -2276,7 +2066,6 @@ useEffect(() => {
                 })}
               </div>
 
-              {/* Next Button */}
               <button
                 onClick={() => setSelectedPhotoIdx(Math.min(totalStagedPhotos - 1, selectedPhotoIdx + 1))}
                 disabled={selectedPhotoIdx === totalStagedPhotos - 1}
@@ -2346,7 +2135,6 @@ useEffect(() => {
         isEligible={shouldShowProjectSelector}
         ineligibilityReason={ineligibilityReason || undefined}
         onSelectProject={async (projectId, projectName) => {
-          // Clear previous run output immediately so new incoming images are visible.
           setStagedImageUrls([]);
           setStagedIds([]);
           setSelectedImageIdx(0);
@@ -2356,7 +2144,6 @@ useEffect(() => {
           setSelectedProjectName(projectName || null);
           setShowProjectModal(false);
 
-          // Refresh default project state (user might have set new default)
           const defaultKey = getDefaultProjectStorageKey(selectedTeamId);
           const stored = localStorage.getItem(defaultKey);
           if (stored) {
@@ -2366,7 +2153,6 @@ useEffect(() => {
             }
           }
 
-          // Now execute the image generation with projectId
           await runGenerate(projectId || undefined);
         }}
       />
@@ -2376,7 +2162,8 @@ useEffect(() => {
         open={showBonusModal}
         onOpenChange={setShowBonusModal}
       />
-
     </>
-  )
+  );
 }
+
+```
