@@ -1805,12 +1805,25 @@ export default function Demo() {
                     </button>
                   </div>
                   {isDemo && !isWatermarkFreeUpload && (
-                    <div
-                      className="absolute inset-0 z-10"
-                      style={{ cursor: 'not-allowed', background: 'rgba(255,255,255,0)', pointerEvents: 'auto' }}
-                      onContextMenu={e => e.preventDefault()}
-                    />
-                  )}
+  <div
+    className="absolute inset-0 z-10 overflow-hidden"
+    style={{ cursor: 'not-allowed', pointerEvents: 'auto' }}
+    onContextMenu={e => e.preventDefault()}
+  >
+    <div
+      className="absolute inset-0 flex flex-wrap content-around justify-around opacity-30 select-none"
+      style={{ transform: 'rotate(-30deg) scale(1.4)' }}
+      aria-hidden="true"
+    >
+      {Array.from({ length: 12 }).map((_, i) => (
+        <span key={i} className="text-white font-black text-2xl px-6 py-4 whitespace-nowrap" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
+          PREVIEW ONLY
+        </span>
+      ))}
+    </div>
+    <div className="absolute inset-0 bg-black/10" />
+  </div>
+)}
                 </>
               ) : (
                 <div
