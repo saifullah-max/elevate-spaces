@@ -212,7 +212,7 @@ export default function Demo() {
     before: false,
   });
   const expectedPhotoCount = isMultiImageMode ? imagesToStageCount : totalStagedPhotos;
-  const hasGeneratedResults = stagedImageUrls.length > 0;  // Watermark-free for first 2 uploads (guests only) // Credits used = DEMO_LIMIT - demoCreditsRemaining const demoUploadsUsed = isDemo && !hasPurchasedCredits   ? Math.max(0, (demoLimit - demoCreditsRemaining))   : 0; const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed < 2;
+  const hasGeneratedResults = stagedImageUrls.length > 0;  // Watermark-free for first 2 uploads (guests only) // Credits used = DEMO_LIMIT - demoCreditsRemaining const demoUploadsUsed = isDemo && !hasPurchasedCredits   ? Math.max(0, demoCount)   : 0;   ? Math.max(0, (demoLimit - demoCreditsRemaining))   : 0; const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed < 2;
   const currentGeneratedImageUrl = normalizeImageUrl(
     stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * VARIANTS_PER_IMAGE + selectedImageIdx : selectedImageIdx]
   );
