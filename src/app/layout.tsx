@@ -10,6 +10,7 @@ import { PWAInstall } from "@/components/PWAInstall";
 import { PageviewTracker } from "@/components/PageviewTracker";
 import { AppToastContainer } from "@/components/AppToastContainer";
 import { AnalyticsScripts } from "@/components/AnalyticsScripts";
+import BonusBanner from "@/components/BonusBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -110,6 +111,7 @@ export default function RootLayout({
               <PWAInstall />
               <PageviewTracker />
             </MainWrapper>
+            <BonusBanner />
           </RootClientLayout>
         </ReduxProvider>
         <script src="//code.tidio.co/trht4vitzty4fc77wnvpa8ctjr6t3tyw.js" async></script>
