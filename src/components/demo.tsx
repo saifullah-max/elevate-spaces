@@ -1,8 +1,3 @@
-Here is the complete, updated code for your `src/components/demo.tsx` file. It includes the variable fixes we did earlier, updates the logic to ensure watermarks apply strictly after the second upload, and includes all state variables and hooks exactly as you had them.
-
-Replace the entire contents of your **`./src/components/demo.tsx`** file with this code:
-
-```tsx
 // Remove Furniture toggle state
 "use client";
 
