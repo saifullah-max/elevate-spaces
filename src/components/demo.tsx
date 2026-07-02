@@ -212,7 +212,7 @@ export default function Demo() {
     before: false,
   });
   const expectedPhotoCount = isMultiImageMode ? imagesToStageCount : totalStagedPhotos;
-  const hasGeneratedResults = stagedImageUrls.length > 0;
+  const hasGeneratedResults = stagedImageUrls.length > 0;  // Watermark-free for first 2 uploads (guests only) // Credits used = DEMO_LIMIT - demoCreditsRemaining const demoUploadsUsed = isDemo && !hasPurchasedCredits   ? Math.max(0, (demoLimit - demoCreditsRemaining))   : 0; const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed < 2;
   const currentGeneratedImageUrl = normalizeImageUrl(
     stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * VARIANTS_PER_IMAGE + selectedImageIdx : selectedImageIdx]
   );
@@ -1979,7 +1979,7 @@ useEffect(() => {
                       alt="Staged living room"
                       className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
                       draggable={false}
-                      onContextMenu={isDemo ? (e) => e.preventDefault() : undefined}
+                      onContextMenu={isDemo && !isWatermarkFreeUpload ? (e) => e.preventDefault() : undefined}
                       loading="eager"
                       decoding="async"
                       style={{ userSelect: 'none' }}
@@ -2011,9 +2011,9 @@ useEffect(() => {
                     </button>
                   </div>
                   {/* Overlay to block interaction for demo images */}
-                  {isDemo && (
-                    <div
-                      className="absolute inset-0 z-10"
+                  {isDemo && !isWatermarkFreeUpload && (
+  <div
+    className="absolute inset-0 z-10"
                       style={{ cursor: 'not-allowed', background: 'rgba(255,255,255,0)', pointerEvents: 'auto' }}
                       onContextMenu={e => e.preventDefault()}
                     />
