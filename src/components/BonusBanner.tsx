@@ -108,7 +108,7 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
       case "new_visitor":
         return {
           message: "Sign up today and get 5 bonus credits free",
-          subMessage: "No credit card required — your first 2 stagings are watermark-free",
+          subMessage: "No credit card required — your first 5 stagings are watermark-free",
           cta: "Sign Up Free",
           urgent: false,
         };
