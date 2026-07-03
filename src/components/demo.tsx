@@ -42,6 +42,7 @@ import { getAuthFromStorage } from "@/lib/auth.storage";
 import { recordAiGenerationConsent } from "@/services/consent.service";
 import { teamHasActiveSubscription, userHasActivePersonalSubscription, canUserCustomizeStyling } from "@/helpers/subscription.helpers";
 import SupportModalTrigger from "@/components/support/SupportModalTrigger";
+import BonusBanner from "@/components/BonusBanner";
 import InfoHint from "@/components/ui/InfoHint";
 
 const VARIANTS_PER_IMAGE = 3;
@@ -1684,7 +1685,9 @@ export default function Demo() {
                 >
                   {loading || restageLoading ? (mode === 'restage' ? "Restaging..." : "Processing...") : (mode === 'restage' ? "Restage Image" : `Generate & Use ${creditsToUseCount || 1} Credit${(creditsToUseCount || 1) > 1 ? 's' : ''}`)}
                 </Button>
-
+                {isDemo && !isLoggedIn && (
+                  <BonusBanner position="bottom" afterUpload={true} />
+                )}
                 {singleStageStartTs && !isMultiImageMode && (
                   <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
                     <p className="text-xs font-semibold text-indigo-800">
