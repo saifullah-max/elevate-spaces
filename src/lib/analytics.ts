@@ -61,3 +61,16 @@ export function trackPurchase({ value, currency, transactionId, productName }: P
     items: productName ? [{ item_name: productName }] : undefined,
   });
 }
+
+export function trackDemoPhotoGenerated(photoNumber: number, isWatermarked: boolean) {
+  fbq("trackCustom", "DemoPhotoGenerated", { photo_number: photoNumber, is_watermarked: isWatermarked });
+  gtag("event", "demo_photo_generated", {
+    photo_number: photoNumber,
+    is_watermarked: isWatermarked,
+  });
+}
+
+export function trackDemoWatermarkShown(photoNumber: number) {
+  fbq("trackCustom", "DemoWatermarkShown", { photo_number: photoNumber });
+  gtag("event", "demo_watermark_shown", { photo_number: photoNumber });
+}
