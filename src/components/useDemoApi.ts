@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { v4 as uuidv4 } from "uuid";
 import { getDeviceIdFromCookie, setDeviceIdCookie, initGuestSession } from "@/services/guest.service";
+import { trackDemoPhotoGenerated, trackDemoWatermarkShown } from "@/lib/analytics";
 
 type GuestSessionResponse = {
   success?: boolean;
@@ -59,7 +60,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
   const [stagedImageUrls, setStagedImageUrls] = useState<string[]>([]);
   const [stagedIds, setStagedIds] = useState<string[]>([]);
   const [stagedFreeClean, setStagedFreeClean] = useState<boolean[]>([]);
-  const FREE_CLEAN_UPLOADS_LIMIT = 2;
+  const FREE_CLEAN_UPLOADS_LIMIT = 5;
   const requestIdRef = useRef(0);
   const hasInitialized = useRef(false);
 
@@ -85,6 +86,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
 
   type PerImageAreaType = "interior" | "exterior";
   const streamedIdsRef = useRef<Set<string>>(new Set());
+  const hasFiredWatermarkShownRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -184,6 +186,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
     let demoCountValue = demoCount;
     let demoLimitValue = demoLimit;
     let isDemoValue = isDemo;
+    let hasTrackedThisPhoto = false;
 
     stageImageSSE({
       file,
@@ -202,13 +205,23 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
         const normalizedUrl = normalizeImageUrl(data.stagedImageUrl);
         setStagedImageUrls((previous) => [...previous, normalizedUrl]);
         setStagedIds((previous) => [...previous, data.stagedId]);
-        setStagedFreeClean((previous) => [
-          ...previous,
+        const isPhotoFreeClean =
           typeof data.freeCleanUploadsUsed === "number"
             ? data.freeCleanUploadsUsed < FREE_CLEAN_UPLOADS_LIMIT
-            : true,
-        ]);
+            : true;
+        setStagedFreeClean((previous) => [...previous, isPhotoFreeClean]);
         setSelectedImageIdx(0);
+
+        if (!hasTrackedThisPhoto) {
+          hasTrackedThisPhoto = true;
+          const photoNumber =
+            typeof data.freeCleanUploadsUsed === "number" ? data.freeCleanUploadsUsed + 1 : 1;
+          trackDemoPhotoGenerated(photoNumber, !isPhotoFreeClean);
+          if (!isPhotoFreeClean && !hasFiredWatermarkShownRef.current) {
+            hasFiredWatermarkShownRef.current = true;
+            trackDemoWatermarkShown(photoNumber);
+          }
+        }
 
         if (typeof data.demoCount === "number") demoCountValue = data.demoCount;
         if (typeof data.demoLimit === "number") demoLimitValue = data.demoLimit;
@@ -458,17 +471,28 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
             return next;
           });
 
+          const isPhotoFreeClean =
+            typeof data.freeCleanUploadsUsed === "number"
+              ? data.freeCleanUploadsUsed <= FREE_CLEAN_UPLOADS_LIMIT
+              : true;
+
           setStagedFreeClean((previous) => {
             const next = [...previous];
             // Batch events report freeCleanUploadsUsed AFTER incrementing for
             // this photo, so a value of 1 or 2 means this was the 1st/2nd
             // free photo; 3+ means it was watermarked.
-            next[absoluteIndex] =
-              typeof data.freeCleanUploadsUsed === "number"
-                ? data.freeCleanUploadsUsed <= FREE_CLEAN_UPLOADS_LIMIT
-                : true;
+            next[absoluteIndex] = isPhotoFreeClean;
             return next;
           });
+
+          // Only fire once per photo (variationIndex 0), not once per variant.
+          if (variationIndex === 0 && typeof data.freeCleanUploadsUsed === "number") {
+            trackDemoPhotoGenerated(data.freeCleanUploadsUsed, !isPhotoFreeClean);
+            if (!isPhotoFreeClean && !hasFiredWatermarkShownRef.current) {
+              hasFiredWatermarkShownRef.current = true;
+              trackDemoWatermarkShown(data.freeCleanUploadsUsed);
+            }
+          }
 
           if (data.imageId && !streamedIdsRef.current.has(data.imageId)) {
             streamedIdsRef.current.add(data.imageId);
