@@ -142,6 +142,7 @@ export default function Demo() {
     error,
     stagedImageUrls,
     stagedIds,
+    stagedFreeClean,
     demoCount,
     demoLimit,
     isDemo,
@@ -215,12 +216,19 @@ export default function Demo() {
   const expectedPhotoCount = isMultiImageMode ? imagesToStageCount : totalStagedPhotos;
   const hasGeneratedResults = stagedImageUrls.length > 0;
 
-  // Watermark-free rules: Free for first 2 uploads (guests only)
-  const demoUploadsUsed = isDemo && !hasPurchasedCredits ? Math.max(0, demoCount) : 0;
-  const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed <= 2;
+  // Watermark-free rules: Free for first 2 uploads (guests only).
+  // Uses the per-photo flag captured from the backend at generation time,
+  // NOT the live/global demoCount — demoCount keeps changing as later
+  // photos complete, which would incorrectly retroactively mark earlier
+  // (already-free) photos as watermarked once the total crossed 2.
+  const currentResultIndex = isMultiImageMode
+    ? selectedPhotoIdx * VARIANTS_PER_IMAGE + selectedImageIdx
+    : selectedImageIdx;
+  const isWatermarkFreeUpload =
+    isDemo && !hasPurchasedCredits && (stagedFreeClean[currentResultIndex] ?? true);
 
   const currentGeneratedImageUrl = normalizeImageUrl(
-    stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * VARIANTS_PER_IMAGE + selectedImageIdx : selectedImageIdx]
+    stagedImageUrls[currentResultIndex]
   );
   const currentDisplayImageUrl = hasGeneratedResults ? currentGeneratedImageUrl : currentAfterPreviewUrl;
   const maxMultiImages = 15;
