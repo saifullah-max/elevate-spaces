@@ -1807,7 +1807,7 @@ export default function Demo() {
                       <Maximize2 className="w-6 h-6 text-indigo-600" />
                     </button>
                   </div>
-                  {isDemo && !isWatermarkFreeUpload && (
+                  {isDemo && !isWatermarkFreeUpload && hasGeneratedResults && (
   <div
     className="absolute inset-0 z-10 overflow-hidden"
     style={{ cursor: 'not-allowed', pointerEvents: 'auto' }}
