@@ -318,7 +318,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
 
       // Restaging always watermarks demo users' results (backend applies no
       // free-clean-count exception for restages), so mark this slot as not
-      // free regardless of whether the original photo was one of the first 2.
+      // free regardless of whether the original photo was within the free limit.
       if (restaged.isDemo) {
         setStagedFreeClean((previous) => {
           const updated = [...previous];
