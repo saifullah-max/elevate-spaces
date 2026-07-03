@@ -58,6 +58,8 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
   const [error, setError] = useState<string | null>(null);
   const [stagedImageUrls, setStagedImageUrls] = useState<string[]>([]);
   const [stagedIds, setStagedIds] = useState<string[]>([]);
+  const [stagedFreeClean, setStagedFreeClean] = useState<boolean[]>([]);
+  const FREE_CLEAN_UPLOADS_LIMIT = 2;
   const requestIdRef = useRef(0);
   const hasInitialized = useRef(false);
 
@@ -176,6 +178,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
     setError(null);
     setStagedImageUrls([]);
     setStagedIds([]);
+    setStagedFreeClean([]);
     requestIdRef.current += 1;
     const requestId = requestIdRef.current;
     let demoCountValue = demoCount;
@@ -199,6 +202,12 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
         const normalizedUrl = normalizeImageUrl(data.stagedImageUrl);
         setStagedImageUrls((previous) => [...previous, normalizedUrl]);
         setStagedIds((previous) => [...previous, data.stagedId]);
+        setStagedFreeClean((previous) => [
+          ...previous,
+          typeof data.freeCleanUploadsUsed === "number"
+            ? data.freeCleanUploadsUsed < FREE_CLEAN_UPLOADS_LIMIT
+            : true,
+        ]);
         setSelectedImageIdx(0);
 
         if (typeof data.demoCount === "number") demoCountValue = data.demoCount;
@@ -294,6 +303,17 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
         return updated;
       });
 
+      // Restaging always watermarks demo users' results (backend applies no
+      // free-clean-count exception for restages), so mark this slot as not
+      // free regardless of whether the original photo was one of the first 2.
+      if (restaged.isDemo) {
+        setStagedFreeClean((previous) => {
+          const updated = [...previous];
+          updated[props?.selectedImageIdx ?? 0] = false;
+          return updated;
+        });
+      }
+
       setStagedIds((previous) => {
         if (!restaged.stagedId) return previous;
         const updated = [...previous];
@@ -346,6 +366,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
     if (!isContinuation) {
       setStagedImageUrls([]);
       setStagedIds([]);
+      setStagedFreeClean([]);
       streamedIdsRef.current.clear();
     }
 
@@ -434,6 +455,18 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
           setStagedIds((previous) => {
             const next = [...previous];
             next[absoluteIndex] = data.stagedId;
+            return next;
+          });
+
+          setStagedFreeClean((previous) => {
+            const next = [...previous];
+            // Batch events report freeCleanUploadsUsed AFTER incrementing for
+            // this photo, so a value of 1 or 2 means this was the 1st/2nd
+            // free photo; 3+ means it was watermarked.
+            next[absoluteIndex] =
+              typeof data.freeCleanUploadsUsed === "number"
+                ? data.freeCleanUploadsUsed <= FREE_CLEAN_UPLOADS_LIMIT
+                : true;
             return next;
           });
 
@@ -533,6 +566,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
     deviceId,
     stagedImageUrls,
     stagedIds,
+    stagedFreeClean,
     demoCount,
     demoLimit,
     isDemo,
