@@ -217,7 +217,7 @@ export default function Demo() {
 
   // Watermark-free rules: Free for first 2 uploads (guests only)
   const demoUploadsUsed = isDemo && !hasPurchasedCredits ? Math.max(0, demoCount) : 0;
-  const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed < 2;
+  const isWatermarkFreeUpload = isDemo && !hasPurchasedCredits && demoUploadsUsed <= 2;
 
   const currentGeneratedImageUrl = normalizeImageUrl(
     stagedImageUrls[isMultiImageMode ? selectedPhotoIdx * VARIANTS_PER_IMAGE + selectedImageIdx : selectedImageIdx]
