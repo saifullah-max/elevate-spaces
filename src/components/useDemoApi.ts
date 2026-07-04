@@ -2,7 +2,7 @@ import { restageImage, stageImageSSE, stageMultipleImagesSSE, normalizeImageUrl 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RoomType, StagingStyle } from "@/lib/errors";
 import { v4 as uuidv4 } from "uuid";
-import { getDeviceIdFromCookie, setDeviceIdCookie, initGuestSession } from "@/services/guest.service";
+import { getDeviceIdFromCookie, setDeviceIdCookie, initGuestSession, getOrCreateFingerprint } from "@/services/guest.service";
 import { trackDemoPhotoGenerated, trackDemoWatermarkShown } from "@/lib/analytics";
 
 type GuestSessionResponse = {
@@ -33,26 +33,10 @@ function readStoredDemoNumber(key: string, fallback: number) {
 }
 
 export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageIdx: (idx: number) => void }) {
-  function getOrCreateDeviceId(): string {
+  async function getOrCreateDeviceId(): Promise<string> {
     if (typeof window === "undefined") return "";
-
-    let deviceId = getDeviceIdFromCookie();
-    if (!deviceId) {
-      deviceId = localStorage.getItem("device_id") || "";
-      if (deviceId) {
-        setDeviceIdCookie(deviceId);
-        localStorage.removeItem("device_id");
-      }
-    }
-
-    if (!deviceId) {
-      deviceId = uuidv4();
-      setDeviceIdCookie(deviceId);
-    }
-
-    return deviceId;
+    return await getOrCreateFingerprint();
   }
-
   const [deviceId, setDeviceId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [restageLoading, setRestageLoading] = useState(false);
@@ -123,7 +107,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
     if (typeof window === "undefined") return;
 
     try {
-      const id = deviceId || getOrCreateDeviceId();
+      const id = deviceId || (await getOrCreateDeviceId());
       setDeviceId(id);
       const response = (await initGuestSession(id)) as GuestSessionResponse;
       applyGuestSessionResponse(response);
@@ -137,7 +121,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
     hasInitialized.current = true;
 
     const init = async () => {
-      const id = getOrCreateDeviceId();
+      const id = await getOrCreateDeviceId();
       setDeviceId(id);
 
       const isLoggedIn = !!localStorage.getItem("elevate_spaces_auth");
