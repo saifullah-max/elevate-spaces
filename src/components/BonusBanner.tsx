@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Sparkles } from "lucide-react";
 
 type BannerType =
@@ -32,6 +32,7 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
   const [bannerState, setBannerState] = useState<BannerState | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const topBannerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +86,23 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
 
     fetchBannerState();
   }, []);
+
+  // Keep the navbar informed of how tall the top banner actually is (or 0 when
+  // it's not showing), so the navbar can shift down instead of being covered.
+  useEffect(() => {
+    if (position !== "top") return;
+
+    const el = topBannerRef.current;
+    if (el) {
+      document.documentElement.style.setProperty("--top-banner-height", `${el.offsetHeight}px`);
+    } else {
+      document.documentElement.style.setProperty("--top-banner-height", "0px");
+    }
+
+    return () => {
+      document.documentElement.style.setProperty("--top-banner-height", "0px");
+    };
+  }, [position, mounted, dismissed, bannerState]);
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -144,6 +162,7 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
   if (position === "top") {
     return (
       <div
+        ref={topBannerRef}
         className="fixed top-0 left-0 right-0 z-[100] text-white px-4 py-2.5 shadow-md"
         style={{ backgroundColor: "#4747C4" }}
       >
