@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MoreVertical, Download } from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
 
 const INSTALL_DISMISSED_KEY = 'elevate_spaces_pwa_install_dismissed';
 const INSTALL_INSTALLED_KEY = 'elevate_spaces_pwa_installed';
@@ -187,11 +187,9 @@ export function PWAInstall() {
       {!shouldShowInstallBanner && !isInstalled && (
         <button
           onClick={() => setIsGuideOpen(true)}
-          aria-label="Installation guide"
-          title="Installation guide"
-          className="fixed bottom-6 right-6 z-60 flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-white shadow-xl ring-1 ring-indigo-300 hover:bg-indigo-700"
+          className="fixed bottom-6 right-6 z-60 rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-indigo-300 hover:bg-indigo-700"
         >
-          <Download className="h-5 w-5" />
+          Install guide
         </button>
       )}
 
