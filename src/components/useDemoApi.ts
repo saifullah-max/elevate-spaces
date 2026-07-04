@@ -221,7 +221,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
             : Math.max(0, demoLimitValue - demoCountValue)
         );
 
-        if (isDemoValue) {
+        if (isDemoValue && !isPhotoFreeClean) {
           const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("elevate_spaces_auth");
           setError(
             isLoggedIn
@@ -511,8 +511,10 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
               : Math.max(0, demoLimitValue - demoCountValue)
           );
 
-          // Show demo watermark message like single-image does
-          if (isDemoValue) {
+          // Show demo watermark message only when this specific photo was
+          // actually watermarked (i.e. it's past the free-clean limit) —
+          // not just because the visitor is a demo user in general.
+          if (isDemoValue && !isPhotoFreeClean) {
             const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("elevate_spaces_auth");
             setError(
               isLoggedIn
