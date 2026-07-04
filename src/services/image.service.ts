@@ -285,6 +285,7 @@ export interface RestageImageResponse {
   demoCount?: number;
   demoLimit?: number;
   isDemo?: boolean;
+  watermarked?: boolean;
 }
 
 export async function restageImage({
