@@ -193,28 +193,26 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
 
   return (
     <div
-      className="w-full rounded-xl text-white px-5 py-4 flex items-center justify-between gap-4 shadow-lg my-3"
+      className="w-full rounded-xl text-white px-4 py-3 shadow-lg my-3"
       style={{ background: "linear-gradient(to right, #4747C4, #00B4B4)" }}
     >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Sparkles className="w-5 h-5 shrink-0" />
-        <div className="min-w-0">
-          <p className="text-sm font-bold">{content.message}</p>
-          <p className="text-xs text-white/80 hidden sm:block">{content.subMessage}</p>
+      <div className="flex items-start gap-2">
+        <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold leading-snug">{content.message}</p>
+          <p className="text-xs text-white/80 mt-1">{content.subMessage}</p>
         </div>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <button
-          onClick={content.urgent ? () => (window.location.href = "/#pricing") : handleSignUp}
-          className="bg-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-indigo-50 transition whitespace-nowrap"
-          style={{ color: "#4747C4" }}
-        >
-          {content.cta}
-        </button>
-        <button onClick={handleDismiss} className="text-white/70 hover:text-white transition">
+        <button onClick={handleDismiss} className="text-white/70 hover:text-white transition shrink-0">
           <X className="w-4 h-4" />
         </button>
       </div>
+      <button
+        onClick={content.urgent ? () => (window.location.href = "/#pricing") : handleSignUp}
+        className="mt-3 w-full bg-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-indigo-50 transition"
+        style={{ color: "#4747C4" }}
+      >
+        {content.cta}
+      </button>
     </div>
   );
 }
