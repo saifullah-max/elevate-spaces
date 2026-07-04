@@ -316,10 +316,20 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
         return updated;
       });
 
-      // Restaging always watermarks demo users' results (backend applies no
-      // free-clean-count exception for restages), so mark this slot as not
-      // free regardless of whether the original photo was within the free limit.
-      if (restaged.isDemo) {
+      // Watermark status is now decided by the backend based on the LOCKED
+      // status of the original image (set once at generation time), and is
+      // returned explicitly as `watermarked`. Use that real value instead of
+      // assuming every demo-user restage is watermarked.
+      if (typeof restaged.watermarked === "boolean") {
+        setStagedFreeClean((previous) => {
+          const updated = [...previous];
+          updated[props?.selectedImageIdx ?? 0] = !restaged.watermarked;
+          return updated;
+        });
+      } else if (restaged.isDemo) {
+        // Fallback for safety if the backend response is ever missing the
+        // field (e.g. mid-deploy version skew) — preserves the old, safer
+        // (watermarked) behavior rather than silently showing an unwatermarked image.
         setStagedFreeClean((previous) => {
           const updated = [...previous];
           updated[props?.selectedImageIdx ?? 0] = false;
