@@ -1,4 +1,37 @@
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:5000/api";
+
+let cachedFingerprint: string | null = null;
+
+/**
+ * Get a stable per-device fingerprint using FingerprintJS. This survives
+ * incognito windows and cleared cookies, because it's derived from
+ * browser/hardware characteristics rather than stored data.
+ * Falls back to the existing device_id cookie if FingerprintJS fails to
+ * load (e.g. blocked by an ad blocker), so the demo never fully breaks.
+ */
+export async function getOrCreateFingerprint(): Promise<string> {
+  if (cachedFingerprint) return cachedFingerprint;
+
+  try {
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+    cachedFingerprint = result.visitorId;
+  } catch (err) {
+    cachedFingerprint = getDeviceIdFromCookie() || null;
+  }
+
+  if (!cachedFingerprint) {
+    cachedFingerprint = getDeviceIdFromCookie();
+  }
+
+  if (cachedFingerprint) {
+    setDeviceIdCookie(cachedFingerprint);
+  }
+
+  return cachedFingerprint || "";
+}
 
 export interface GuestStatusData {
     deviceId?: string | null;
