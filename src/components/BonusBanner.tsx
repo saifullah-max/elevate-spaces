@@ -139,8 +139,8 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
         };
       case "returning_watermarked":
   return {
-    message: "Sign up to unlock 5 bonus credits",
-    subMessage: "Upgrade to a plan anytime to remove watermarks and stage at full resolution",
+    message: "Sign up free to unlock 5 watermark-free credits",
+    subMessage: "Your next 5 stagings come out clean — no watermark",
     cta: "Sign Up Free",
     urgent: false,
   };
