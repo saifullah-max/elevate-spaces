@@ -152,6 +152,7 @@ const PricingPage = () => {
     confirmPlanChange?: boolean;
   }>(null);
   const [showContactSalesModal, setShowContactSalesModal] = useState(false);
+  const [showSignUpPrompt, setShowSignUpPrompt] = useState(false);
   const [firstPaymentAgreements, setFirstPaymentAgreements] = useState<Record<string, boolean>>({
     authorizeCharges: false,
     creditsNonRefundable: false,
@@ -194,19 +195,19 @@ const PricingPage = () => {
     let isMounted = true;
 
     const loadOwnedTeams = async () => {
-  const auth = getAuthFromStorage();
-  if (!auth?.token) {
-    if (isMounted) {
-      setOwnedTeams([]);
-      setOwnedTeamDetails([]);
-      setTeamsLoading(false);
-    }
-    return;
-  }
-  try {
-    setTeamsLoading(true);
-    setTeamsError(null);
-    const response = await getTeams();
+      const auth = getAuthFromStorage();
+      if (!auth?.token) {
+        if (isMounted) {
+          setOwnedTeams([]);
+          setOwnedTeamDetails([]);
+          setTeamsLoading(false);
+        }
+        return;
+      }
+      try {
+        setTeamsLoading(true);
+        setTeamsError(null);
+        const response = await getTeams();
         if (!isMounted) return;
         setOwnedTeamDetails(response.teams || []);
         const teams = (response.teams || []).map((team) => ({ id: team.id, name: team.name }));
@@ -429,21 +430,11 @@ const PricingPage = () => {
       if (session?.url) { window.location.href = session.url; } else { throw new Error('No checkout URL returned'); }
     } catch (err: any) {
       const isUnauthorized = err?.status === 401 || err?.code === 401 || err?.code === 'UNAUTHORIZED';
-if (isUnauthorized) {
-  const loginMessage = 'Please log in first to buy a plan, buy extra credits, or pay per image.';
-  toast.error(
-    <div>
-      <div>{loginMessage}</div>
-      <a href="/sign-up" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline', display: 'inline-block', marginTop: 6 }}>
-        Sign up now →
-      </a>
-    </div>,
-    { autoClose: 8000 }
-  );
-  setErrorMessage(loginMessage);
-  setPlanChangePending(null);
-  return;
-}
+      if (isUnauthorized) {
+        setShowSignUpPrompt(true);
+        setPlanChangePending(null);
+        return;
+      }
       if (err?.code === 'PLAN_CHANGE_CONFIRMATION_REQUIRED') {
         setPlanChangePending({ productKey, qty });
         const seatImpact = err?.details?.seatImpact as DowngradeSeatImpact | undefined;
@@ -986,6 +977,36 @@ if (isUnauthorized) {
           <ContactSalesForm onClose={() => setShowContactSalesModal(false)} />
         </DialogContent>
       </Dialog>
+
+      {showSignUpPrompt && (
+        <div
+          onClick={() => setShowSignUpPrompt(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: '#4747C4', borderRadius: 16, padding: '32px 28px', maxWidth: 360, width: '90%', textAlign: 'center' }}
+          >
+            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Zap className="w-6 h-6" style={{ color: '#EEEDFE' }} />
+            </div>
+            <p style={{ fontSize: 17, fontWeight: 600, color: '#ffffff', margin: '0 0 6px' }}>You'll need an account for that</p>
+            <p style={{ fontSize: 14, color: '#CECBF6', margin: '0 0 20px', lineHeight: 1.5 }}>It only takes a minute, and it's free.</p>
+            <a
+              href="/sign-up"
+              style={{ display: 'block', width: '100%', background: '#ffffff', color: '#3C3489', border: 'none', borderRadius: 10, padding: '11px', fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'none', boxSizing: 'border-box' }}
+            >
+              Create free account
+            </a>
+            <button
+              onClick={() => setShowSignUpPrompt(false)}
+              style={{ width: '100%', background: 'transparent', color: '#CECBF6', border: 'none', padding: '10px', fontSize: 13, cursor: 'pointer', marginTop: 4 }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
