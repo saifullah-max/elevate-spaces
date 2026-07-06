@@ -194,10 +194,19 @@ const PricingPage = () => {
     let isMounted = true;
 
     const loadOwnedTeams = async () => {
-      try {
-        setTeamsLoading(true);
-        setTeamsError(null);
-        const response = await getTeams();
+  const auth = getAuthFromStorage();
+  if (!auth?.token) {
+    if (isMounted) {
+      setOwnedTeams([]);
+      setOwnedTeamDetails([]);
+      setTeamsLoading(false);
+    }
+    return;
+  }
+  try {
+    setTeamsLoading(true);
+    setTeamsError(null);
+    const response = await getTeams();
         if (!isMounted) return;
         setOwnedTeamDetails(response.teams || []);
         const teams = (response.teams || []).map((team) => ({ id: team.id, name: team.name }));
