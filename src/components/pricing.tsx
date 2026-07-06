@@ -429,13 +429,21 @@ const PricingPage = () => {
       if (session?.url) { window.location.href = session.url; } else { throw new Error('No checkout URL returned'); }
     } catch (err: any) {
       const isUnauthorized = err?.status === 401 || err?.code === 401 || err?.code === 'UNAUTHORIZED';
-      if (isUnauthorized) {
-        const loginMessage = 'Please log in first to buy a plan, buy extra credits, or pay per image.';
-        toast.error(loginMessage, { autoClose: 5000 });
-        setErrorMessage(loginMessage);
-        setPlanChangePending(null);
-        return;
-      }
+if (isUnauthorized) {
+  const loginMessage = 'Please log in first to buy a plan, buy extra credits, or pay per image.';
+  toast.error(
+    <div>
+      <div>{loginMessage}</div>
+      <a href="/sign-up" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline', display: 'inline-block', marginTop: 6 }}>
+        Sign up now →
+      </a>
+    </div>,
+    { autoClose: 8000 }
+  );
+  setErrorMessage(loginMessage);
+  setPlanChangePending(null);
+  return;
+}
       if (err?.code === 'PLAN_CHANGE_CONFIRMATION_REQUIRED') {
         setPlanChangePending({ productKey, qty });
         const seatImpact = err?.details?.seatImpact as DowngradeSeatImpact | undefined;
