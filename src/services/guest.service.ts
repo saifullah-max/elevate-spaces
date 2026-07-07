@@ -14,16 +14,25 @@ let cachedFingerprint: string | null = null;
 export async function getOrCreateFingerprint(): Promise<string> {
   if (cachedFingerprint) return cachedFingerprint;
 
+  // If we already have a persisted device_id, keep using it. This is the
+  // visitor's established identity — don't let a freshly-computed
+  // FingerprintJS value overwrite it, since the free/open-source FingerprintJS
+  // visitorId is not guaranteed to be stable day-to-day (browser updates,
+  // privacy protections in Safari/Firefox/Brave, etc. can shift it). Only
+  // compute a new fingerprint when there's no existing cookie at all, i.e.
+  // this is a genuinely new visitor.
+  const existingDeviceId = getDeviceIdFromCookie();
+  if (existingDeviceId) {
+    cachedFingerprint = existingDeviceId;
+    return cachedFingerprint;
+  }
+
   try {
     const fp = await FingerprintJS.load();
     const result = await fp.get();
     cachedFingerprint = result.visitorId;
   } catch (err) {
-    cachedFingerprint = getDeviceIdFromCookie() || null;
-  }
-
-  if (!cachedFingerprint) {
-    cachedFingerprint = getDeviceIdFromCookie();
+    cachedFingerprint = null;
   }
 
   if (cachedFingerprint) {
