@@ -56,7 +56,17 @@ const PROJECT_SELECTOR_PLANS = new Set([
   'enterprise',
 ]);
 
-export default function Demo() {
+interface DemoProps {
+  onCreditsUpdate?: (info: {
+    demoCreditsRemaining: number;
+    personalBalance: number;
+    hasPurchasedCredits: boolean;
+    isDemo: boolean;
+    demoSessionReady: boolean;
+  }) => void;
+}
+
+export default function Demo({ onCreditsUpdate }: DemoProps) {
   // Move selectedImageIdx state to Demo
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [showBonusModal, setShowBonusModal] = useState(false);
@@ -647,7 +657,19 @@ export default function Demo() {
 
   const hasAnyActiveSubscription = Boolean(paymentSummary?.activeSubscriptions?.length) || teamHasActiveSubscription(selectedTeamData);
   const shouldEnforceDemoLimit = limitReached && creditSource === 'personal' && !selectedTeamId && !hasPurchasedCredits && !hasAnyActiveSubscription;
-  const shouldRequireTeamSelectionForStaging = creditSource === 'team' && !selectedTeamId;
+  const shouldRequireTeamSelectionForStaging = creditSource === 'team' && !selectedTeamId;// Report the live credit numbers up to the parent page, so the hero
+  // section always shows the same numbers as this component tracks —
+  // never a separately-fetched, possibly-different snapshot.
+  useEffect(() => {
+    if (!demoSessionReady) return;
+    onCreditsUpdate?.({
+      demoCreditsRemaining,
+      personalBalance,
+      hasPurchasedCredits,
+      isDemo,
+      demoSessionReady,
+    });
+  }, [demoCreditsRemaining, personalBalance, hasPurchasedCredits, isDemo, demoSessionReady, onCreditsUpdate]);
   
 
   const prevUrlsRef = useRef<string[]>([]);
