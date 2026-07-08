@@ -63,8 +63,8 @@ export default function Home() {
     setShowResourcesBanner(showBanner);
   }, []);
 
-  // Separate, self-contained check: only show the "Try for free now" hero
-  // button when the visitor (guest or logged-in) still has free demo credits.
+  // Separate, self-contained check: decides which hero copy/CTA to show —
+  // "free" framing when demo credits remain, non-free framing when they don't.
   useEffect(() => {
     if (typeof window === "undefined") return;
     (async () => {
@@ -134,19 +134,36 @@ export default function Home() {
 
         {/* Hero CTA - visible above the fold on both mobile and desktop */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
-            Turn empty rooms into staged homes
-          </h1>
-          <p className="text-base sm:text-lg text-slate-600 mb-6">
-            Upload a photo and see it staged in seconds.
-          </p>
-          {hasFreeDemoCredits && (
-            <button
-              onClick={scrollToDemo}
-              className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
-            >
-              Try for free now
-            </button>
+          {hasFreeDemoCredits ? (
+            <>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+                Turn empty rooms into staged homes
+              </h1>
+              <p className="text-base sm:text-lg text-slate-600 mb-6">
+                Upload a photo and see it staged in seconds.
+              </p>
+              <button
+                onClick={scrollToDemo}
+                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+              >
+                Try for free now
+              </button>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+                See your space staged in seconds
+              </h1>
+              <p className="text-base sm:text-lg text-slate-600 mb-6">
+                Upload a photo and get a fully staged preview.
+              </p>
+              <button
+                onClick={scrollToDemo}
+                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+              >
+                Upload a Photo
+              </button>
+            </>
           )}
         </section>
 
@@ -156,28 +173,4 @@ export default function Home() {
           <div className="relative z-10 mx-auto mb-8 max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-2xl border border-indigo-200 px-5 py-4 sm:px-6 sm:py-5 shadow-md">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-semibold text-indigo-900 sm:text-base">
-                  New to platform? Resources are in process
-                </p>
-                <Link
-                  href="/resources"
-                  className="inline-flex w-fit items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-                >
-                  Open resources
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-        <div id="try-now-demo">
-          <Demo />
-        </div>
-        {isLoggedIn ? <RecentUploads /> : null}
-
-        <Pricing />
-
-        <Footer />
-      </div>
-    </>
-  );
-}
+                <p
