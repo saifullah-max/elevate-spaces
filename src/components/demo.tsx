@@ -63,7 +63,7 @@ export default function Demo() {
   const [bonusOfferShownToday, setBonusOfferShownToday] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const hasShownDemoInfoRef = useRef(false);
+  
   const hasInitializedLimitWatcherRef = useRef(false);
   const prevLimitReachedRef = useRef(false);
   const imageDimensionsRef = useRef<Array<{ width: number; height: number }>>([]);
@@ -648,16 +648,7 @@ export default function Demo() {
   const hasAnyActiveSubscription = Boolean(paymentSummary?.activeSubscriptions?.length) || teamHasActiveSubscription(selectedTeamData);
   const shouldEnforceDemoLimit = limitReached && creditSource === 'personal' && !selectedTeamId && !hasPurchasedCredits && !hasAnyActiveSubscription;
   const shouldRequireTeamSelectionForStaging = creditSource === 'team' && !selectedTeamId;
-  const shouldShowDemoNotice = authChecked && demoSessionReady && demoCreditsRemaining > 0 && isDemo && !hasPurchasedCredits && !hasAnyActiveSubscription;
-
-  useEffect(() => {
-    if (!shouldShowDemoNotice || hasShownDemoInfoRef.current) return;
-    const demoScope = isLoggedIn ? "per account" : "per device";
-    showInfo(
-      `You have ${demoCreditsRemaining} of ${demoLimit} free demo credits left ${demoScope} this month.`
-    );
-    hasShownDemoInfoRef.current = true;
-  }, [shouldShowDemoNotice, demoCreditsRemaining, demoLimit, isLoggedIn]);
+  
 
   const prevUrlsRef = useRef<string[]>([]);
   useEffect(() => {
