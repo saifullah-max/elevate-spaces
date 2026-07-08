@@ -158,6 +158,9 @@ export default function Home() {
               >
                 Try for free now
               </button>
+              <p className="mt-3 text-sm text-slate-500">
+                No credit card required · Results in under 60 seconds
+              </p>
               {heroCreditCount !== null && (
                 <div className="mt-4 flex justify-center">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-semibold text-indigo-700">
@@ -181,6 +184,9 @@ export default function Home() {
               >
                 Upload a Photo
               </button>
+              <p className="mt-3 text-sm text-slate-500">
+                Results in under 60 seconds
+              </p>
             </>
           )}
         </section>
