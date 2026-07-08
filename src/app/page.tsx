@@ -22,7 +22,6 @@ export default function Home() {
   const [showResourcesBanner, setShowResourcesBanner] = useState(false);
   const [hasFreeDemoCredits, setHasFreeDemoCredits] = useState(false);
   const [heroCreditCount, setHeroCreditCount] = useState<number | null>(null);
-  const [heroCreditIsPaid, setHeroCreditIsPaid] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -65,9 +64,9 @@ export default function Home() {
     setShowResourcesBanner(showBanner);
   }, []);
 
-  // Single source of truth: the Demo section resolves the real device
-  // identity and tracks live credit numbers already. The hero just
-  // displays whatever Demo reports, so the two can never disagree.
+  // Single source of truth: Demo resolves the real device identity and
+  // tracks live credit numbers already. The hero only ever shows a count
+  // for free demo users — paying customers get the button with no count.
   const handleDemoCreditsUpdate = useCallback(
     (info: {
       demoCreditsRemaining: number;
@@ -80,15 +79,9 @@ export default function Home() {
 
       if (info.isDemo && info.demoCreditsRemaining > 0) {
         setHasFreeDemoCredits(true);
-        setHeroCreditIsPaid(false);
         setHeroCreditCount(info.demoCreditsRemaining);
-      } else if (info.hasPurchasedCredits) {
-        setHasFreeDemoCredits(false);
-        setHeroCreditIsPaid(true);
-        setHeroCreditCount(info.personalBalance);
       } else {
         setHasFreeDemoCredits(false);
-        setHeroCreditIsPaid(false);
         setHeroCreditCount(null);
       }
     },
@@ -184,11 +177,6 @@ export default function Home() {
               >
                 Upload a Photo
               </button>
-              {heroCreditIsPaid && heroCreditCount !== null && (
-                <p className="mt-3 text-sm text-slate-500">
-                  {heroCreditCount} credit{heroCreditCount === 1 ? "" : "s"} remaining
-                </p>
-              )}
             </>
           )}
         </section>
