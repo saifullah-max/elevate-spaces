@@ -11,6 +11,7 @@ import AdminAutoRedirect from "./admin-redirect";
 import { ResourcesOnboardingPopup } from "@/components/ResourcesOnboardingPopup";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { getGuestStatus } from "@/services/guest.service";
+import { getUserCredits } from "@/services/payment.service";
 
 const Footer = dynamic(() => import("@/components/footer"), { ssr: false });
 const RESOURCE_BANNER_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
@@ -21,6 +22,8 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showResourcesBanner, setShowResourcesBanner] = useState(false);
   const [hasFreeDemoCredits, setHasFreeDemoCredits] = useState(false);
+  const [heroCreditCount, setHeroCreditCount] = useState<number | null>(null);
+  const [heroCreditIsPaid, setHeroCreditIsPaid] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -63,8 +66,8 @@ export default function Home() {
     setShowResourcesBanner(showBanner);
   }, []);
 
-  // Separate, self-contained check: decides which hero copy/CTA to show —
-  // "free" framing when demo credits remain, non-free framing when they don't.
+  // Separate, self-contained check: decides which hero copy/CTA to show, and
+  // which credit count (free demo vs. paid balance) to display underneath it.
   useEffect(() => {
     if (typeof window === "undefined") return;
     (async () => {
@@ -72,9 +75,24 @@ export default function Home() {
         const status = await getGuestStatus();
         const remaining = status?.data?.remainingDemoCredits ?? 0;
         const limitReached = status?.data?.limitReached ?? true;
-        setHasFreeDemoCredits(remaining > 0 && !limitReached);
+        const hasPurchased = status?.data?.hasPurchasedCredits ?? false;
+        const freeCreditsLeft = remaining > 0 && !limitReached;
+
+        setHasFreeDemoCredits(freeCreditsLeft);
+
+        if (freeCreditsLeft) {
+          setHeroCreditIsPaid(false);
+          setHeroCreditCount(remaining);
+        } else if (hasPurchased) {
+          const credits = await getUserCredits();
+          setHeroCreditIsPaid(true);
+          setHeroCreditCount(credits.currentBalance);
+        } else {
+          setHeroCreditCount(null);
+        }
       } catch {
         setHasFreeDemoCredits(false);
+        setHeroCreditCount(null);
       }
     })();
   }, []);
@@ -148,6 +166,11 @@ export default function Home() {
               >
                 Try for free now
               </button>
+              {heroCreditCount !== null && (
+                <p className="mt-3 text-sm text-slate-500">
+                  {heroCreditCount} free demo credit{heroCreditCount === 1 ? "" : "s"} remaining
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -163,6 +186,11 @@ export default function Home() {
               >
                 Upload a Photo
               </button>
+              {heroCreditIsPaid && heroCreditCount !== null && (
+                <p className="mt-3 text-sm text-slate-500">
+                  {heroCreditCount} credit{heroCreditCount === 1 ? "" : "s"} remaining
+                </p>
+              )}
             </>
           )}
         </section>
