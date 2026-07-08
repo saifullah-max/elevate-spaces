@@ -1267,8 +1267,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               {/* Upload Section */}
               <div className="bg-white rounded-xl shadow border border-slate-100 p-3 mb-1 flex flex-col gap-1">
                 <div className="flex items-center gap-2 mb-1">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">1</span>
                   <UploadCloud className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">1. Upload Photo</span>
+                  <span className="text-sm font-bold text-slate-700">Upload Photo</span>
                 </div>
                 <span className="text-xs text-slate-500 mb-1">JPG/PNG, single or multiple images</span>
                 <UploadArea
@@ -1457,8 +1458,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               {!isMultiImageMode && (
                 <details className="bg-white rounded-xl shadow border border-slate-100 p-3">
                   <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">2</span>
                     <Settings className="w-5 h-5 text-indigo-500" />
-                    <span>Step 2: Area & Style</span>
+                    <span>Area & Style</span>
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
                   </summary>
                   <div className="mt-3 flex flex-col gap-2">
@@ -1561,8 +1563,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               {/* Prompt & Action with mode toggle */}
               <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2 mb-1">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">3</span>
                   <Sparkles className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">Step 3: Refine & Generate</span>
+                  <span className="text-sm font-bold text-slate-700">Refine & Generate</span>
                   <InfoHint
                     text="Single image staging may take up to 40-45 seconds on average."
                     className="inline-flex"
