@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "./globals.css";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -11,7 +11,6 @@ import AdminAutoRedirect from "./admin-redirect";
 import { ResourcesOnboardingPopup } from "@/components/ResourcesOnboardingPopup";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { getGuestStatus } from "@/services/guest.service";
-import { getUserCredits } from "@/services/payment.service";
 
 const Footer = dynamic(() => import("@/components/footer"), { ssr: false });
 const RESOURCE_BANNER_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
@@ -66,36 +65,35 @@ export default function Home() {
     setShowResourcesBanner(showBanner);
   }, []);
 
-  // Separate, self-contained check: decides which hero copy/CTA to show, and
-  // which credit count (free demo vs. paid balance) to display underneath it.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    (async () => {
-      try {
-        const status = await getGuestStatus();
-        const remaining = status?.data?.remainingDemoCredits ?? 0;
-        const limitReached = status?.data?.limitReached ?? true;
-        const hasPurchased = status?.data?.hasPurchasedCredits ?? false;
-        const freeCreditsLeft = remaining > 0 && !limitReached;
+  // Single source of truth: the Demo section resolves the real device
+  // identity and tracks live credit numbers already. The hero just
+  // displays whatever Demo reports, so the two can never disagree.
+  const handleDemoCreditsUpdate = useCallback(
+    (info: {
+      demoCreditsRemaining: number;
+      personalBalance: number;
+      hasPurchasedCredits: boolean;
+      isDemo: boolean;
+      demoSessionReady: boolean;
+    }) => {
+      if (!info.demoSessionReady) return;
 
-        setHasFreeDemoCredits(freeCreditsLeft);
-
-        if (freeCreditsLeft) {
-          setHeroCreditIsPaid(false);
-          setHeroCreditCount(remaining);
-        } else if (hasPurchased) {
-          const credits = await getUserCredits();
-          setHeroCreditIsPaid(true);
-          setHeroCreditCount(credits.currentBalance);
-        } else {
-          setHeroCreditCount(null);
-        }
-      } catch {
+      if (info.isDemo && info.demoCreditsRemaining > 0) {
+        setHasFreeDemoCredits(true);
+        setHeroCreditIsPaid(false);
+        setHeroCreditCount(info.demoCreditsRemaining);
+      } else if (info.hasPurchasedCredits) {
         setHasFreeDemoCredits(false);
+        setHeroCreditIsPaid(true);
+        setHeroCreditCount(info.personalBalance);
+      } else {
+        setHasFreeDemoCredits(false);
+        setHeroCreditIsPaid(false);
         setHeroCreditCount(null);
       }
-    })();
-  }, []);
+    },
+    []
+  );
 
   const handleMove = (clientX: number) => {
     const rect = document
@@ -215,7 +213,7 @@ export default function Home() {
           </div>
         )}
         <div id="try-now-demo">
-          <Demo />
+          <Demo onCreditsUpdate={handleDemoCreditsUpdate} />
         </div>
         {isLoggedIn ? <RecentUploads /> : null}
 
