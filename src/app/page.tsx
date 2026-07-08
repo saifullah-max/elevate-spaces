@@ -209,12 +209,7 @@ export default function Home() {
           </div>
           <p className="text-center text-[11px] text-slate-400 italic mt-3 max-w-lg mx-auto">
             Source:{" "}
-            
-              href="https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-slate-500"
-            >
+            <a href="https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-500">
               National Association of Realtors, 2025 Profile of Home Staging
             </a>
             {" "}— reflects staging generally, not Elevate Spaces AI results specifically.
