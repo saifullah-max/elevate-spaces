@@ -46,14 +46,14 @@ export default function ResourcesPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAF7F2] text-slate-500">
         <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading resources...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-14">
+    <div className="min-h-screen bg-[#FAF7F2] px-4 py-14">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
           <div className="bg-linear-to-r from-slate-900 via-slate-800 to-indigo-900 px-6 py-10 text-white sm:px-10">
