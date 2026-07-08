@@ -1,6 +1,6 @@
 import 'react-toastify/dist/ReactToastify.css';
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/providers/ReduxProvider";
 import { RootClientLayout } from "@/components/RootClientLayout";
@@ -12,11 +12,10 @@ import { AppToastContainer } from "@/components/AppToastContainer";
 import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import BonusBanner from "@/components/BonusBanner";
 
-const geistSans = Geist({
+const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
