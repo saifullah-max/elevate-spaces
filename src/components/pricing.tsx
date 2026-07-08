@@ -715,18 +715,13 @@ const PricingPage = () => {
             <button className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8" onClick={handleOpenContactSales}>
               Contact Sales
             </button>
+            <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-slate-800">
+              Custom volume & seats
+            </div>
             <ul className="space-y-4 flex-1">
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best rates with annual commitment</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Built for teams of 6 or more</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">High volume monthly credits</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Shared usage across teams and projects</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Priority support</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Custom onboarding and setup</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Flexible plans built around your business</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best for brokerages, agencies, and enterprise level usage</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Custom enterprise pricing based on volume and seats</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Seats: Included based on plan size</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">No limit on the number of teams you can create</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Priority support & custom onboarding</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Volume discounts available for larger annual commitments</span></li>
             </ul>
           </div>
