@@ -673,7 +673,7 @@ export default function Teams() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 py-12">
+        <div className="min-h-screen bg-[#FAF7F2] py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <TeamsHeader>
                     <CreateTeamDialog
@@ -732,7 +732,7 @@ export default function Teams() {
                                         </button>
                                         <button
                                             type="submit"
-                                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                                             disabled={transferToTeamLoading}
                                         >
                                             {transferToTeamLoading ? "Transferring..." : "Transfer"}
