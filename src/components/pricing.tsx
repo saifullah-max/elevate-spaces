@@ -669,14 +669,12 @@ const PricingPage = () => {
             <button onClick={() => startCheckout(proProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === proProductKey} className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === proProductKey ? 'Processing...' : 'Get Started'}
             </button>
+            <div className="mb-4 inline-block rounded-lg bg-white/15 px-3 py-2 text-sm font-semibold text-white">
+              {proCredits} {creditsLabel} · 2 seats
+            </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">{proCredits} {creditsLabel}</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Up to 2 users included</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Add 1 extra user for $20/month</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Designed for consistent monthly usage</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Stage & customize multiple images in one batch</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Better value per photo than Starter</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Ideal for active agents and solo creators</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Cost per credit: ${proPerCredit}</span></li>
             </ul>
           </div>
