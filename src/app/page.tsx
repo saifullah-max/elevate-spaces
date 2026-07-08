@@ -143,7 +143,7 @@ export default function Home() {
       <div className="bg-[#FAF7F2] min-h-screen">
 
         {/* Hero CTA - visible above the fold on both mobile and desktop */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 text-center">
           {hasFreeDemoCredits ? (
             <>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
@@ -192,7 +192,7 @@ export default function Home() {
         </section>
 
         {/* Trust strip - cited industry stats, not platform-specific usage data */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <div className="border-t border-b border-slate-200 py-5 flex flex-wrap items-start justify-center gap-9">
             <div className="text-center max-w-[190px]">
               <div className="text-2xl font-bold text-indigo-700">49%</div>
