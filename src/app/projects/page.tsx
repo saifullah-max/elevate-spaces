@@ -267,7 +267,7 @@ export default function ProjectsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 py-12">
+        <div className="min-h-screen bg-[#FAF7F2] py-12">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 <div className="flex flex-wrap items-center justify-end gap-3 mb-8">
