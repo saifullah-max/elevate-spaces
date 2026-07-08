@@ -564,7 +564,7 @@ const PricingPage = () => {
 
   return (
     <div id="pricing" className="min-h-screen bg-[#FAF7F2] py-16 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-350uto">
+      <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-16">
