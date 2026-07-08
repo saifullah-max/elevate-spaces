@@ -692,16 +692,13 @@ const PricingPage = () => {
             <button onClick={() => startCheckout(teamProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === teamProductKey} className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === teamProductKey ? 'Processing...' : 'Get Team Plan'}
             </button>
+           <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-slate-800">
+              {teamCredits} {creditsLabel} · 5 seats
+            </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">{teamCredits} {creditsLabel}</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Up to 5 users included</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Add 1 extra user for $15/month</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Built for higher volume workflows</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Stage & customize multiple images in one batch</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Team access and shared usage</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Easy photo sharing across projects</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Photo storage for up to one month</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best for teams managing multiple listings</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Team access, shared usage, photo storage up to 1 month</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Cost per credit: ${teamPerCredit}</span></li>
             </ul>
           </div>
