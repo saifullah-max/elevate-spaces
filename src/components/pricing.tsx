@@ -641,10 +641,11 @@ const PricingPage = () => {
             <button onClick={() => startCheckout(starterProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === starterProductKey} className="w-full py-3 px-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === starterProductKey ? 'Processing...' : 'Get Started'}
             </button>
+          <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-slate-800">
+              {starterCredits} {creditsLabel} · 1 seat
+            </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">{starterCredits} {creditsLabel}</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best for first time users and occasional projects</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">1 user only (owner seat)</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best for first-time users and occasional projects</span></li>
               <li className="flex items-start"><Check className="w-5 h-5 text-blue-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Cost per credit: ${starterPerCredit}</span></li>
             </ul>
           </div>
