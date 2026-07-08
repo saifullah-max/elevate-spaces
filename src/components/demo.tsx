@@ -1208,13 +1208,10 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
             </div>
             <span>For Sales &amp; Rentals</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight mb-6 animate-slide-up">
-            Don't Just List a Property. <br />
-            <span className="text-indigo-600 px-2 rounded-lg">
-              Showcase Potential.
-            </span>
-          </h1>
-          <p className="text-lg text-slate-600 mb-8 animate-fade-in delay-300">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-3 animate-slide-up">
+            Don't Just List a Property. Showcase Potential.
+          </h2>
+          <p className="text-base text-slate-600 mb-8 animate-fade-in delay-300">
             AI Staging, Virtual Renovation &amp; Furnishing for modern real estate.
           </p>
         </div>
