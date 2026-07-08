@@ -48,7 +48,6 @@ export default function Home() {
       return;
     }
 
-    // If user is logged in prefer the server-side `created_at` from the stored auth payload
     const stored = getAuthFromStorage();
     const userCreatedAtStr = (stored?.user as any)?.created_at || null;
     if (userCreatedAtStr) {
@@ -91,7 +90,6 @@ export default function Home() {
     setIsDragging(false);
   };
 
-  // Add global listeners when dragging
   React.useEffect(() => {
     if (isDragging) {
       window.addEventListener("mousemove", handleDrag as any);
@@ -107,13 +105,31 @@ export default function Home() {
     }
   }, [isDragging]);
 
+  const scrollToDemo = () => {
+    document.getElementById("try-now-demo")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <>
       <AdminAutoRedirect />
       <ResourcesOnboardingPopup />
       <div className="bg-slate-100 min-h-screen">
 
-        {/* Added space below navbar */}
+        {/* Hero CTA - visible above the fold on both mobile and desktop */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+            Turn empty rooms into staged homes
+          </h1>
+          <p className="text-base sm:text-lg text-slate-600 mb-6">
+            Upload a photo and see it staged in seconds.
+          </p>
+          <button
+            onClick={scrollToDemo}
+            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+          >
+            Try for free now
+          </button>
+        </section>
 
         {/* Our Expertise Section - Matches the design perfectly */}
         <Services />
@@ -134,10 +150,10 @@ export default function Home() {
             </div>
           </div>
         )}
-        <Demo />
+        <div id="try-now-demo">
+          <Demo />
+        </div>
         {isLoggedIn ? <RecentUploads /> : null}
-
-        {/* <Services /> */}
 
         <Pricing />
 
