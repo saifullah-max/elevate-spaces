@@ -45,7 +45,7 @@ export default function Services() {
   }, [isDragging]);
 
   return (
-    <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 bg-white">
+    <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 bg-white">
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-slate-900 mb-4 mt-8">
           Our Expertise
