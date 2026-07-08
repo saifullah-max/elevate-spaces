@@ -173,4 +173,28 @@ export default function Home() {
           <div className="relative z-10 mx-auto mb-8 max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-2xl border border-indigo-200 px-5 py-4 sm:px-6 sm:py-5 shadow-md">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p
+                <p className="text-sm font-semibold text-indigo-900 sm:text-base">
+                  New to platform? Resources are in process
+                </p>
+                <Link
+                  href="/resources"
+                  className="inline-flex w-fit items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                >
+                  Open resources
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+        <div id="try-now-demo">
+          <Demo />
+        </div>
+        {isLoggedIn ? <RecentUploads /> : null}
+
+        <Pricing />
+
+        <Footer />
+      </div>
+    </>
+  );
+}
