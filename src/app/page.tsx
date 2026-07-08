@@ -140,7 +140,7 @@ export default function Home() {
     <>
       <AdminAutoRedirect />
       <ResourcesOnboardingPopup />
-      <div className="bg-slate-100 min-h-screen">
+      <div className="bg-[#FAF7F2] min-h-screen">
 
         {/* Hero CTA - visible above the fold on both mobile and desktop */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
