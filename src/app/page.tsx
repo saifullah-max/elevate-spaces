@@ -20,6 +20,7 @@ export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showResourcesBanner, setShowResourcesBanner] = useState(false);
+  const [hasFreeDemoCredits, setHasFreeDemoCredits] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -60,6 +61,22 @@ export default function Home() {
     const signupAt = signupAtRaw ? Number(signupAtRaw) : stored?.timestamp ?? null;
     const showBanner = Boolean(signupAt && Number.isFinite(signupAt) && Date.now() - signupAt <= RESOURCE_BANNER_WINDOW_MS);
     setShowResourcesBanner(showBanner);
+  }, []);
+
+  // Separate, self-contained check: only show the "Try for free now" hero
+  // button when the visitor (guest or logged-in) still has free demo credits.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    (async () => {
+      try {
+        const status = await getGuestStatus();
+        const remaining = status?.data?.remainingDemoCredits ?? 0;
+        const limitReached = status?.data?.limitReached ?? true;
+        setHasFreeDemoCredits(remaining > 0 && !limitReached);
+      } catch {
+        setHasFreeDemoCredits(false);
+      }
+    })();
   }, []);
 
   const handleMove = (clientX: number) => {
@@ -123,12 +140,14 @@ export default function Home() {
           <p className="text-base sm:text-lg text-slate-600 mb-6">
             Upload a photo and see it staged in seconds.
           </p>
-          <button
-            onClick={scrollToDemo}
-            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
-          >
-            Try for free now
-          </button>
+          {hasFreeDemoCredits && (
+            <button
+              onClick={scrollToDemo}
+              className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+            >
+              Try for free now
+            </button>
+          )}
         </section>
 
         {/* Our Expertise Section - Matches the design perfectly */}
