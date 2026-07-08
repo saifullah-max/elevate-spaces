@@ -1,4 +1,5 @@
 "use client";
+import { Sparkles } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import "./globals.css";
 import Link from "next/link";
@@ -158,9 +159,12 @@ export default function Home() {
                 Try for free now
               </button>
               {heroCreditCount !== null && (
-                <p className="mt-3 text-sm text-slate-500">
-                  {heroCreditCount} free demo credit{heroCreditCount === 1 ? "" : "s"} remaining
-                </p>
+                <div className="mt-4 flex justify-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-semibold text-indigo-700">
+                    <Sparkles className="h-4 w-4" />
+                    {heroCreditCount} free demo credit{heroCreditCount === 1 ? "" : "s"} remaining
+                  </span>
+                </div>
               )}
             </>
           ) : (
