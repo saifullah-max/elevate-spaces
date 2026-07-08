@@ -1109,7 +1109,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
 
   return (
     <>
-      <section id="try-it-free" className="pt-8 pb-12">
+      <section id="try-it-free" className="pb-16">
         {isBlocked && (
           <div className="max-w-2xl mx-auto mb-6 animate-fade-in">
             <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-900 text-sm font-semibold border border-red-200 shadow animate-slide-down">
