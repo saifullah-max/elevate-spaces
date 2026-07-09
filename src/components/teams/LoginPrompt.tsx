@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export function LoginPrompt() {
     return (
-        <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="min-h-[80vh] flex items-center justify-center bg-[#FAF7F2]">
             <div className="max-w-md w-full mx-4">
                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-indigo-100">
                     <div className="flex justify-center mb-6">
