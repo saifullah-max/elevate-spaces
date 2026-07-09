@@ -63,10 +63,10 @@ export const metadata: Metadata = {
     description: "Transform your spaces with AI-powered virtual staging. Upload images, get instant professional staging suggestions.",
     images: [
       {
-        url: "/icon-512.jpg",
-        width: 512,
-        height: 512,
-        alt: "Elevate Spaces AI",
+        url: "/og-before-after.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Empty room transformed into a staged, market-ready living room by Elevate Spaces AI",
       }
     ],
   },
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Elevate Spaces AI - AI Virtual Staging",
     description: "Transform your spaces with AI-powered virtual staging.",
-    images: ["/icon-512.jpg"],
+    images: ["/og-before-after.jpg"],
   },
 };
 
