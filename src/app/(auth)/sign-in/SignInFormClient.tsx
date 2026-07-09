@@ -96,7 +96,7 @@ export default function SignInFormClient({ initialOauthError, initialOauthProvid
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-slate-50 to-white">
+    <div className="flex justify-center items-center min-h-screen bg-[#FAF7F2]">
       <div className="w-full max-w-md p-8 space-y-8 rounded-2xl bg-white shadow-lg border border-slate-200">
         <div className="text-center">
           <div className="mb-6 flex justify-center">
