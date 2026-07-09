@@ -2109,8 +2109,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
           </div>
         )}
 
-        {/* Version Selector */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-end gap-2">
+        {/* Version Selector - only shown once staging has started or finished */}
+        {(hasGeneratedResults || loading || restageLoading || multiProgress.active || isBatchProcessing) && (
+        <div className="flex flex-col items-center lg:flex-row lg:items-center lg:justify-center gap-2">
           {hasGeneratedResults && (
             <div className="text-sm font-semibold text-slate-700 mr-8">
               {isMultiImageMode
@@ -2157,6 +2158,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
             })}
           </div>
         </div>
+        )}
       </div>
 
       {/* Project Selection Modal */}
