@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://elevate-spaces.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.elevatespacesai.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
