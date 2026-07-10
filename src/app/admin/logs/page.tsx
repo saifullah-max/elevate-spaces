@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { getAuthFromStorage, clearAuthFromStorage } from '@/lib/auth.storage';
 import { useRouter } from 'next/navigation';
+import LogExportDialog from '@/components/admin/LogExportDialog';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:3003';
 
@@ -353,8 +354,20 @@ export default function AdminLogsPage() {
         <TabsContent value="requests" className="mt-6">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="border-b border-slate-200 bg-slate-50">
-              <CardTitle className="text-xl text-slate-900">Request Logs</CardTitle>
-              <CardDescription>HTTP requests (POST, PATCH, DELETE, sensitive GETs)</CardDescription>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="text-xl text-slate-900">Request Logs</CardTitle>
+                  <CardDescription>HTTP requests (POST, PATCH, DELETE, sensitive GETs)</CardDescription>
+                </div>
+                <LogExportDialog
+                  type="requests"
+                  apiUrl={API_URL}
+                  token={auth?.token}
+                  defaultMonth={selectedMonth}
+                  defaultSearch={requestSearch}
+                  months={months}
+                />
+              </div>
             </CardHeader>
             <CardContent className="p-0">{loading ? (
               <div className="p-8 text-center text-slate-500">Loading...</div>
@@ -455,8 +468,19 @@ export default function AdminLogsPage() {
         <TabsContent value="payments" className="mt-6">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="border-b border-slate-200 bg-slate-50">
-              <CardTitle className="text-xl text-slate-900">Payment Logs</CardTitle>
-              <CardDescription>Transaction history with email delivery status</CardDescription>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="text-xl text-slate-900">Payment Logs</CardTitle>
+                  <CardDescription>Transaction history with email delivery status</CardDescription>
+                </div>
+                <LogExportDialog
+                  type="payments"
+                  apiUrl={API_URL}
+                  token={auth?.token}
+                  defaultMonth={selectedMonth}
+                  months={months}
+                />
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               {loading ? (
@@ -535,8 +559,19 @@ export default function AdminLogsPage() {
         <TabsContent value="multi-image" className="mt-6">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="border-b border-slate-200 bg-slate-50">
-              <CardTitle className="text-xl text-slate-900">Multi-Image Logs</CardTitle>
-              <CardDescription>Batch processing run analytics</CardDescription>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <CardTitle className="text-xl text-slate-900">Multi-Image Logs</CardTitle>
+                  <CardDescription>Batch processing run analytics</CardDescription>
+                </div>
+                <LogExportDialog
+                  type="multi-image"
+                  apiUrl={API_URL}
+                  token={auth?.token}
+                  defaultMonth={selectedMonth}
+                  months={months}
+                />
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               {loading ? (
