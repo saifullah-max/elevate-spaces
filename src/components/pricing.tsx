@@ -4,6 +4,7 @@ import { showInfo } from './toastUtils';
 import { toast } from 'react-toastify';
 import { Check, X, Building, Camera, Users, Zap, Home } from 'lucide-react';
 import { createCheckoutSession, getPaymentSummary, getUserCredits } from '@/services/payment.service';
+import { trackStartTrial } from '@/lib/analytics';
 import ContactSalesForm from '@/components/support/ContactSalesForm';
 import SupportModalTrigger from '@/components/support/SupportModalTrigger';
 import { getTeams, cancelInvitation, removeTeamMember } from '@/services/teams.service';
@@ -420,6 +421,7 @@ const PricingPage = () => {
     try {
       setErrorMessage(null);
       setLoadingKey(productKey);
+      trackStartTrial(productKey, getUiUnitAmountUsd(productKey) ?? 29);
       if (purchaseFor === 'team' && !teamId.trim()) throw new Error('Team ID is required for team purchases');
       const session = await createCheckoutSession({
         productKey, uiUnitAmountUsd: getUiUnitAmountUsd(productKey), purchaseFor,
