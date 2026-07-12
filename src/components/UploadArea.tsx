@@ -96,6 +96,7 @@ export function UploadArea({ limitReached, setFile, setFiles, setStagedImageUrls
         )}
 
         <div
+          data-meta-event="upload-photo"
           onClick={limitReached ? undefined : handleDivClick}
           className={`border-2 border-dashed border-slate-300 rounded-lg p-6 text-center ${limitReached
             ? "cursor-not-allowed opacity-60"
