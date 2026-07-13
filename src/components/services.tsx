@@ -47,10 +47,10 @@ export default function Services() {
   return (
     <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 bg-white">
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-slate-900 mb-4 mt-8">
+        <h2 className="font-display text-4xl font-bold text-brand-900 mb-4 mt-8">
           Our Expertise
         </h2>
-        <p className="text-xl text-slate-600">From Listing to Living</p>
+        <p className="text-xl text-cream-800/70">From Listing to Living</p>
       </div>
       <div className="grid lg:grid-cols-2 gap-12 items-center">
         <div className="animate-fade-in">
@@ -87,63 +87,63 @@ export default function Services() {
               className="absolute top-0 h-full w-0.5 bg-white shadow-md pointer-events-none"
               style={{ left: `${sliderPosition}%` }}
             >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-indigo-600 font-bold text-sm">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-brand-500 font-bold text-sm">
                 ⇔
               </div>
             </div>
 
             {/* Corner tags */}
-            <span className="absolute top-4 left-4 bg-slate-900/70 text-white text-xs font-semibold px-3 py-1 rounded-full">
+            <span className="absolute top-4 left-4 bg-brand-900/70 text-white text-xs font-semibold px-3 py-1 rounded-full">
               EMPTY
             </span>
-            <span className="absolute top-4 right-4 bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+            <span className="absolute top-4 right-4 bg-brand-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
               AI STAGED
             </span>
 
             {/* Existing caption, kept as requested */}
             <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <p className="text-sm text-slate-600 font-medium">
-                <span className="text-slate-400">©</span> High-Quality
+              <p className="text-sm text-cream-800/70 font-medium">
+                <span className="text-cream-800/40">©</span> High-Quality
                 Professional Photos Required
               </p>
             </div>
           </div>
         </div>
         <div className="text-left space-y-6">
-          <h4 className="text-2xl font-bold text-slate-900">
+          <h4 className="font-display text-2xl font-bold text-brand-900">
             The Visual Advantage
           </h4>
           <div className="flex gap-4">
-            <div className="bg-indigo-50 p-3 rounded h-fit text-indigo-600">
-              <Sparkles className="w-6 h-6 text-indigo-600" />
+            <div className="bg-brand-50 p-3 rounded h-fit text-brand-500">
+              <Sparkles className="w-6 h-6 text-brand-500" />
             </div>
             <div>
-              <h5 className="font-bold">Empty or Furnished</h5>
-              <p className="text-slate-600 text-sm">
+              <h5 className="font-bold text-brand-900">Empty or Furnished</h5>
+              <p className="text-cream-800/70 text-sm">
                 We don't just fill empty rooms. We can declutter and virtually
                 renovate existing furnished spaces to modernize the look.
               </p>
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="bg-indigo-50 p-3 rounded h-fit text-indigo-600">
-              <TrendingUp className="w-6 h-6 text-indigo-600" />
+            <div className="bg-brand-50 p-3 rounded h-fit text-brand-500">
+              <TrendingUp className="w-6 h-6 text-brand-500" />
             </div>
             <div>
-              <h5 className="font-bold">Rentals &amp; Sales</h5>
-              <p className="text-slate-600 text-sm">
+              <h5 className="font-bold text-brand-900">Rentals &amp; Sales</h5>
+              <p className="text-cream-800/70 text-sm">
                 Whether you are selling a luxury home or looking for long-term
                 tenants, visual presentation drives higher prices.
               </p>
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="bg-red-50 p-3 rounded h-fit text-red-600">
-              <AlertTriangle className="w-6 h-6 text-orange-600" />
+            <div className="bg-accent-500/10 p-3 rounded h-fit text-accent-600">
+              <AlertTriangle className="w-6 h-6 text-accent-600" />
             </div>
             <div>
-              <h5 className="font-bold">Quality Input Matters</h5>
-              <p className="text-slate-600 text-sm">
+              <h5 className="font-bold text-brand-900">Quality Input Matters</h5>
+              <p className="text-cream-800/70 text-sm">
                 Garbage in, garbage out. We require high-resolution professional
                 photography.
               </p>
