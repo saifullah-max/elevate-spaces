@@ -65,9 +65,6 @@ export default function Home() {
     setShowResourcesBanner(showBanner);
   }, []);
 
-  // Single source of truth: Demo resolves the real device identity and
-  // tracks live credit numbers already. The hero only ever shows a count
-  // for free demo users — paying customers get the button with no count.
   const handleDemoCreditsUpdate = useCallback(
     (info: {
       demoCreditsRemaining: number;
@@ -140,30 +137,30 @@ export default function Home() {
     <>
       <AdminAutoRedirect />
       <ResourcesOnboardingPopup />
-      <div className="bg-[#FAF7F2] min-h-screen">
+      <div className="bg-cream-50 min-h-screen">
 
         {/* Hero CTA - visible above the fold on both mobile and desktop */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 text-center">
           {hasFreeDemoCredits ? (
             <>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-brand-900 mb-3">
                 Turn empty rooms into staged homes
               </h1>
-              <p className="text-base sm:text-lg text-slate-600 mb-6">
+              <p className="text-base sm:text-lg text-cream-800/70 mb-6">
                 Upload a photo and see it staged in seconds.
               </p>
               <button
                 onClick={scrollToDemo}
-                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center justify-center rounded-lg bg-accent-500 px-6 py-3 text-base font-semibold text-white hover:bg-accent-600 transition-colors"
               >
                 Try for free now
               </button>
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 text-sm text-cream-800/50">
                 No credit card required · Results in under 60 seconds
               </p>
               {heroCreditCount !== null && (
                 <div className="mt-4 flex justify-center">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-semibold text-indigo-700">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50 px-4 py-1.5 text-sm font-semibold text-brand-500">
                     <Sparkles className="h-4 w-4" />
                     {heroCreditCount} free demo credit{heroCreditCount === 1 ? "" : "s"} remaining
                   </span>
@@ -172,19 +169,19 @@ export default function Home() {
             </>
           ) : (
             <>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-brand-900 mb-3">
                 See your space staged in seconds
               </h1>
-              <p className="text-base sm:text-lg text-slate-600 mb-6">
+              <p className="text-base sm:text-lg text-cream-800/70 mb-6">
                 Upload a photo and get a fully staged preview.
               </p>
               <button
                 onClick={scrollToDemo}
-                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center justify-center rounded-lg bg-accent-500 px-6 py-3 text-base font-semibold text-white hover:bg-accent-600 transition-colors"
               >
                 Upload a Photo
               </button>
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 text-sm text-cream-800/50">
                 Results in under 60 seconds
               </p>
             </>
@@ -193,23 +190,23 @@ export default function Home() {
 
         {/* Trust strip - cited industry stats, not platform-specific usage data */}
         <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="border-t border-b border-slate-200 py-5 flex flex-wrap items-start justify-center gap-9">
+          <div className="border-t border-b border-cream-200 py-5 flex flex-wrap items-start justify-center gap-9">
             <div className="text-center max-w-[190px]">
-              <div className="text-2xl font-bold text-indigo-700">49%</div>
-              <div className="mt-1 text-xs text-slate-500 leading-snug">of agents report staged homes sell faster</div>
+              <div className="font-display text-2xl font-bold text-brand-500">49%</div>
+              <div className="mt-1 text-xs text-cream-800/60 leading-snug">of agents report staged homes sell faster</div>
             </div>
             <div className="text-center max-w-[190px]">
-              <div className="text-2xl font-bold text-indigo-700">29%</div>
-              <div className="mt-1 text-xs text-slate-500 leading-snug">saw a 1–10% higher offer from staging</div>
+              <div className="font-display text-2xl font-bold text-brand-500">29%</div>
+              <div className="mt-1 text-xs text-cream-800/60 leading-snug">saw a 1–10% higher offer from staging</div>
             </div>
             <div className="text-center max-w-[190px]">
-              <div className="text-2xl font-bold text-indigo-700">83%</div>
-              <div className="mt-1 text-xs text-slate-500 leading-snug">of buyers' agents say staging helps buyers picture living there</div>
+              <div className="font-display text-2xl font-bold text-brand-500">83%</div>
+              <div className="mt-1 text-xs text-cream-800/60 leading-snug">of buyers' agents say staging helps buyers picture living there</div>
             </div>
           </div>
-          <p className="text-center text-[11px] text-slate-400 italic mt-3 max-w-lg mx-auto">
+          <p className="text-center text-[11px] text-cream-800/40 italic mt-3 max-w-lg mx-auto">
             Source:{" "}
-            <a href="https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-500">
+            <a href="https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging" target="_blank" rel="noopener noreferrer" className="underline hover:text-cream-800/60">
               National Association of Realtors, 2025 Profile of Home Staging
             </a>
             {" "}— reflects staging generally, not Elevate Spaces AI results specifically.
@@ -220,14 +217,14 @@ export default function Home() {
         <Services />
         {showResourcesBanner && (
           <div className="relative z-10 mx-auto mb-8 max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl border border-indigo-200 px-5 py-4 sm:px-6 sm:py-5 shadow-md">
+            <div className="rounded-2xl border border-brand-100 bg-brand-50 px-5 py-4 sm:px-6 sm:py-5 shadow-md">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-semibold text-indigo-900 sm:text-base">
+                <p className="text-sm font-semibold text-brand-900 sm:text-base">
                   New to platform? Resources are in process
                 </p>
                 <Link
                   href="/resources"
-                  className="inline-flex w-fit items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                  className="inline-flex w-fit items-center rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-white hover:bg-accent-600"
                 >
                   Open resources
                 </Link>
