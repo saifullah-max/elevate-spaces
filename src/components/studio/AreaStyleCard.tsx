@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Info, Sliders } from "lucide-react";
 import type { StudioController } from "./useStudio";
 import type { RoomType, StagingStyle } from "@/lib/errors";
@@ -9,7 +10,7 @@ interface Props {
   studio: StudioController;
 }
 
-const ROOMS: { value: RoomType; label: string }[] = [
+const INTERIOR_ROOMS: { value: RoomType; label: string }[] = [
   { value: "living-room", label: "Living Room" },
   { value: "bedroom", label: "Bedroom" },
   { value: "kitchen", label: "Kitchen" },
@@ -19,6 +20,12 @@ const ROOMS: { value: RoomType; label: string }[] = [
   { value: "basement", label: "Basement" },
   { value: "attic", label: "Attic" },
   { value: "hallway", label: "Hallway" },
+];
+
+const EXTERIOR_ROOMS: { value: RoomType; label: string }[] = [
+  { value: "outdoor", label: "Outdoor" },
+  { value: "garage", label: "Garage" },
+  { value: "other", label: "Other" },
 ];
 
 const STYLES: { value: StagingStyle; label: string }[] = [
@@ -41,6 +48,19 @@ export default function AreaStyleCard({ studio }: Props) {
   const hasFiles = studio.files.length > 0;
   const promptLen = studio.prompt.length;
 
+  const rooms = studio.areaType === "exterior" ? EXTERIOR_ROOMS : INTERIOR_ROOMS;
+
+  // If the area type changes and the currently selected room type doesn't
+  // belong to the new list, snap to the first valid option so the dropdown
+  // never shows a stale/invalid selection.
+  useEffect(() => {
+    const isValidForArea = rooms.some((r) => r.value === studio.roomType);
+    if (!isValidForArea) {
+      studio.setRoomType(rooms[0].value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studio.areaType]);
+
   return (
     <div className="bg-white border border-cream-200 rounded-2xl p-5">
       <p className="text-xs font-bold text-brand-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
@@ -57,7 +77,7 @@ export default function AreaStyleCard({ studio }: Props) {
 
       {!isMulti && (
         <div className="mb-4">
-          <div className="grid sm:grid-cols-2 gap-4 mb-4">
+          <div className={"grid gap-4 mb-4 " + (studio.areaType === "exterior" ? "sm:grid-cols-1" : "sm:grid-cols-2")}>
             <div>
               <p className="text-xs text-cream-800/50 font-medium mb-1.5">Room type</p>
               <select
@@ -65,27 +85,30 @@ export default function AreaStyleCard({ studio }: Props) {
                 onChange={(e) => studio.setRoomType(e.target.value as RoomType)}
                 className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs text-cream-800/80 bg-cream-50"
               >
-                {ROOMS.map((r) => (
+                {rooms.map((r) => (
                   <option key={r.value} value={r.value}>
                     {r.label}
                   </option>
                 ))}
               </select>
             </div>
-            <div>
-              <p className="text-xs text-cream-800/50 font-medium mb-1.5">Staging style</p>
-              <select
-                value={studio.stagingStyle}
-                onChange={(e) => studio.setStagingStyle(e.target.value as StagingStyle)}
-                className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs text-cream-800/80 bg-cream-50"
-              >
-                {STYLES.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+            {studio.areaType === "interior" && (
+              <div>
+                <p className="text-xs text-cream-800/50 font-medium mb-1.5">Staging style</p>
+                <select
+                  value={studio.stagingStyle}
+                  onChange={(e) => studio.setStagingStyle(e.target.value as StagingStyle)}
+                  className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs text-cream-800/80 bg-cream-50"
+                >
+                  {STYLES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-cream-800/50 font-medium mb-1.5">Area</p>
@@ -94,10 +117,10 @@ export default function AreaStyleCard({ studio }: Props) {
               type="button"
               onClick={() => studio.setAreaType("interior")}
               className={
-                "px-4 text-center text-[11px] py-1.5 rounded transition-all " +
-                (hasFiles && studio.areaType === "interior"
-                  ? "bg-brand-500 text-white font-semibold"
-                  : "text-cream-800/60 font-semibold")
+                "px-4 text-center text-[11px] py-1.5 rounded transition-all cursor-pointer " +
+                (studio.areaType === "interior"
+                  ? "bg-brand-500 text-white font-semibold shadow-sm"
+                  : "text-cream-800/60 font-semibold hover:bg-white hover:text-brand-500")
               }
             >
               Interior
@@ -106,15 +129,25 @@ export default function AreaStyleCard({ studio }: Props) {
               type="button"
               onClick={() => studio.setAreaType("exterior")}
               className={
-                "px-4 text-center text-[11px] py-1.5 rounded transition-all " +
-                (hasFiles && studio.areaType === "exterior"
-                  ? "bg-brand-500 text-white font-semibold"
-                  : "text-cream-800/60 font-semibold")
+                "px-4 text-center text-[11px] py-1.5 rounded transition-all cursor-pointer " +
+                (studio.areaType === "exterior"
+                  ? "bg-brand-500 text-white font-semibold shadow-sm"
+                  : "text-cream-800/60 font-semibold hover:bg-white hover:text-brand-500")
               }
             >
               Exterior
             </button>
           </div>
+
+          {studio.areaType === "exterior" && (
+            <div className="bg-brand-50 border border-brand-100 rounded-xl p-3 mb-4">
+              <p className="text-xs text-brand-900">
+                <Info className="w-3 h-3 text-brand-500 inline mr-1.5" />
+                Exterior staging uses your custom prompt below instead of a style preset —
+                describe what you'd like to see (e.g. "add a fire pit and string lights").
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center gap-1 mb-1">
             <p className="text-xs text-cream-800/50 font-medium">
