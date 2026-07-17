@@ -135,9 +135,46 @@ export const getProjectImages = async (projectId: string): Promise<any> => {
                     error.response?.data?.message ||
                     error.message ||
                     "Failed to fetch project images. Please try again.",
+                status: error.response?.status,
             };
         }
 
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
+/**
+ * Fetch photographers assigned to a project.
+ * `/projects` returns `members: []` even when a photographer is assigned, so this
+ * dedicated endpoint is the source of truth for the current photographer.
+ */
+export const getProjectPhotographers = async (projectId: string): Promise<any> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.get<unknown>(
+            `${API_BASE_URL}/projects/${projectId}/photographers`,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to fetch project photographers.",
+                status: error.response?.status,
+            };
+        }
         throw {
             message:
                 error instanceof Error

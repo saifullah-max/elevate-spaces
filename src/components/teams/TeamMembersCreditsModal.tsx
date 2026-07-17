@@ -58,14 +58,14 @@ export function TeamMembersCreditsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-5xl max-h-[85vh] flex flex-col overflow-y-scroll">
-        <DialogHeader className="border-b border-slate-200 pb-4 shrink-0">
+        <DialogHeader className="border-b border-cream-200 pb-4 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="bg-indigo-100 p-2 rounded-lg">
-              <Users className="w-5 h-5 text-indigo-600" />
+            <div className="bg-brand-100 p-2 rounded-lg">
+              <Users className="w-5 h-5 text-brand-500" />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-bold text-slate-900">{team.name}</DialogTitle>
-              <DialogDescription className="text-slate-600">
+              <DialogTitle className="text-2xl font-bold text-brand-900">{team.name}</DialogTitle>
+              <DialogDescription className="text-cream-800/70">
                 Team members, invitations & credit allocation
               </DialogDescription>
             </div>
@@ -76,11 +76,11 @@ export function TeamMembersCreditsModal({
           <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="bg-linear-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200">
-                <p className="text-xs text-indigo-600 font-semibold uppercase tracking-wide">Members</p>
-                <p className="text-2xl font-bold text-indigo-900 mt-1">{activeMembers.length}</p>
+              <div className="bg-linear-to-br from-brand-50 to-brand-100 rounded-lg p-4 border border-brand-100">
+                <p className="text-xs text-brand-500 font-semibold uppercase tracking-wide">Members</p>
+                <p className="text-2xl font-bold text-brand-900 mt-1">{activeMembers.length}</p>
               </div>
-              <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+              <div className="bg-linear-to-br from-brand-50 to-brand-100 rounded-lg p-4 border border-brand-100">
                 <p className="text-xs text-blue-600 font-semibold uppercase tracking-wide">Total Allocated</p>
                 <p className="text-2xl font-bold text-blue-900 mt-1">{totalAllocated}</p>
               </div>
@@ -97,23 +97,23 @@ export function TeamMembersCreditsModal({
             {/* Active Members Section */}
             {activeMembers.length > 0 && (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
+                <div className="flex items-center gap-2 pb-3 border-b-2 border-cream-200">
                   <div className="bg-green-100 p-2 rounded-lg">
                     <CheckCircle className="w-5 h-5 text-green-700" />
                   </div>
-                  <h3 className="font-bold text-slate-900 text-lg">Active Members ({activeMembers.length})</h3>
+                  <h3 className="font-bold text-brand-900 text-lg">Active Members ({activeMembers.length})</h3>
                 </div>
-                <div className="border border-slate-200 rounded-lg max-h-[55vh] overflow-y-auto">
+                <div className="border border-cream-200 rounded-lg max-h-[55vh] overflow-y-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50 hover:bg-slate-50">
-                        <TableHead className="font-semibold text-slate-700">Member</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Role</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-right">Allocated</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-right">Used</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-right">Available</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-right">Joined</TableHead>
-                        <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
+                      <TableRow className="bg-cream-50 hover:bg-cream-50">
+                        <TableHead className="font-semibold text-cream-800/80">Member</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Role</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80 text-right">Allocated</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80 text-right">Used</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80 text-right">Available</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80 text-right">Joined</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80 text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -132,14 +132,14 @@ export function TeamMembersCreditsModal({
                         // Admin can remove anyone except the owner.
                         const canRemove = onRemoveMember && !isOwner && currentUserId && (currentUserIsOwner || currentUserIsAdmin);
                         return (
-                          <TableRow key={member.id} className="hover:bg-slate-50 border-b border-slate-100">
+                          <TableRow key={member.id} className="hover:bg-cream-50 border-b border-cream-100">
                             <TableCell className="py-4">
                               <div>
-                                <p className="font-medium text-sm text-slate-900">
+                                <p className="font-medium text-sm text-brand-900">
                                   {member.user.name || "Unknown"}
-                                  {isOwner && <span className="ml-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">OWNER</span>}
+                                  {isOwner && <span className="ml-2 text-xs font-semibold text-brand-500 bg-brand-50 px-2 py-0.5 rounded">OWNER</span>}
                                 </p>
-                                <p className="text-xs text-slate-500">{member.user.email}</p>
+                                <p className="text-xs text-cream-800/50">{member.user.email}</p>
                               </div>
                             </TableCell>
                             <TableCell className="py-4">
@@ -147,16 +147,16 @@ export function TeamMembersCreditsModal({
                                 {member.role.name === "TEAM_ADMIN" ? "ADMIN" : member.role.name === "TEAM_MEMBER" ? "MEMBER" : member.role.name === "TEAM_PHOTOGRAPHER" ? "PHOTOGRAPHER" : member.role.name}
                               </span>
                             </TableCell>
-                            <TableCell className="py-4 text-right font-medium text-slate-900">{member.allocated}</TableCell>
+                            <TableCell className="py-4 text-right font-medium text-brand-900">{member.allocated}</TableCell>
                             <TableCell className="py-4 text-right">
                               <span className="font-medium text-orange-600">{member.used}</span>
                             </TableCell>
                             <TableCell className="py-4 text-right">
-                              <span className={`font-semibold ${available > 0 ? "text-green-600" : "text-slate-400"}`}>
+                              <span className={`font-semibold ${available > 0 ? "text-green-600" : "text-cream-800/40"}`}>
                                 {available}
                               </span>
                             </TableCell>
-                            <TableCell className="py-4 text-right text-xs text-slate-500">
+                            <TableCell className="py-4 text-right text-xs text-cream-800/50">
                               {new Date(member.joined_at).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="py-4 text-right">
@@ -304,8 +304,8 @@ export function TeamMembersCreditsModal({
 
             {/* Empty State */}
             {activeMembers.length === 0 && pendingInvites.length === 0 && failedInvites.length === 0 && (
-              <div className="text-center py-12 text-slate-500">
-                <Users className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+              <div className="text-center py-12 text-cream-800/50">
+                <Users className="w-12 h-12 mx-auto mb-3 text-cream-800/30" />
                 <p className="font-medium">No members or invitations</p>
                 <p className="text-sm">Invite team members to get started</p>
               </div>
@@ -319,11 +319,11 @@ export function TeamMembersCreditsModal({
             // {/* Pending Invitations */}
             // {pendingInvites.length > 0 && (
             //   <div className="space-y-3">
-            //     <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
+            //     <div className="flex items-center gap-2 pb-3 border-b-2 border-cream-200">
             //       <div className="bg-amber-100 p-2 rounded-lg">
             //         <Clock className="w-5 h-5 text-amber-700" />
             //       </div>
-            //       <h3 className="font-bold text-slate-900 text-lg">Pending Invitations ({pendingInvites.length})</h3>
+            //       <h3 className="font-bold text-brand-900 text-lg">Pending Invitations ({pendingInvites.length})</h3>
             //     </div>
             //     <div className="space-y-2">
             //       {pendingInvites.map((invite) => (
@@ -332,9 +332,9 @@ export function TeamMembersCreditsModal({
             //             <div className="flex-1">
             //               <div className="flex items-center gap-2">
             //                 <Mail className="w-4 h-4 text-amber-600" />
-            //                 <span className="font-medium text-slate-900">{invite.email}</span>
+            //                 <span className="font-medium text-brand-900">{invite.email}</span>
             //               </div>
-            //               <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
+            //               <div className="flex items-center gap-4 mt-2 text-xs text-cream-800/70">
             //                 <span>Expires: <span className="font-semibold">{new Date(invite.expires_at).toLocaleDateString()}</span></span>
             //               </div>
             //             </div>
@@ -351,11 +351,11 @@ export function TeamMembersCreditsModal({
             // {/* Failed Invitations */}
             // {failedInvites.length > 0 && (
             //   <div className="space-y-3">
-            //     <div className="flex items-center gap-2 pb-3 border-b-2 border-slate-200">
+            //     <div className="flex items-center gap-2 pb-3 border-b-2 border-cream-200">
             //       <div className="bg-red-100 p-2 rounded-lg">
             //         <AlertCircle className="w-5 h-5 text-red-700" />
             //       </div>
-            //       <h3 className="font-bold text-slate-900 text-lg">Failed Invitations ({failedInvites.length})</h3>
+            //       <h3 className="font-bold text-brand-900 text-lg">Failed Invitations ({failedInvites.length})</h3>
             //     </div>
             //     <div className="space-y-2">
             //       {failedInvites.map((invite) => (
@@ -364,9 +364,9 @@ export function TeamMembersCreditsModal({
             //             <div className="flex-1">
             //               <div className="flex items-center gap-2">
             //                 <Mail className="w-4 h-4 text-red-600" />
-            //                 <span className="font-medium text-slate-900">{invite.email}</span>
+            //                 <span className="font-medium text-brand-900">{invite.email}</span>
             //               </div>
-            //               <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
+            //               <div className="flex items-center gap-4 mt-2 text-xs text-cream-800/70">
             //                 <span>Sent: <span className="font-semibold">{new Date(invite.invited_at).toLocaleDateString()}</span></span>
             //               </div>
             //             </div>

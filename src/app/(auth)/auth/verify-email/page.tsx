@@ -31,7 +31,7 @@ function VerifyEmailInner() {
       } else if (result.success) {
         setStatus("success");
         setTimeout(() => {
-          router.push("/thank-you");
+          router.push("/");
         }, 2000);
       } else if (result.code === "VERIFICATION_TOKEN_EXPIRED") {
         setStatus("expired");
@@ -44,13 +44,13 @@ function VerifyEmailInner() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-indigo-50 via-white to-purple-50">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-brand-50 via-white to-cream-50">
+      <div className="bg-white border border-cream-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
         {status === "pending" && (
           <>
-            <Loader2 className="w-10 h-10 mx-auto animate-spin text-indigo-600" />
+            <Loader2 className="w-10 h-10 mx-auto animate-spin text-brand-500" />
             <h1 className="text-xl font-semibold">Confirming your account…</h1>
-            <p className="text-sm text-slate-600">This will only take a moment.</p>
+            <p className="text-sm text-cream-800/70">This will only take a moment.</p>
           </>
         )}
         {(status === "success" || status === "already") && (
@@ -59,21 +59,21 @@ function VerifyEmailInner() {
             <h1 className="text-xl font-semibold">
               {status === "already" ? "Already confirmed" : "Email confirmed!"}
             </h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-cream-800/70">
               {status === "already"
                 ? "Your account is already active — go ahead and sign in."
                 : "Your account is active. Taking you to get started…"}
             </p>
             {status === "success" && (
-              <Link href="/thank-you" className="inline-block">
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+              <Link href="/" className="inline-block">
+                <Button className="w-full bg-brand-500 hover:bg-brand-600">
                   Get Started
                 </Button>
               </Link>
             )}
             {status === "already" && (
               <Link href="/sign-in" className="inline-block">
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                <Button className="w-full bg-brand-500 hover:bg-brand-600">
                   Sign in
                 </Button>
               </Link>
@@ -84,7 +84,7 @@ function VerifyEmailInner() {
           <>
             <AlertTriangle className="w-12 h-12 mx-auto text-amber-500" />
             <h1 className="text-xl font-semibold">This link has expired</h1>
-            <p className="text-sm text-slate-600">{message || "Request a fresh confirmation link from the sign-in page."}</p>
+            <p className="text-sm text-cream-800/70">{message || "Request a fresh confirmation link from the sign-in page."}</p>
             <Link href="/sign-in" className="inline-block">
               <Button variant="outline" className="w-full">Go to sign in</Button>
             </Link>
@@ -94,7 +94,7 @@ function VerifyEmailInner() {
           <>
             <AlertTriangle className="w-12 h-12 mx-auto text-red-500" />
             <h1 className="text-xl font-semibold">We couldn&apos;t confirm this account</h1>
-            <p className="text-sm text-slate-600">{message || "The link is invalid or has already been used."}</p>
+            <p className="text-sm text-cream-800/70">{message || "The link is invalid or has already been used."}</p>
             <Link href="/sign-in" className="inline-block">
               <Button variant="outline" className="w-full">Go to sign in</Button>
             </Link>
@@ -109,9 +109,9 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-indigo-50 via-white to-purple-50">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
-            <Loader2 className="w-10 h-10 mx-auto animate-spin text-indigo-600" />
+        <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-brand-50 via-white to-cream-50">
+          <div className="bg-white border border-cream-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
+            <Loader2 className="w-10 h-10 mx-auto animate-spin text-brand-500" />
             <h1 className="text-xl font-semibold">Loading…</h1>
           </div>
         </div>

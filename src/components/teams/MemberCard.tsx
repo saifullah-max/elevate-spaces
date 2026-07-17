@@ -39,10 +39,10 @@ export function AcceptedMemberCard({
                         {email[0].toUpperCase()}
                     </div>
                     <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{email}</p>
+                        <p className="font-semibold text-brand-900">{email}</p>
                         <p className="text-xs text-green-700 mt-0.5">Joined {joinDate}</p>
                         {roleName ? (
-                            <p className="text-xs text-slate-500 mt-1">Role: {roleName.replace("TEAM_", "").toLowerCase()}</p>
+                            <p className="text-xs text-cream-800/50 mt-1">Role: {roleName.replace("TEAM_", "").toLowerCase()}</p>
                         ) : null}
                     </div>
                 </div>
@@ -55,8 +55,8 @@ export function AcceptedMemberCard({
                                 disabled={!isEditingRole || updatingRole}
                                 className={`px-2 py-1 border rounded-md text-xs bg-white transition 
             ${isEditingRole
-                                        ? "border-indigo-500"
-                                        : "border-slate-200 opacity-70 cursor-not-allowed"
+                                        ? "border-brand-500"
+                                        : "border-cream-200 opacity-70 cursor-not-allowed"
                                     }`}
                             >
                                 {roleOptions.map((option) => (
@@ -83,7 +83,7 @@ export function AcceptedMemberCard({
                                             setIsEditingRole(false);
                                         }}
                                         disabled={updatingRole}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                        className="bg-brand-500 hover:bg-brand-600 text-white"
                                     >
                                         {updatingRole ? "Saving..." : "Save"}
                                     </Button>
@@ -134,16 +134,16 @@ export function AcceptedMemberCard({
                         {/* Close */}
                         <button
                             onClick={() => setConfirmDelete(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition"
+                            className="absolute top-4 right-4 text-cream-800/40 hover:text-cream-800/80 transition"
                         >
                             <X className="w-4 h-4" />
                         </button>
 
-                        <h2 className="text-lg font-semibold text-slate-900 mb-2">
+                        <h2 className="text-lg font-semibold text-brand-900 mb-2">
                             Remove Member
                         </h2>
 
-                        <p className="text-sm text-slate-600 mb-6">
+                        <p className="text-sm text-cream-800/70 mb-6">
                             Are you sure you want to remove{" "}
                             <span className="font-medium">{email}</span>?
                             This action cannot be undone.
@@ -212,7 +212,7 @@ export function PendingInviteCard({
                         {email[0].toUpperCase()}
                     </div>
                     <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{email}</p>
+                        <p className="font-semibold text-brand-900">{email}</p>
                         <p className={`text-xs mt-0.5 ${status === "PENDING" ? "text-amber-700" : "text-red-700"}`}>
                             {status === "PENDING" ? `Expires ${expiryDate}` : `Sent ${expiryDate}`}
                         </p>

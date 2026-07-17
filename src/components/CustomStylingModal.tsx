@@ -71,7 +71,7 @@ function ImageComparisonSlider({
   return (
     <div
       ref={containerRef}
-      className="relative h-52 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 select-none touch-none"
+      className="relative h-52 overflow-hidden rounded-xl border border-cream-200 bg-cream-100 select-none touch-none"
       onPointerDown={(event) => {
         event.preventDefault();
         draggingRef.current = true;
@@ -101,7 +101,7 @@ function ImageComparisonSlider({
       </div>
       <div className="absolute inset-y-0 w-px bg-white shadow-sm" style={{ left: `${position}%` }} />
       <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-8 w-8 rounded-full border border-white bg-white shadow-md flex items-center justify-center" style={{ left: `${position}%` }}>
-        <div className="h-4 w-1 rounded-full bg-slate-400" />
+        <div className="h-4 w-1 rounded-full bg-cream-800/40" />
       </div>
     </div>
   );
@@ -246,23 +246,23 @@ export function CustomStylingModal({
                     onEnableCustomStylingChange?.(nextEnabled);
                     onCustomStylingChange?.(nextEnabled);
                   }}
-                  className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  className="w-5 h-5 rounded border-cream-200 text-brand-500 focus:ring-brand-500 cursor-pointer"
                 />
                 <div>
-                  <span className="text-lg font-semibold text-slate-700 block">
+                  <span className="text-lg font-semibold text-cream-800/80 block">
                     Enable Custom Styling
                   </span>
-                  <span className="text-sm text-slate-500">
+                  <span className="text-sm text-cream-800/50">
                     View your uploaded images without customization
                   </span>
                 </div>
               </label>
             </div>
           ) : (
-            <div className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3">
+            <div className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-brand-100 bg-brand-50 px-4 py-3">
               <div>
-                <p className="text-sm font-semibold text-indigo-900">Custom styling enabled</p>
-                <p className="text-xs text-indigo-700">The step is collapsed so you can focus on the uploaded images.</p>
+                <p className="text-sm font-semibold text-brand-900">Custom styling enabled</p>
+                <p className="text-xs text-brand-600">The step is collapsed so you can focus on the uploaded images.</p>
               </div>
               <button
                 type="button"
@@ -270,7 +270,7 @@ export function CustomStylingModal({
                   onEnableCustomStylingChange?.(false);
                   onCustomStylingChange?.(false);
                 }}
-                className="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+                className="rounded-md border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-brand-600 hover:bg-brand-50"
               >
                 Turn off
               </button>
@@ -287,7 +287,7 @@ export function CustomStylingModal({
                   onChange={(e) => setApplySameStyleForAll(e.target.checked)}
                   className="w-4 h-4 rounded"
                 />
-                <span className="text-md font-medium text-slate-700">
+                <span className="text-md font-medium text-cream-800/80">
                   Apply same style to all images
                 </span>
               </label>
@@ -296,14 +296,14 @@ export function CustomStylingModal({
 
           {/* Global Style Selector - Only shown when enabled */}
           {enableCustomStyling && areaType === "interior" && showGlobalStyleSelector && (
-            <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50/80 p-4">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
+            <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50/80 p-4">
+              <label className="block text-sm font-semibold text-cream-800/80 mb-3">
                 Staging Style {isStyleLocked ? "(for all images)" : "(applies to all images)"}
               </label>
               <select
                 value={perImageSettings[0]?.stagingStyle || DEFAULT_DEMO_STYLE}
                 onChange={(event) => handleStagingStyleChange(0, event.target.value as StagingStyle)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-cream-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               >
                 <option value="">Select Style...</option>
                 {stagingStyles.map((style) => (
@@ -317,7 +317,7 @@ export function CustomStylingModal({
 
           {/* Images Grid */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-slate-700 mb-4">
+            <h3 className="text-sm font-semibold text-cream-800/80 mb-4">
               {enableCustomStyling ? "Customize Each Image" : "Uploaded Images"}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -342,13 +342,13 @@ export function CustomStylingModal({
                     className={`relative border rounded-lg p-5 bg-white hover:shadow-md transition-shadow ${
                       isLowResolution 
                         ? 'border-red-300 ring-2 ring-red-200' 
-                        : 'border-slate-200'
+                        : 'border-cream-200'
                     }`}
                   >
                   <button
                     type="button"
                     onClick={() => onRemoveFile?.(index)}
-                    className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-rose-50 hover:text-rose-600"
+                    className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-cream-800/50 shadow-sm ring-1 ring-cream-200 transition hover:bg-rose-50 hover:text-rose-600"
                     aria-label={`Remove image ${index + 1}`}
                     title="Remove image"
                   >
@@ -356,7 +356,7 @@ export function CustomStylingModal({
                   </button>
 
                   <div className="mb-3 flex items-center justify-evenly">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    <p className="text-xs font-semibold text-cream-800/50 uppercase tracking-wide">
                       Image {index + 1} of {selectedFiles.length}
                     </p>
                     {isLowResolution && (
@@ -379,8 +379,8 @@ export function CustomStylingModal({
                       <button
                         type="button"
                         className={`px-3 py-2 rounded-lg border text-xs font-semibold ${perImageSettings[index]?.areaType === 'interior' || (!perImageSettings[index]?.areaType && areaType === 'interior')
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                          ? 'bg-brand-500 text-white border-brand-500'
+                          : 'bg-white text-cream-800/80 border-cream-200 hover:bg-cream-100'
                         }`}
                         onClick={() => handleAreaTypeChange(index, 'interior')}
                       >
@@ -389,8 +389,8 @@ export function CustomStylingModal({
                       <button
                         type="button"
                         className={`px-3 py-2 rounded-lg border text-xs font-semibold ${perImageSettings[index]?.areaType === 'exterior' || (!perImageSettings[index]?.areaType && areaType === 'exterior')
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                          ? 'bg-brand-500 text-white border-brand-500'
+                          : 'bg-white text-cream-800/80 border-cream-200 hover:bg-cream-100'
                         }`}
                         onClick={() => handleAreaTypeChange(index, 'exterior')}
                       >
@@ -398,14 +398,14 @@ export function CustomStylingModal({
                       </button>
                     </div>
 
-                    <label className="flex text-sm font-semibold text-slate-700 mb-2 items-center gap-2">
+                    <label className="flex text-sm font-semibold text-cream-800/80 mb-2 items-center gap-2">
                       <span>{(perImageSettings[index]?.areaType || areaType) === "interior" ? "Room Type" : "Area Type"}</span>
-                      <span className="text-xs text-slate-400">(Required)</span>
+                      <span className="text-xs text-cream-800/40">(Required)</span>
                     </label>
                     <select
                       value={perImageSettings[index]?.roomType || ""}
                       onChange={(e) => handleRoomTypeChange(index, e.target.value as RoomType)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                      className="w-full px-3 py-2 border border-cream-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                     >
                       <option value="">Select {(perImageSettings[index]?.areaType || areaType) === "interior" ? "Room" : "Area"}...</option>
                       {((perImageSettings[index]?.areaType || areaType) === 'interior' ? interiorOptions : exteriorOptions).map((option) => (
@@ -418,7 +418,7 @@ export function CustomStylingModal({
 
                   {enableCustomStyling && (perImageSettings[index]?.areaType || areaType) === "interior" && (
                     <div className="mb-4">
-                      <label className="flex text-sm font-semibold text-slate-700 mb-2 items-center gap-2">
+                      <label className="flex text-sm font-semibold text-cream-800/80 mb-2 items-center gap-2">
                         <span>Staging Style</span>
                         {isStyleLocked && (
                           <div title="Available on Pro+ plans" className="flex">
@@ -428,14 +428,14 @@ export function CustomStylingModal({
                         <InfoHint
                           text="Select any style to preview how this image may look. Final generated results are AI-based and can vary slightly."
                           className="ml-auto"
-                          iconClassName="text-indigo-500"
+                          iconClassName="text-brand-500"
                         />
                       </label>
                       {isStyleLocked || (effectiveApplySameStyleForAll && index > 0) ? (
                         <div className="relative" title="Upgrade to Pro+ plan to customize styling for each image">
                           <select
                             disabled
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed opacity-60 text-sm"
+                            className="w-full px-3 py-2 border border-cream-200 rounded-lg bg-cream-50 text-cream-800/50 cursor-not-allowed opacity-60 text-sm"
                           >
                             <option>Locked on your plan</option>
                           </select>
@@ -445,7 +445,7 @@ export function CustomStylingModal({
                         <select
                           value={perImageSettings[index]?.stagingStyle || ""}
                           onChange={(e) => handleStagingStyleChange(index, e.target.value as StagingStyle)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                          className="w-full px-3 py-2 border border-cream-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                         >
                           <option value="">Select Style...</option>
                           {stagingStyles.map((style) => (
@@ -455,18 +455,18 @@ export function CustomStylingModal({
                           ))}
                         </select>
                       )}
-                      <div className="text-xs text-slate-400 mt-1 text-right">{(perImageSettings[index]?.prompt || '').length} / 100</div>
+                      <div className="text-xs text-cream-800/40 mt-1 text-right">{(perImageSettings[index]?.prompt || '').length} / 100</div>
                     </div>
                   )}
 
                   {enableCustomStyling && (
                     <div>
-                      <label className="flex text-sm font-semibold text-slate-700 mb-2 items-center gap-2">
+                      <label className="flex text-sm font-semibold text-cream-800/80 mb-2 items-center gap-2">
                         <span>Custom Prompt</span>
                         <InfoHint
                           text="Custom prompts are applied very literally. To get the best results, keep your prompt short and focused, but make sure it includes all essential instructions. The AI will primarily follow the changes you specify, so avoid long or repetitive prompts."
                           className="ml-auto"
-                          iconClassName="text-indigo-500"
+                          iconClassName="text-brand-500"
                         />
                         {isStyleLocked && (
                           <div title="Available on Pro+ plans" className="flex">
@@ -480,7 +480,7 @@ export function CustomStylingModal({
                             type="text"
                               disabled
                               placeholder="Upgrade to Pro+ plan"
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed opacity-60 text-sm"
+                              className="w-full px-3 py-2 border border-cream-200 rounded-lg bg-cream-50 text-cream-800/50 cursor-not-allowed opacity-60 text-sm"
                           />
                           <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
                         </div>
@@ -491,7 +491,7 @@ export function CustomStylingModal({
                           onChange={(e) => handlePromptChange(index, e.target.value)}
                           placeholder="Describe how you'd like this image staged (optional)"
                           maxLength={100}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                          className="w-full px-3 py-2 border border-cream-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                         />
                       )}
                     </div>
@@ -504,15 +504,15 @@ export function CustomStylingModal({
                 <button
                   type="button"
                   onClick={onAddFiles}
-                  className="min-h-112 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-5 text-left transition hover:border-indigo-400 hover:bg-indigo-50/40"
+                  className="min-h-112 rounded-lg border-2 border-dashed border-cream-200 bg-cream-50 p-5 text-left transition hover:border-brand-500 hover:bg-brand-50/40"
                 >
                   <div className="flex h-full min-h-96 flex-col items-center justify-center gap-3 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-500">
                       <X className="h-5 w-5 rotate-45" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-700">Add another image</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="text-sm font-semibold text-cream-800/80">Add another image</p>
+                      <p className="mt-1 text-xs text-cream-800/50">
                         Upload up to {maxMultiImages - selectedFiles.length} more image{maxMultiImages - selectedFiles.length === 1 ? '' : 's'}
                       </p>
                     </div>
@@ -524,14 +524,14 @@ export function CustomStylingModal({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-slate-50 border-t p-6 flex justify-between gap-4">
-          <p className="text-sm text-slate-600 self-center">
+        <div className="sticky bottom-0 bg-cream-50 border-t p-6 flex justify-between gap-4">
+          <p className="text-sm text-cream-800/70 self-center">
             {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} selected
           </p>
           <div className="flex gap-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors font-medium"
+              className="px-4 py-2 text-cream-800/80 border border-cream-200 rounded-lg hover:bg-cream-100 transition-colors font-medium"
             >
               Cancel
             </button>
@@ -540,8 +540,8 @@ export function CustomStylingModal({
               disabled={!enableCustomStyling}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 enableCustomStyling
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  ? 'bg-brand-500 text-white hover:bg-brand-600'
+                  : 'bg-cream-200 text-cream-800/40 cursor-not-allowed'
               }`}
             >
               {enableCustomStyling ? 'Apply Custom Styling' : 'Enable styling to apply'}

@@ -334,9 +334,9 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-24">
+      <div className="min-h-screen bg-cream-50 px-4 py-24">
         <div className="mx-auto flex max-w-4xl items-center justify-center py-20">
-          <Loader className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader className="h-8 w-8 animate-spin text-brand-500" />
         </div>
       </div>
     );
@@ -347,11 +347,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-24">
+    <div className="min-h-screen bg-cream-50 px-4 py-24">
       <div className="mx-auto max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-          <p className="mt-2 text-slate-600">Manage your profile settings and subscription billing.</p>
+          <h1 className="font-display text-3xl font-bold text-brand-900">Settings</h1>
+          <p className="mt-2 text-cream-800/70">Manage your profile settings and subscription billing.</p>
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
@@ -362,25 +362,25 @@ export default function SettingsPage() {
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   {user.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
                       alt={user.name || 'User'}
-                      className="h-20 w-20 rounded-full border-4 border-indigo-100 object-cover"
+                      className="h-20 w-20 rounded-full border-4 border-brand-100 object-cover"
                     />
                   ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-xl font-semibold text-white">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-500 text-xl font-semibold text-white">
                       {getInitials(user.name) || <User className="h-8 w-8" />}
                     </div>
                   )}
 
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900">{user.name}</h2>
-                    <p className="text-sm text-slate-500">{user.email}</p>
-                    <p className="mt-1 text-xs font-medium uppercase tracking-wide text-indigo-600">{user.role}</p>
+                    <h2 className="font-display text-xl font-bold text-brand-900">{user.name}</h2>
+                    <p className="text-sm text-cream-800/50">{user.email}</p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-wide text-brand-500">{user.role}</p>
                   </div>
                 </div>
 
@@ -395,7 +395,7 @@ export default function SettingsPage() {
                   <Button
                     onClick={handlePickFile}
                     disabled={isUploading}
-                    className="bg-indigo-600 hover:bg-indigo-700"
+                    className="bg-brand-500 hover:bg-brand-600"
                   >
                     {isUploading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
                     Update profile image
@@ -407,7 +407,7 @@ export default function SettingsPage() {
                   >
                     Remove profile image
                   </Button>
-                  <p className="text-xs text-slate-500">Supported formats: JPG, PNG, GIF, WebP. Max size: 10MB.</p>
+                  <p className="text-xs text-cream-800/50">Supported formats: JPG, PNG, GIF, WebP. Max size: 10MB.</p>
                 </div>
               </div>
             </div>
@@ -495,10 +495,10 @@ export default function SettingsPage() {
             </div>
 
             {/* Secondary email — optional sign-in alternative */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Secondary email</h3>
-                <p className="text-sm text-slate-600">
+                <h3 className="text-lg font-semibold text-brand-900">Secondary email</h3>
+                <p className="text-sm text-cream-800/70">
                   Add an optional secondary email you can also sign in with. It must not already be in use by another account. We&apos;ll send a confirmation link to that address — it only becomes active once you click the link. Your primary email is notified after confirmation.
                 </p>
               </div>
@@ -510,7 +510,7 @@ export default function SettingsPage() {
                     value={secondaryEmailInput}
                     onChange={(e) => { setSecondaryEmailInput(e.target.value); setSecondaryEmailError(null); }}
                     placeholder="alternate@example.com"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
                   />
                   {secondaryEmailError && (
                     <p className="text-xs text-red-600">{secondaryEmailError}</p>
@@ -535,7 +535,7 @@ export default function SettingsPage() {
                           setSecondaryEmailSaving(false);
                         }
                       }}
-                      className="bg-indigo-600 hover:bg-indigo-700"
+                      className="bg-brand-500 hover:bg-brand-600"
                     >
                       {secondaryEmailSaving ? <Loader className="h-4 w-4 animate-spin mr-2" /> : null}
                       {secondaryEmail ? 'Save changes' : 'Add email'}
@@ -556,9 +556,9 @@ export default function SettingsPage() {
               ) : (
                 <div className="space-y-3">
                   {secondaryEmail && (
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-cream-50 px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{secondaryEmail}</p>
+                        <p className="text-sm font-medium text-brand-900">{secondaryEmail}</p>
                         <p className="text-xs text-emerald-700">Confirmed — you can sign in with this email.</p>
                       </div>
                       <div className="flex gap-2">
@@ -586,7 +586,7 @@ export default function SettingsPage() {
                   {pendingSecondaryEmail && (
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{pendingSecondaryEmail}</p>
+                        <p className="text-sm font-medium text-brand-900">{pendingSecondaryEmail}</p>
                         <p className="text-xs text-amber-700">Pending confirmation — open the link we sent to this address.</p>
                       </div>
                       <div className="flex gap-2">
@@ -690,116 +690,116 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="photographer" className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm space-y-6">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-500">
                   <Sparkles className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Become a Photographer</h2>
-                  <p className="text-sm text-slate-600">
+                  <h2 className="font-display text-xl font-bold text-brand-900">Become a Photographer</h2>
+                  <p className="text-sm text-cream-800/70">
                     Already signed up as a normal user? You can apply here to join the photographer marketplace.
                   </p>
                 </div>
               </div>
 
               {photographerProfile ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <BadgeCheck className="h-4 w-4 text-indigo-600" />
+                <div className="rounded-xl border border-cream-200 bg-cream-50 p-4 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-cream-800/80">
+                    <BadgeCheck className="h-4 w-4 text-brand-500" />
                     Status: {String(photographerProfile.application_status || (photographerProfile.approved ? 'APPROVED' : 'SUBMITTED')).replace(/_/g, ' ').toLowerCase()}
                   </div>
 
                   <div className="grid gap-4">
                     <label className="grid gap-2">
-                      <span className="text-sm font-medium text-slate-700">Bio</span>
+                      <span className="text-sm font-medium text-cream-800/80">Bio</span>
                       <textarea
                         value={photographerApplication.bio}
                         onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, bio: e.target.value }))}
-                        className="min-h-28 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500"
+                        className="min-h-28 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500"
                         placeholder="Tell clients about your experience, photography style, and coverage area"
                       />
                     </label>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <input value={photographerApplication.businessName} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, businessName: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Business name" />
-                      <input value={photographerApplication.photographerType} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, photographerType: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Photographer type" />
-                      <input value={photographerApplication.yearsExperience} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, yearsExperience: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Years of experience" />
-                      <input value={photographerApplication.serviceArea} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, serviceArea: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Service area" />
-                      <input value={photographerApplication.portfolioUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, portfolioUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Portfolio URL" />
-                      <input value={photographerApplication.instagramUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, instagramUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Instagram URL" />
-                      <input value={photographerApplication.websiteUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, websiteUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Website URL" />
-                      <input value={photographerApplication.availability} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, availability: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Availability" />
+                      <input value={photographerApplication.businessName} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, businessName: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Business name" />
+                      <input value={photographerApplication.photographerType} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, photographerType: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Photographer type" />
+                      <input value={photographerApplication.yearsExperience} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, yearsExperience: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Years of experience" />
+                      <input value={photographerApplication.serviceArea} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, serviceArea: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Service area" />
+                      <input value={photographerApplication.portfolioUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, portfolioUrl: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Portfolio URL" />
+                      <input value={photographerApplication.instagramUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, instagramUrl: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Instagram URL" />
+                      <input value={photographerApplication.websiteUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, websiteUrl: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Website URL" />
+                      <input value={photographerApplication.availability} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, availability: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Availability" />
                     </div>
 
-                    <textarea value={photographerApplication.shortPitch} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, shortPitch: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Why should clients hire you?" />
-                    <textarea value={photographerApplication.gearDescription} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, gearDescription: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Gear / camera / equipment details" />
+                    <textarea value={photographerApplication.shortPitch} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, shortPitch: e.target.value }))} className="min-h-24 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Why should clients hire you?" />
+                    <textarea value={photographerApplication.gearDescription} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, gearDescription: e.target.value }))} className="min-h-24 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Gear / camera / equipment details" />
                   </div>
 
-                  <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                      <FileUp className="h-4 w-4 text-indigo-600" />
+                  <div className="space-y-3 rounded-xl border border-cream-200 bg-white p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-cream-800/80">
+                      <FileUp className="h-4 w-4 text-brand-500" />
                       Verification document
                     </div>
                     <input
                       type="file"
                       accept="application/pdf,image/jpeg,image/png,image/webp"
                       onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                      className="block w-full text-sm text-cream-800/70 file:mr-4 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-500 hover:file:bg-brand-100"
                     />
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button onClick={handleSubmitPhotographerApplication} disabled={isPhotographerLoading} className="bg-indigo-600 hover:bg-indigo-700">
+                    <Button onClick={handleSubmitPhotographerApplication} disabled={isPhotographerLoading} className="bg-brand-500 hover:bg-brand-600">
                       {isPhotographerLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-2 h-4 w-4" />}
                       Apply as Photographer
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                <div className="rounded-xl border border-cream-200 bg-cream-50 p-4 space-y-4">
                   <div className="grid gap-4">
                     <label className="grid gap-2">
-                      <span className="text-sm font-medium text-slate-700">Professional Bio</span>
+                      <span className="text-sm font-medium text-cream-800/80">Professional Bio</span>
                       <textarea
                         value={photographerApplication.bio}
                         onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, bio: e.target.value }))}
-                        className="min-h-28 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500"
+                        className="min-h-28 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500"
                         placeholder="Tell clients about your experience, photography style, and coverage area"
                       />
                     </label>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <input value={photographerApplication.businessName} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, businessName: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Business name" />
-                      <input value={photographerApplication.photographerType} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, photographerType: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Photographer type" />
-                      <input value={photographerApplication.yearsExperience} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, yearsExperience: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Years of experience" />
-                      <input value={photographerApplication.serviceArea} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, serviceArea: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Service area" />
-                      <input value={photographerApplication.portfolioUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, portfolioUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Portfolio URL" />
-                      <input value={photographerApplication.instagramUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, instagramUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Instagram URL" />
-                      <input value={photographerApplication.websiteUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, websiteUrl: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Website URL" />
-                      <input value={photographerApplication.availability} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, availability: e.target.value }))} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Availability" />
+                      <input value={photographerApplication.businessName} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, businessName: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Business name" />
+                      <input value={photographerApplication.photographerType} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, photographerType: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Photographer type" />
+                      <input value={photographerApplication.yearsExperience} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, yearsExperience: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Years of experience" />
+                      <input value={photographerApplication.serviceArea} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, serviceArea: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Service area" />
+                      <input value={photographerApplication.portfolioUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, portfolioUrl: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Portfolio URL" />
+                      <input value={photographerApplication.instagramUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, instagramUrl: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Instagram URL" />
+                      <input value={photographerApplication.websiteUrl} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, websiteUrl: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Website URL" />
+                      <input value={photographerApplication.availability} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, availability: e.target.value }))} className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Availability" />
                     </div>
 
-                    <textarea value={photographerApplication.shortPitch} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, shortPitch: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Why should clients hire you?" />
-                    <textarea value={photographerApplication.gearDescription} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, gearDescription: e.target.value }))} className="min-h-24 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Gear / camera / equipment details" />
+                    <textarea value={photographerApplication.shortPitch} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, shortPitch: e.target.value }))} className="min-h-24 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Why should clients hire you?" />
+                    <textarea value={photographerApplication.gearDescription} onChange={(e) => setPhotographerApplication((previous) => ({ ...previous, gearDescription: e.target.value }))} className="min-h-24 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-500" placeholder="Gear / camera / equipment details" />
                   </div>
 
-                  <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                      <FileUp className="h-4 w-4 text-indigo-600" />
+                  <div className="space-y-3 rounded-xl border border-cream-200 bg-white p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-cream-800/80">
+                      <FileUp className="h-4 w-4 text-brand-500" />
                       Verification document
                     </div>
                     <input
                       type="file"
                       accept="application/pdf,image/jpeg,image/png,image/webp"
                       onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                      className="block w-full text-sm text-cream-800/70 file:mr-4 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-500 hover:file:bg-brand-100"
                     />
-                    <p className="text-xs text-slate-500">Upload it once, together with your application.</p>
+                    <p className="text-xs text-cream-800/50">Upload it once, together with your application.</p>
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button onClick={handleSubmitPhotographerApplication} disabled={isPhotographerLoading} className="bg-indigo-600 hover:bg-indigo-700">
+                    <Button onClick={handleSubmitPhotographerApplication} disabled={isPhotographerLoading} className="bg-brand-500 hover:bg-brand-600">
                       {isPhotographerLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <BadgeCheck className="mr-2 h-4 w-4" />}
                       Apply as Photographer
                     </Button>
@@ -807,7 +807,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900">
+              <div className="rounded-xl border border-brand-100 bg-brand-50 p-4 text-sm text-brand-900">
                 {photographerProfile
                   ? 'Your profile has been submitted. You can track the current status below and update the details if the admin asks for more information.'
                   : 'Once approved, your account can participate in the photographer marketplace without needing a new signup.'}

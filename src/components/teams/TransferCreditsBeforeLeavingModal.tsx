@@ -105,7 +105,7 @@ export function TransferCreditsBeforeLeavingModal({
                     <div className="space-y-2">
                         <Label>Transfer Option</Label>
                         <div className="space-y-2">
-                            <label className="flex items-center gap-2 cursor-pointer p-2 border rounded hover:bg-slate-50">
+                            <label className="flex items-center gap-2 cursor-pointer p-2 border rounded hover:bg-cream-50">
                                 <input
                                     type="radio"
                                     checked={transferMode === "wallet"}
@@ -115,7 +115,7 @@ export function TransferCreditsBeforeLeavingModal({
                                 <span className="text-sm">Transfer to team wallet</span>
                             </label>
                             {activeMembers.length > 0 && (
-                                <label className="flex items-center gap-2 cursor-pointer p-2 border rounded hover:bg-slate-50">
+                                <label className="flex items-center gap-2 cursor-pointer p-2 border rounded hover:bg-cream-50">
                                     <input
                                         type="radio"
                                         checked={transferMode === "member"}
@@ -135,7 +135,7 @@ export function TransferCreditsBeforeLeavingModal({
                                 id="member-select"
                                 value={selectedMemberId}
                                 onChange={(e) => setSelectedMemberId(e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                className="w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
                             >
                                 <option value="">Choose a member...</option>
                                 {activeMembers.map((member) => (
@@ -158,7 +158,7 @@ export function TransferCreditsBeforeLeavingModal({
                             onChange={(e) => setCreditsToTransfer(e.target.value)}
                             className="mt-1"
                         />
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-cream-800/50">
                             Available: {availableCredits} credits
                         </p>
                     </div>
@@ -168,7 +168,7 @@ export function TransferCreditsBeforeLeavingModal({
                     <Button
                         onClick={handleTransfer}
                         disabled={isLoading || isProcessing}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                        className="flex-1 bg-brand-500 hover:bg-brand-600"
                     >
                         {isLoading ? (
                             <>

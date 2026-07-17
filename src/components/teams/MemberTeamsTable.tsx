@@ -38,11 +38,11 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
     };
     if (!teams || teams.teams.length === 0) {
         return (
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg border border-cream-200 overflow-hidden">
                 <div className="text-center py-12 px-4">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                    <h3 className="text-lg font-semibold text-slate-700 mb-1">No team memberships yet</h3>
-                    <p className="text-slate-500">You will see teams here once you accept an invite.</p>
+                    <Users className="w-12 h-12 mx-auto mb-3 text-cream-800/30" />
+                    <h3 className="text-lg font-semibold text-cream-800/80 mb-1">No team memberships yet</h3>
+                    <p className="text-cream-800/50">You will see teams here once you accept an invite.</p>
                 </div>
             </div>
         );
@@ -102,10 +102,10 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-lg border border-cream-200 overflow-hidden">
             <Table>
                 <TableHeader>
-                    <TableRow className="bg-slate-50">
+                    <TableRow className="bg-cream-50">
                         <TableHead className="font-semibold text-left">Team Name</TableHead>
                         <TableHead className="font-semibold text-left">Description</TableHead>
                         <TableHead className="font-semibold text-left">Owner</TableHead>
@@ -118,19 +118,19 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                 </TableHeader>
                 <TableBody>
                     {teams.teams.map((team) => (
-                        <TableRow key={team.id} className="hover:bg-slate-50">
+                        <TableRow key={team.id} className="hover:bg-cream-50">
                             <TableCell className="font-medium">{team.name}</TableCell>
-                            <TableCell className="text-slate-600 max-w-xs truncate">
+                            <TableCell className="text-cream-800/70 max-w-xs truncate">
                                 {team.description || "-"}
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-500 font-semibold text-sm">
                                         {team.owner.name?.[0]?.toUpperCase() || "?"}
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium">{team.owner.name || "Unknown"}</p>
-                                        <p className="text-xs text-slate-500">{team.owner.email}</p>
+                                        <p className="text-xs text-cream-800/50">{team.owner.email}</p>
                                     </div>
                                 </div>
                             </TableCell>
@@ -167,18 +167,18 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                             <TableCell>
                                 <div className="space-y-1 text-xs">
                                     {canViewTeamWallet(team) && (
-                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-indigo-100 text-indigo-800">
+                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-brand-100 text-brand-900">
                                             Team Wallet: {team.wallet}
                                         </div>
                                     )}
                                     {canSeeAllocatedCredits(team) && (
-                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-slate-100 text-slate-800">
+                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-cream-100 text-brand-900">
                                             Allocated to you: {getDisplayedCredits(team)}
                                         </div>
                                     )}
                                 </div>
                             </TableCell>
-                            <TableCell className="text-sm text-slate-600">
+                            <TableCell className="text-sm text-cream-800/70">
                                 {new Date(team.created_at).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-left">
@@ -224,8 +224,8 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                                         )}
                                         {isOwnerOrAdmin(team) && onDeleteClick && (
                                             <>
-                                                <div className="flex items-center px-2 py-1.5 text-xs text-slate-500 cursor-default">
-                                                    <div className="flex-1 h-px bg-slate-200"></div>
+                                                <div className="flex items-center px-2 py-1.5 text-xs text-cream-800/50 cursor-default">
+                                                    <div className="flex-1 h-px bg-cream-200"></div>
                                                 </div>
                                                 <DropdownMenuItem
                                                     onClick={() => onDeleteClick(team)}
@@ -236,8 +236,8 @@ export function MemberTeamsTable({ teams, currentUserId, onInviteClick, onTransf
                                                 </DropdownMenuItem>
                                             </>
                                         )}
-                                        <div className="flex items-center px-2 py-1.5 text-xs text-slate-500 cursor-default">
-                                            <div className="flex-1 h-px bg-slate-200"></div>
+                                        <div className="flex items-center px-2 py-1.5 text-xs text-cream-800/50 cursor-default">
+                                            <div className="flex-1 h-px bg-cream-200"></div>
                                         </div>
                                         <DropdownMenuItem onClick={() => onLeaveClick && onLeaveClick(team)}>
                                             <Send className="w-4 h-4 mr-2" />

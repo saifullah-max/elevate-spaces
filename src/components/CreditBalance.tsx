@@ -44,9 +44,9 @@ export function CreditBalance({ onBalanceChange, refreshTrigger }: CreditBalance
 
   if (loading && balance === null) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-        <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-        <span className="text-sm text-slate-600">Loading credits...</span>
+      <div className="flex items-center gap-2 px-3 py-2 bg-cream-50 rounded-lg border border-cream-200">
+        <Loader2 className="w-4 h-4 animate-spin text-brand-500" />
+        <span className="text-sm text-cream-800/70">Loading credits...</span>
       </div>
     );
   }
@@ -75,13 +75,13 @@ export function CreditBalance({ onBalanceChange, refreshTrigger }: CreditBalance
         <Coins className={`w-4 h-4 ${creditColor}`} />
         <div>
           <span className={`text-sm font-semibold ${creditColor}`}>{balance} credits</span>
-          {lastRefresh && <p className="text-xs text-slate-500">Updated just now</p>}
+          {lastRefresh && <p className="text-xs text-cream-800/50">Updated just now</p>}
         </div>
       </div>
       <button
         onClick={fetchBalance}
         disabled={loading}
-        className="text-slate-400 hover:text-slate-600 disabled:opacity-50"
+        className="text-cream-800/40 hover:text-cream-800/70 disabled:opacity-50"
       >
         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
       </button>

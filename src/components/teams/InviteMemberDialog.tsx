@@ -110,7 +110,7 @@ export function InviteMemberDialog({
 
                             <div>
                                 <Label htmlFor="invite-subject">
-                                    Subject <span className="text-slate-400 text-sm">(optional)</span>
+                                    Subject <span className="text-cream-800/40 text-sm">(optional)</span>
                                 </Label>
                                 <Input
                                     id="invite-subject"
@@ -124,28 +124,28 @@ export function InviteMemberDialog({
 
                             <div>
                                 <Label htmlFor="invite-text">
-                                    Message <span className="text-slate-400 text-sm">(optional)</span>
+                                    Message <span className="text-cream-800/40 text-sm">(optional)</span>
                                 </Label>
                                 <textarea
                                     id="invite-text"
                                     placeholder="Add a custom invitation message"
                                     value={message}
                                     onChange={(e) => onMessageChange(e.target.value)}
-                                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
+                                    className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all resize-none"
                                     rows={3}
                                 />
                             </div>
 
                             <div>
                                 <Label htmlFor="invite-role">
-                                    Role <span className="text-slate-400 text-sm">(optional)</span>
+                                    Role <span className="text-cream-800/40 text-sm">(optional)</span>
                                 </Label>
                                 {roleOptions.length > 0 ? (
                                     <select
                                         id="invite-role"
                                         value={roleName}
                                         onChange={(e) => onRoleNameChange(e.target.value)}
-                                        className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white"
+                                        className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all bg-white"
                                     >
                                         {roleOptions.map((option) => (
                                             <option key={option.value} value={option.value}>
@@ -154,7 +154,7 @@ export function InviteMemberDialog({
                                         ))}
                                     </select>
                                 ) : (
-                                    <div className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-500 text-sm">
+                                    <div className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md bg-cream-50 text-cream-800/50 text-sm">
                                         You don't have permission to invite members
                                     </div>
                                 )}
@@ -175,7 +175,7 @@ export function InviteMemberDialog({
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700"
+                                className="w-full bg-brand-500 hover:bg-brand-600"
                             >
                                 {loading ? (
                                     <>
@@ -210,13 +210,13 @@ export function InviteMemberDialog({
                                 {team.teamInvites.map((invite) => (
                                     <div
                                         key={invite.id}
-                                        className="p-4 border border-slate-200 rounded-lg hover:border-indigo-200 transition-colors"
+                                        className="p-4 border border-cream-200 rounded-lg hover:border-brand-100 transition-colors"
                                     >
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <Mail className="w-4 h-4 text-slate-400" />
-                                                    <span className="font-medium text-slate-900">{invite.email}</span>
+                                                    <Mail className="w-4 h-4 text-cream-800/40" />
+                                                    <span className="font-medium text-brand-900">{invite.email}</span>
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${invite.status === "ACCEPTED"
                                                         ? "bg-green-100 text-green-800"
                                                         : invite.status === "PENDING"
@@ -229,7 +229,7 @@ export function InviteMemberDialog({
                                                         {invite.status}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-xs text-slate-500">
+                                                <div className="flex items-center gap-4 text-xs text-cream-800/50">
                                                     <span className="flex items-center gap-1">
                                                         <Calendar className="w-3 h-3" />
                                                         Invited: {new Date(invite.invited_at).toLocaleDateString()}
@@ -295,8 +295,8 @@ export function InviteMemberDialog({
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-slate-500">
-                                <Mail className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                            <div className="text-center py-8 text-cream-800/50">
+                                <Mail className="w-12 h-12 mx-auto mb-3 text-cream-800/30" />
                                 <p className="font-medium">No pending invitations</p>
                                 <p className="text-sm">Invite members to get started</p>
                             </div>

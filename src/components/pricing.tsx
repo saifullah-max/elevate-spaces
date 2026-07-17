@@ -570,24 +570,24 @@ const PricingPage = () => {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-indigo-600 font-semibold tracking-wide uppercase text-sm mb-2">Pricing Plans</h2>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Professional Real Estate Media Solutions</h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">Choose the right plan for your workflow and your teams.</p>
-          <div className="mt-8 inline-flex flex-col items-center gap-3 bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm">
+          <h2 className="text-brand-500 font-semibold tracking-wide uppercase text-sm mb-2">Pricing Plans</h2>
+          <h1 className="text-3xl md:text-4xl font-bold text-brand-900 mb-4">Professional Real Estate Media Solutions</h1>
+          <p className="text-lg text-cream-800/70 max-w-2xl mx-auto">Choose the right plan for your workflow and your teams.</p>
+          <div className="mt-8 inline-flex flex-col items-center gap-3 bg-white border border-cream-200 rounded-xl px-5 py-4 shadow-sm">
             <div className="flex items-center gap-2">
-              <button onClick={() => setPurchaseFor('individual')} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${purchaseFor === 'individual' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200'}`}>Buy for Individual</button>
-              <button onClick={() => setPurchaseFor('team')} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${purchaseFor === 'team' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200'}`}>Buy for Team</button>
+              <button onClick={() => setPurchaseFor('individual')} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${purchaseFor === 'individual' ? 'bg-brand-500 text-white border-brand-500' : 'bg-white text-cream-800/80 border-cream-200'}`}>Buy for Individual</button>
+              <button onClick={() => setPurchaseFor('team')} className={`px-4 py-2 rounded-lg text-sm font-semibold border ${purchaseFor === 'team' ? 'bg-brand-500 text-white border-brand-500' : 'bg-white text-cream-800/80 border-cream-200'}`}>Buy for Team</button>
             </div>
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
-              <button onClick={() => setBillingCycle('monthly')} className={`px-3 py-1.5 rounded-md text-xs font-semibold ${billingCycle === 'monthly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'}`}>Monthly</button>
-              <button onClick={() => setBillingCycle('annual')} className={`px-3 py-1.5 rounded-md text-xs font-semibold ${billingCycle === 'annual' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'}`}>Annual Billing</button>
+            <div className="inline-flex rounded-lg border border-cream-200 bg-cream-100 p-1">
+              <button onClick={() => setBillingCycle('monthly')} className={`px-3 py-1.5 rounded-md text-xs font-semibold ${billingCycle === 'monthly' ? 'bg-white text-brand-900 shadow-sm' : 'text-cream-800/70'}`}>Monthly</button>
+              <button onClick={() => setBillingCycle('annual')} className={`px-3 py-1.5 rounded-md text-xs font-semibold ${billingCycle === 'annual' ? 'bg-white text-brand-900 shadow-sm' : 'text-cream-800/70'}`}>Annual Billing</button>
             </div>
             {purchaseFor === 'team' && (
               <div className="w-64">
                 {teamsLoading ? (
-                  <div className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-500 text-left">Loading owned teams...</div>
+                  <div className="px-3 py-2 rounded-lg border border-cream-200 text-sm text-cream-800/50 text-left">Loading owned teams...</div>
                 ) : ownedTeams.length > 0 ? (
-                  <select value={teamId} onChange={(e) => setTeamId(e.target.value)} className={`w-full px-3 py-2 rounded-lg border text-sm ${teamDowngradeImpacts[teamId]?.requiredRemovalCount > 0 ? 'border-red-300 text-red-700' : 'border-slate-200'}`}>
+                  <select value={teamId} onChange={(e) => setTeamId(e.target.value)} className={`w-full px-3 py-2 rounded-lg border text-sm ${teamDowngradeImpacts[teamId]?.requiredRemovalCount > 0 ? 'border-red-300 text-red-700' : 'border-cream-200'}`}>
                     {ownedTeams.map((team) => (
                       <option key={team.id} value={team.id}>{teamDowngradeImpacts[team.id]?.requiredRemovalCount > 0 ? `[EXCEEDED] ${team.name}` : team.name}</option>
                     ))}
@@ -617,11 +617,11 @@ const PricingPage = () => {
               </div>
             )}
           </div>
-          <div className="mt-6 max-w-3xl mx-auto rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-900">
+          <div className="mt-6 max-w-3xl mx-auto rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-900">
             If you change plans while already on a paid subscription, your current plan will be canceled and any unused credits will be transferred to your wallet. Each individual or team can have only one active subscription at a time.
           </div>
           {isAnnual && (
-            <div className="mt-3 max-w-3xl mx-auto rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+            <div className="mt-3 max-w-3xl mx-auto rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-cream-800/80">
               Annual plans are billed once per year at your discounted monthly-equivalent rate.
             </div>
           )}
@@ -631,118 +631,118 @@ const PricingPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 xl:gap-6 items-start">
 
           {/* Card 1: Starter */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 xl:p-6 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
+          <div className="bg-white rounded-2xl shadow-sm border border-cream-200 p-4 xl:p-6 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Starter</h3>
-              <p className="text-sm text-slate-500 mt-2 h-10">For trying the product and light use</p>
+              <h3 className="text-xl font-bold text-brand-900">Starter</h3>
+              <p className="text-sm text-cream-800/50 mt-2 h-10">For trying the product and light use</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-slate-900">${starterPrice}</span>
-              <span className="text-slate-500 ml-2">{billingLabel}</span>
+              <span className="text-4xl font-bold text-brand-900">${starterPrice}</span>
+              <span className="text-cream-800/50 ml-2">{billingLabel}</span>
             </div>
-            <button onClick={() => startCheckout(starterProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === starterProductKey} className="w-full py-3 px-4 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
+            <button onClick={() => startCheckout(starterProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === starterProductKey} className="w-full py-3 px-4 bg-white border-2 border-brand-500 text-brand-500 font-semibold rounded-lg hover:bg-brand-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === starterProductKey ? 'Processing...' : 'Get Started'}
             </button>
-          <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-slate-800">
+          <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-brand-900">
               {starterCredits} {creditsLabel} · 1 seat
             </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best for first-time users and occasional projects</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Cost per credit: ${starterPerCredit}</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Best for first-time users and occasional projects</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Cost per credit: ${starterPerCredit}</span></li>
             </ul>
           </div>
 
           {/* Card 2: Pro (Most Popular) - UPDATED TO INDIGO */}
           <div
-            className="relative rounded-2xl border border-indigo-400 p-4 xl:p-6 flex flex-col h-full transform lg:scale-105 z-10 shadow-2xl"
+            className="relative rounded-2xl border border-brand-500 p-4 xl:p-6 flex flex-col h-full transform lg:scale-105 z-10 shadow-2xl"
             style={{ background: 'linear-gradient(135deg, #4747C4 0%, #3535a0 100%)' }}
           >
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-indigo-600 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg whitespace-nowrap">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-brand-500 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg whitespace-nowrap">
               ⭐ Most Popular
             </div>
             <div className="mb-6 mt-2">
               <h3 className="text-xl font-bold text-white">Pro</h3>
-              <p className="text-sm text-indigo-200 mt-2 h-10">For agents and freelancers</p>
+              <p className="text-sm text-white/70 mt-2 h-10">For agents and freelancers</p>
             </div>
             <div className="mb-6">
               <span className="text-4xl font-bold text-white">${proPrice}</span>
-              <span className="text-indigo-200 ml-2">{billingLabel}</span>
+              <span className="text-white/70 ml-2">{billingLabel}</span>
             </div>
-            <button onClick={() => startCheckout(proProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === proProductKey} className="w-full py-3 px-4 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
+            <button onClick={() => startCheckout(proProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === proProductKey} className="w-full py-3 px-4 bg-white border-2 border-brand-500 text-brand-500 font-semibold rounded-lg hover:bg-brand-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === proProductKey ? 'Processing...' : 'Get Started'}
             </button>
             <div className="mb-4 inline-block rounded-lg bg-white/15 px-3 py-2 text-sm font-semibold text-white">
               {proCredits} {creditsLabel} · 2 seats
             </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Add 1 extra user for $20/month</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Stage & customize multiple images in one batch</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-200 mr-3 shrink-0" /><span className="text-sm text-indigo-100">Cost per credit: ${proPerCredit}</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-white/70 mr-3 shrink-0" /><span className="text-sm text-white/80">Add 1 extra user for $20/month</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-white/70 mr-3 shrink-0" /><span className="text-sm text-white/80">Stage & customize multiple images in one batch</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-white/70 mr-3 shrink-0" /><span className="text-sm text-white/80">Cost per credit: ${proPerCredit}</span></li>
             </ul>
           </div>
 
           {/* Card 3: Team */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 xl:p-6 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
+          <div className="bg-white rounded-2xl shadow-sm border border-cream-200 p-4 xl:p-6 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Team</h3>
-              <p className="text-sm text-slate-500 mt-2 h-10">For small teams and agencies</p>
+              <h3 className="text-xl font-bold text-brand-900">Team</h3>
+              <p className="text-sm text-cream-800/50 mt-2 h-10">For small teams and agencies</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-bold text-slate-900">${teamPrice}</span>
-              <span className="text-slate-500 ml-2">{billingLabel}</span>
+              <span className="text-4xl font-bold text-brand-900">${teamPrice}</span>
+              <span className="text-cream-800/50 ml-2">{billingLabel}</span>
             </div>
-            <button onClick={() => startCheckout(teamProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === teamProductKey} className="w-full py-3 px-4 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
+            <button onClick={() => startCheckout(teamProductKey)} disabled={isTeamCheckoutDisabled || loadingKey === teamProductKey} className="w-full py-3 px-4 bg-white border-2 border-brand-500 text-brand-500 font-semibold rounded-lg hover:bg-brand-50 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed">
               {loadingKey === teamProductKey ? 'Processing...' : 'Get Team Plan'}
             </button>
-           <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-slate-800">
+           <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-brand-900">
               {teamCredits} {creditsLabel} · 5 seats
             </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Add 1 extra user for $15/month</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Stage & customize multiple images in one batch</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Team access, shared usage, photo storage up to 1 month</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Cost per credit: ${teamPerCredit}</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Add 1 extra user for $15/month</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Stage & customize multiple images in one batch</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Team access, shared usage, photo storage up to 1 month</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Cost per credit: ${teamPerCredit}</span></li>
             </ul>
           </div>
 
           {/* Card 4: Enterprise */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 xl:p-6 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
+          <div className="bg-white rounded-2xl shadow-sm border border-cream-200 p-4 xl:p-6 flex flex-col h-full hover:shadow-md transition-shadow duration-300">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Enterprise</h3>
-              <p className="text-sm text-slate-500 mt-2 h-10">For high volume teams, brokerages, and custom workflows</p>
+              <h3 className="text-xl font-bold text-brand-900">Enterprise</h3>
+              <p className="text-sm text-cream-800/50 mt-2 h-10">For high volume teams, brokerages, and custom workflows</p>
             </div>
             <div className="mb-6 flex items-baseline">
-              <span className="text-3xl font-bold text-slate-900">Custom monthly pricing</span>
+              <span className="text-3xl font-bold text-brand-900">Custom monthly pricing</span>
             </div>
-            <button className="w-full py-3 px-4 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors mb-8" onClick={handleOpenContactSales}>
+            <button className="w-full py-3 px-4 bg-white border-2 border-brand-500 text-brand-500 font-semibold rounded-lg hover:bg-brand-50 transition-colors mb-8" onClick={handleOpenContactSales}>
               Contact Sales
             </button>
-            <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-slate-800">
+            <div className="mb-4 inline-block rounded-lg bg-[#F1ECE3] px-3 py-2 text-sm font-semibold text-brand-900">
               Custom volume & seats
             </div>
             <ul className="space-y-4 flex-1">
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Best rates with annual commitment</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Built for teams of 6 or more</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Priority support & custom onboarding</span></li>
-              <li className="flex items-start"><Check className="w-5 h-5 text-indigo-500 mr-3 shrink-0" /><span className="text-sm text-slate-600">Volume discounts available for larger annual commitments</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Best rates with annual commitment</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Built for teams of 6 or more</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Priority support & custom onboarding</span></li>
+              <li className="flex items-start"><Check className="w-5 h-5 text-brand-500 mr-3 shrink-0" /><span className="text-sm text-cream-800/70">Volume discounts available for larger annual commitments</span></li>
             </ul>
           </div>
 
         </div>
 
         {/* Footer Options */}
-        <div className="mt-16 pt-8 border-t border-slate-200">
+        <div className="mt-16 pt-8 border-t border-cream-200">
           <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-12">
-            <div className="flex items-center space-x-4 bg-white px-6 py-4 rounded-xl border border-slate-200 shadow-sm">
-              <div className="p-2 bg-indigo-50 rounded-lg"><Camera className="w-6 h-6 text-indigo-600" /></div>
+            <div className="flex items-center space-x-4 bg-white px-6 py-4 rounded-xl border border-cream-200 shadow-sm">
+              <div className="p-2 bg-brand-50 rounded-lg"><Camera className="w-6 h-6 text-brand-500" /></div>
               <div>
-                <h4 className="font-bold text-slate-900">Buy Extra Credits</h4>
-                <p className="text-sm text-slate-600">
+                <h4 className="font-bold text-brand-900">Buy Extra Credits</h4>
+                <p className="text-sm text-cream-800/70">
                   {hasActiveSubscription ? "If you have an active subscription, buy any amount at your current plan's per-credit rate." : "If you do not have an active subscription, extra credits are billed at the same $1.50 / image pay-per-image rate."}
                 </p>
                 <div className="mt-3 flex items-center gap-2">
-                  <input type="number" min={1} max={1000} value={topUpCredits} onChange={(e) => setTopUpCredits(Math.max(1, Number(e.target.value) || 1))} className="w-20 px-2 py-1 text-xs border border-slate-200 rounded-lg" />
-                  <button onClick={() => startCheckout(extraCreditsProductKey, topUpCredits)} disabled={isTeamCheckoutDisabled || loadingKey === extraCreditsProductKey} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-60 disabled:cursor-not-allowed">
+                  <input type="number" min={1} max={1000} value={topUpCredits} onChange={(e) => setTopUpCredits(Math.max(1, Number(e.target.value) || 1))} className="w-20 px-2 py-1 text-xs border border-cream-200 rounded-lg" />
+                  <button onClick={() => startCheckout(extraCreditsProductKey, topUpCredits)} disabled={isTeamCheckoutDisabled || loadingKey === extraCreditsProductKey} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-brand-100 text-brand-600 hover:bg-brand-50 disabled:opacity-60 disabled:cursor-not-allowed">
                     {loadingKey === extraCreditsProductKey ? 'Processing...' : (hasActiveSubscription ? 'Buy at Plan Rate' : 'Buy Extra Credits')}
                   </button>
                 </div>
@@ -750,14 +750,14 @@ const PricingPage = () => {
             </div>
 
             {!hasActiveSubscription && (
-              <div className="flex items-center space-x-4 bg-white px-6 py-4 rounded-xl border border-slate-200 shadow-sm relative">
-                <div className="p-2 bg-indigo-50 rounded-lg"><Zap className="w-6 h-6 text-indigo-600" /></div>
+              <div className="flex items-center space-x-4 bg-white px-6 py-4 rounded-xl border border-cream-200 shadow-sm relative">
+                <div className="p-2 bg-brand-50 rounded-lg"><Zap className="w-6 h-6 text-brand-500" /></div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-900">Pay Per Image</h4>
+                    <h4 className="font-bold text-brand-900">Pay Per Image</h4>
                     <button onClick={() => setShowSubscriptionTip(!showSubscriptionTip)} className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition font-semibold">💡 Save More</button>
                   </div>
-                  <p className="text-sm text-slate-600">Flexible usage starting from <span className="font-semibold text-indigo-600">$1.50</span> / image</p>
+                  <p className="text-sm text-cream-800/70">Flexible usage starting from <span className="font-semibold text-brand-500">$1.50</span> / image</p>
                   {showSubscriptionTip && (
                     <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-xs text-green-900 font-semibold mb-1">💰 Better Value with Subscription!</p>
@@ -766,8 +766,8 @@ const PricingPage = () => {
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-2">
-                    <input type="number" min={1} max={1000} value={quantity} onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))} className="w-20 px-2 py-1 text-xs border border-slate-200 rounded-lg" />
-                    <button onClick={() => startCheckout('pay_per_image', quantity)} disabled={isTeamCheckoutDisabled || loadingKey === 'pay_per_image'} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-60 disabled:cursor-not-allowed">
+                    <input type="number" min={1} max={1000} value={quantity} onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))} className="w-20 px-2 py-1 text-xs border border-cream-200 rounded-lg" />
+                    <button onClick={() => startCheckout('pay_per_image', quantity)} disabled={isTeamCheckoutDisabled || loadingKey === 'pay_per_image'} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-brand-100 text-brand-600 hover:bg-brand-50 disabled:opacity-60 disabled:cursor-not-allowed">
                       {loadingKey === 'pay_per_image' ? 'Processing...' : 'Pay Per Image'}
                     </button>
                   </div>
@@ -776,8 +776,8 @@ const PricingPage = () => {
             )}
           </div>
 
-          <div className="text-center mt-8 text-slate-400 text-sm">
-            Prices are in USD. Standard taxes apply. Need help? <SupportModalTrigger className="text-indigo-500 hover:underline">Contact Support</SupportModalTrigger> or email <a href="mailto:hello@elevatespacesai.com" className="text-indigo-500 hover:underline">hello@elevatespacesai.com</a> - typical response time within 24 hours.
+          <div className="text-center mt-8 text-cream-800/40 text-sm">
+            Prices are in USD. Standard taxes apply. Need help? <SupportModalTrigger className="text-brand-500 hover:underline">Contact Support</SupportModalTrigger> or email <a href="mailto:hello@elevatespacesai.com" className="text-brand-500 hover:underline">hello@elevatespacesai.com</a> - typical response time within 24 hours.
           </div>
         </div>
 
@@ -788,12 +788,12 @@ const PricingPage = () => {
               <DialogDescription>{errorMessage || 'You already have an active subscription. Changing plans will cancel the current plan and transfer any unused credits to your wallet.'}</DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              <div className="rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-cream-800/80">
                 {pendingSeatImpact?.requiredRemovalCount || totalRequiredRemovalsAcrossTeams ? 'If seat review is needed, you will be shown the team review dialog after confirming.' : 'No seat review is required for this plan change.'}
               </div>
               <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => setShowPlanChangeConfirmDialog(false)} className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
-                <button type="button" onClick={handleConfirmPlanChange} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">Yes, Proceed</button>
+                <button type="button" onClick={() => setShowPlanChangeConfirmDialog(false)} className="rounded-md border border-cream-200 bg-white px-4 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-50">Cancel</button>
+                <button type="button" onClick={handleConfirmPlanChange} className="rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500">Yes, Proceed</button>
               </div>
             </div>
           </DialogContent>
@@ -813,9 +813,9 @@ const PricingPage = () => {
                   {totalRequiredRemovalsAcrossTeams > 0 ? <p className="mt-2 text-xs text-amber-800">If you proceed without making changes, the latest {totalRequiredRemovalsAcrossTeams} seat holder(s) will be removed or cancelled to match capacity.</p> : null}
                 </div>
               ) : null}
-              <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Select team</label>
-                <select value={activeDowngradeTeamId} onChange={(event) => setDowngradeSelectedTeamId(event.target.value)} className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${activeDowngradeImpact?.requiredRemovalCount ? 'border-red-300 text-red-700' : 'border-slate-300 text-slate-900'}`}>
+              <div className="rounded-lg border border-cream-200 bg-white px-4 py-3">
+                <label className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Select team</label>
+                <select value={activeDowngradeTeamId} onChange={(event) => setDowngradeSelectedTeamId(event.target.value)} className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${activeDowngradeImpact?.requiredRemovalCount ? 'border-red-300 text-red-700' : 'border-cream-200 text-brand-900'}`}>
                   {ownedTeams.map((team) => {
                     const impact = teamDowngradeImpacts[team.id];
                     return <option key={team.id} value={team.id}>{impact?.requiredRemovalCount ? `[EXCEEDED] ${team.name} (${impact.requiredRemovalCount} over)` : team.name}</option>;
@@ -825,13 +825,13 @@ const PricingPage = () => {
               </div>
               {activeDowngradeImpact?.protectedPaidSeats?.length ? (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Protected paid extra seats</h3>
+                  <h3 className="text-sm font-semibold text-brand-900">Protected paid extra seats</h3>
                   <div className="mt-2 space-y-2">
                     {activeDowngradeImpact.protectedPaidSeats.map((seat) => (
                       <div key={seat.id} className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
                         <div>
-                          <div className="font-medium text-slate-900">{seat.name || seat.email || 'Unnamed member'}</div>
-                          <div className="text-xs text-slate-600">{seat.email || 'No email'}{seat.roleName ? ` · ${seat.roleName}` : ''}</div>
+                          <div className="font-medium text-brand-900">{seat.name || seat.email || 'Unnamed member'}</div>
+                          <div className="text-xs text-cream-800/70">{seat.email || 'No email'}{seat.roleName ? ` · ${seat.roleName}` : ''}</div>
                         </div>
                         <div className="text-xs font-semibold text-emerald-700">Kept active</div>
                       </div>
@@ -841,15 +841,15 @@ const PricingPage = () => {
               ) : null}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Members to remove</h3>
+                  <h3 className="text-sm font-semibold text-brand-900">Members to remove</h3>
                   <div className="mt-2 space-y-2">
                     {activeDowngradeImpact?.removalCandidates.filter((candidate) => candidate.kind === 'member').length ? (
                       activeDowngradeImpact.removalCandidates.filter((candidate) => candidate.kind === 'member').map((candidate) => (
-                        <div key={candidate.id} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                        <div key={candidate.id} className="rounded-lg border border-cream-200 px-3 py-2 text-sm">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <div className="font-medium text-slate-900">{candidate.name || candidate.email || 'Unnamed member'}</div>
-                              <div className="text-xs text-slate-500">{candidate.email || 'No email'}{candidate.roleName ? ` · ${candidate.roleName}` : ''}</div>
+                              <div className="font-medium text-brand-900">{candidate.name || candidate.email || 'Unnamed member'}</div>
+                              <div className="text-xs text-cream-800/50">{candidate.email || 'No email'}{candidate.roleName ? ` · ${candidate.roleName}` : ''}</div>
                             </div>
                             <button type="button" onClick={() => handleRemoveDowngradeMember(candidate)} disabled={removingMemberId === candidate.id} className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60">
                               {removingMemberId === candidate.id ? 'Removing...' : 'Remove'}
@@ -857,19 +857,19 @@ const PricingPage = () => {
                           </div>
                         </div>
                       ))
-                    ) : <div className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-500">No active members need to be removed.</div>}
+                    ) : <div className="rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/50">No active members need to be removed.</div>}
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Pending invites to cancel</h3>
+                  <h3 className="text-sm font-semibold text-brand-900">Pending invites to cancel</h3>
                   <div className="mt-2 space-y-2">
                     {activeDowngradeImpact?.removalCandidates.filter((candidate) => candidate.kind === 'invite').length ? (
                       activeDowngradeImpact.removalCandidates.filter((candidate) => candidate.kind === 'invite').map((candidate) => (
-                        <div key={candidate.id} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                        <div key={candidate.id} className="rounded-lg border border-cream-200 px-3 py-2 text-sm">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <div className="font-medium text-slate-900">{candidate.email || 'Unnamed invite'}</div>
-                              <div className="text-xs text-slate-500">{candidate.joinedAt ? new Date(candidate.joinedAt).toLocaleDateString() : 'Pending invite'}{candidate.roleName ? ` · ${candidate.roleName}` : ''}</div>
+                              <div className="font-medium text-brand-900">{candidate.email || 'Unnamed invite'}</div>
+                              <div className="text-xs text-cream-800/50">{candidate.joinedAt ? new Date(candidate.joinedAt).toLocaleDateString() : 'Pending invite'}{candidate.roleName ? ` · ${candidate.roleName}` : ''}</div>
                             </div>
                             <button type="button" onClick={() => handleCancelInvite(candidate.id, candidate.teamId)} disabled={cancelingInviteId === candidate.id} className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60">
                               {cancelingInviteId === candidate.id ? 'Cancelling...' : 'Cancel'}
@@ -877,20 +877,20 @@ const PricingPage = () => {
                           </div>
                         </div>
                       ))
-                    ) : <div className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-500">No pending invitations need to be cancelled.</div>}
+                    ) : <div className="rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/50">No pending invitations need to be cancelled.</div>}
                   </div>
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-slate-900">All pending invitations on selected team</h3>
+                <h3 className="text-sm font-semibold text-brand-900">All pending invitations on selected team</h3>
                 <div className="mt-2 space-y-2">
                   {activeDowngradeTeamId && teamDowngradeImpacts[activeDowngradeTeamId] ? (
                     (ownedTeamDetails.find((team) => team.id === activeDowngradeTeamId)?.teamInvites || []).filter((invite) => invite.status === 'PENDING').map((invite) => (
-                      <div key={invite.id} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                      <div key={invite.id} className="rounded-lg border border-cream-200 px-3 py-2 text-sm">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <div className="font-medium text-slate-900">{invite.email}</div>
-                            <div className="text-xs text-slate-500">{invite.invited_at ? new Date(invite.invited_at).toLocaleDateString() : 'Pending invite'}{invite.role?.name ? ` · ${invite.role.name}` : ''}</div>
+                            <div className="font-medium text-brand-900">{invite.email}</div>
+                            <div className="text-xs text-cream-800/50">{invite.invited_at ? new Date(invite.invited_at).toLocaleDateString() : 'Pending invite'}{invite.role?.name ? ` · ${invite.role.name}` : ''}</div>
                           </div>
                           <button type="button" onClick={() => handleCancelInvite(invite.id, activeDowngradeTeamId)} disabled={cancelingInviteId === invite.id} className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60">
                             {cancelingInviteId === invite.id ? 'Cancelling...' : 'Cancel'}
@@ -900,19 +900,19 @@ const PricingPage = () => {
                     ))
                   ) : null}
                   {activeDowngradeTeamId && (ownedTeamDetails.find((team) => team.id === activeDowngradeTeamId)?.teamInvites || []).filter((invite) => invite.status === 'PENDING').length === 0 ? (
-                    <div className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-500">No pending invitations on this team.</div>
+                    <div className="rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/50">No pending invitations on this team.</div>
                   ) : null}
                 </div>
               </div>
               {selectedOwnedTeam ? (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  Team: <span className="font-semibold text-slate-900">{activeDowngradeImpact?.teamName || selectedOwnedTeam.name}</span>
-                  {totalRequiredRemovalsAcrossTeams > 0 ? <span className="block mt-1 text-xs text-slate-500">If you continue, the latest {totalRequiredRemovalsAcrossTeams} seat holder(s) across exceeded teams will be auto-removed/cancelled to match the lower plan.</span> : null}
+                <div className="rounded-lg border border-cream-200 bg-cream-50 px-4 py-3 text-sm text-cream-800/80">
+                  Team: <span className="font-semibold text-brand-900">{activeDowngradeImpact?.teamName || selectedOwnedTeam.name}</span>
+                  {totalRequiredRemovalsAcrossTeams > 0 ? <span className="block mt-1 text-xs text-cream-800/50">If you continue, the latest {totalRequiredRemovalsAcrossTeams} seat holder(s) across exceeded teams will be auto-removed/cancelled to match the lower plan.</span> : null}
                 </div>
               ) : null}
               <div className="flex flex-wrap justify-end gap-2">
-                <button type="button" onClick={() => setShowManageInvitesModal(false)} className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Close</button>
-                <button type="button" onClick={handleAutoRemoveAndProceed} disabled={!planChangePending || loadingKey === planChangePending?.productKey} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
+                <button type="button" onClick={() => setShowManageInvitesModal(false)} className="rounded-md border border-cream-200 bg-white px-4 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-50">Close</button>
+                <button type="button" onClick={handleAutoRemoveAndProceed} disabled={!planChangePending || loadingKey === planChangePending?.productKey} className="rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500 disabled:opacity-60">
                   {totalRequiredRemovalsAcrossTeams > 0 ? `Proceed and auto-remove ${totalRequiredRemovalsAcrossTeams} remaining item${totalRequiredRemovalsAcrossTeams === 1 ? '' : 's'}` : 'Proceed with downgrade'}
                 </button>
               </div>
@@ -930,23 +930,23 @@ const PricingPage = () => {
           </DialogHeader>
           <div className="max-h-[55vh] overflow-y-auto pr-1 space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Required Agreements</h3>
+              <h3 className="text-sm font-semibold text-brand-900 mb-3">Required Agreements</h3>
               <div className="space-y-4">
                 {FIRST_PAYMENT_AGREEMENTS.map((agreement) => (
-                  <label key={agreement.id} className="flex items-start gap-3 text-sm text-slate-700">
-                    <input type="checkbox" checked={Boolean(firstPaymentAgreements[agreement.id])} onChange={(event) => handleFirstPaymentAgreementToggle(agreement.id, event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
+                  <label key={agreement.id} className="flex items-start gap-3 text-sm text-cream-800/80">
+                    <input type="checkbox" checked={Boolean(firstPaymentAgreements[agreement.id])} onChange={(event) => handleFirstPaymentAgreementToggle(agreement.id, event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-cream-200 text-brand-500 focus:ring-brand-500" />
                     <span>{agreement.label}{agreement.required ? <span className="ml-1 text-red-600">*</span> : null}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-indigo-50 p-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Subscription Preferences</h3>
-              <label className="flex items-start gap-3 text-sm text-slate-700">
-                <input type="checkbox" checked={autoRenewEnabled} onChange={(e) => setAutoRenewEnabled(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
+            <div className="rounded-lg border border-cream-200 bg-brand-50 p-4">
+              <h3 className="text-sm font-semibold text-brand-900 mb-3">Subscription Preferences</h3>
+              <label className="flex items-start gap-3 text-sm text-cream-800/80">
+                <input type="checkbox" checked={autoRenewEnabled} onChange={(e) => setAutoRenewEnabled(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-cream-200 text-brand-500 focus:ring-brand-500" />
                 <div className="flex-1">
-                  <span className="font-medium text-slate-900">Enable auto-renewal</span>
-                  <p className="mt-1 text-xs text-slate-600">
+                  <span className="font-medium text-brand-900">Enable auto-renewal</span>
+                  <p className="mt-1 text-xs text-cream-800/70">
                     {autoRenewEnabled ? "Your subscription will automatically renew at the end of each billing cycle. You can manage or cancel anytime from your account settings." : "Your subscription will expire at the end of the current billing cycle. You'll need to manually renew to continue using the service."}
                   </p>
                 </div>
@@ -955,8 +955,8 @@ const PricingPage = () => {
           </div>
           {firstPaymentAgreementError ? <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{firstPaymentAgreementError}</div> : null}
           <div className="flex justify-end gap-3">
-            <button onClick={() => setShowFirstPaymentModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
-            <button onClick={handleConfirmFirstPaymentAgreements} disabled={!hasAcceptedRequiredFirstPaymentAgreements()} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">Continue to Payment</button>
+            <button onClick={() => setShowFirstPaymentModal(false)} className="px-4 py-2 text-sm font-medium text-cream-800/80 border border-cream-200 rounded-lg hover:bg-cream-50 transition-colors">Cancel</button>
+            <button onClick={handleConfirmFirstPaymentAgreements} disabled={!hasAcceptedRequiredFirstPaymentAgreements()} className="px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">Continue to Payment</button>
           </div>
         </DialogContent>
       </Dialog>

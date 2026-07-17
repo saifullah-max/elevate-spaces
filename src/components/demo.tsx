@@ -64,9 +64,16 @@ interface DemoProps {
     isDemo: boolean;
     demoSessionReady: boolean;
   }) => void;
+  initialFiles?: File[];
+  /**
+   * When true, hides the marketing intro (STEPS diagram, "Don't Just List a
+   * Property" heading) and the dark workspace header so the component can be
+   * embedded inside the Studio shell.
+   */
+  embedded?: boolean;
 }
 
-export default function Demo({ onCreditsUpdate }: DemoProps) {
+export default function Demo({ onCreditsUpdate, initialFiles, embedded = false }: DemoProps) {
   // Move selectedImageIdx state to Demo
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [showBonusModal, setShowBonusModal] = useState(false);
@@ -281,6 +288,15 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
       image.src = url;
     });
   }, [previewImageUrls]);
+
+  // Seed uploaded files handed off from the Home page dropzone.
+  useEffect(() => {
+    if (!initialFiles || initialFiles.length === 0) return;
+    setSelectedFiles(initialFiles);
+    setFile(initialFiles[0] ?? null);
+    setSelectedPhotoIdx(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFiles]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1131,12 +1147,13 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
           </div>
         )}
 
+        {!embedded && (<>
         <div className="max-w-5xl mx-auto mb-8 animate-fade-in">
           <h3 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-center mb-8">STEPS :</h3>
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
-            <div className="bg-white border border-indigo-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
-              <p className="text-xs font-semibold text-indigo-700">Step 1</p>
-              <p className="text-sm font-bold text-slate-800">Upload Photo</p>
+            <div className="bg-white border border-brand-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
+              <p className="text-xs font-semibold text-brand-600">Step 1</p>
+              <p className="text-sm font-bold text-brand-900">Upload Photo</p>
             </div>
             <svg
               className="hidden md:block w-14 h-10 opacity-80 rotate-155"
@@ -1164,9 +1181,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                 strokeLinecap="round"
               />
             </svg>
-            <div className="bg-white border border-indigo-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
-              <p className="text-xs font-semibold text-indigo-700">Step 2</p>
-              <p className="text-sm font-bold text-slate-800">Choose Area & Style</p>
+            <div className="bg-white border border-brand-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
+              <p className="text-xs font-semibold text-brand-600">Step 2</p>
+              <p className="text-sm font-bold text-brand-900">Choose Area & Style</p>
             </div>
             <svg
               className="hidden md:block w-14 h-10 opacity-80 rotate-155"
@@ -1194,40 +1211,43 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                 strokeLinecap="round"
               />
             </svg>
-            <div className="bg-white border border-indigo-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
-              <p className="text-xs font-semibold text-indigo-700">Step 3</p>
-              <p className="text-sm font-bold text-slate-800">Generate / Restage</p>
+            <div className="bg-white border border-brand-100 rounded-xl px-4 py-3 min-w-44 text-center shadow-sm">
+              <p className="text-xs font-semibold text-brand-600">Step 3</p>
+              <p className="text-sm font-bold text-brand-900">Generate / Restage</p>
             </div>
           </div>
         </div>
 
         <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-semibold mb-6 border border-indigo-100 animate-slide-down">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 text-brand-600 text-sm font-semibold mb-6 border border-brand-100 animate-slide-down">
             <div className="flex items-center justify-center w-4 h-4 rounded-full">
               <Sparkles className="w-4 h-4" />
             </div>
             <span>For Sales &amp; Rentals</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-3 animate-slide-up">
+          <h2 className="text-2xl sm:text-3xl font-bold text-brand-900 tracking-tight mb-3 animate-slide-up">
             Don't Just List a Property. Showcase Potential.
           </h2>
-          <p className="text-base text-slate-600 mb-8 animate-fade-in delay-300">
+          <p className="text-base text-cream-800/60 mb-8 animate-fade-in delay-300">
             AI Staging, Virtual Renovation &amp; Furnishing for modern real estate.
           </p>
         </div>
+        </>)}
 
-        <div className="mt-8 max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-fade-in delay-500">
-          <div className="bg-slate-900 p-4 text-white flex justify-between items-center px-6">
+        <div className={embedded ? "max-w-6xl mx-auto animate-fade-in" : "mt-8 max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-cream-200 animate-fade-in delay-500"}>
+          {!embedded && (
+          <div className="bg-brand-900 p-4 text-white flex justify-between items-center px-6">
             <span className="font-bold flex items-center gap-2">
               <Monitor className="w-4 h-4" />
               <span id="workspace-title">Instant AI Staging</span>
             </span>
           </div>
+          )}
 
           <div className="grid lg:grid-cols-3 relative">
             <div
               ref={leftPanelRef}
-              className="p-4 border-r border-slate-200 bg-linear-to-b from-slate-50 to-white flex flex-col gap-3 relative overflow-y-auto"
+              className="p-4 border-r border-cream-200 bg-linear-to-b from-cream-50 to-white flex flex-col gap-3 relative overflow-y-auto"
               style={imageAreaHeight ? { height: imageAreaHeight } : undefined}
             >
               {(file || (stagedImageUrls && stagedImageUrls.length > 0)) && (
@@ -1238,24 +1258,24 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   </svg>
                 </div>
               )}
-              <span className="text-md font-medium text-indigo-700 ">
+              <span className="text-md font-medium text-brand-600 ">
                 *Each staging provides 3 different variants
               </span>
-              <span className="text-xs text-slate-600">
+              <span className="text-xs text-cream-800/60">
                 Your staging quality is based on the resolution of the image you upload.
               </span>
               {resolutionInsight && (
                 <div>
-                  <span className="text-xs text-indigo-700 font-medium">{resolutionInsight}</span>
+                  <span className="text-xs text-brand-600 font-medium">{resolutionInsight}</span>
                   {recommendedResolution && (
-                    <div className="mt-1 space-y-1 text-xs text-slate-600">
+                    <div className="mt-1 space-y-1 text-xs text-cream-800/60">
                       <div>
                         Recommended resolution: <span className="font-semibold">{recommendedResolution}</span>. To fix, upload a higher-resolution image or choose a different photo.
                       </div>
                       <button
                         type="button"
                         onClick={openCustomStylingModal}
-                        className="text-left font-semibold text-indigo-600 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-700"
+                        className="text-left font-semibold text-brand-500 underline decoration-brand-100 underline-offset-2 hover:text-brand-600"
                       >
                         These are marked in the image modal.
                       </button>
@@ -1265,13 +1285,13 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               )}
 
               {/* Upload Section */}
-              <div className="bg-white rounded-xl shadow border border-slate-100 p-3 mb-1 flex flex-col gap-1">
+              <div className="bg-white border border-cream-200 rounded-2xl p-5 mb-1 flex flex-col gap-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">1</span>
-                  <UploadCloud className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">Upload Photo</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-500 text-white text-xs font-bold shrink-0">1</span>
+                  <UploadCloud className="w-5 h-5 text-brand-500" />
+                  <span className="text-sm font-bold text-cream-800/80">Upload Photo</span>
                 </div>
-                <span className="text-xs text-slate-500 mb-1">JPG/PNG, single or multiple images</span>
+                <span className="text-xs text-cream-800/50 mb-1">JPG/PNG, single or multiple images</span>
                 <UploadArea
                   limitReached={shouldEnforceDemoLimit}
                   setFile={setFile}
@@ -1297,19 +1317,19 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               </div>
 
               {/* Credits & Project */}
-              <details open className="bg-white rounded-xl shadow border border-slate-100 p-3">
-                <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
-                  <Sparkles className="w-4 h-4 text-indigo-500" />
+              <details open className="bg-white border border-cream-200 rounded-2xl p-5">
+                <summary className="flex items-center gap-2 text-sm font-bold text-cream-800/80 cursor-pointer list-none">
+                  <Sparkles className="w-4 h-4 text-brand-500" />
                   <span>Credits & Project</span>
-                  <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
+                  <ChevronDown className="w-4 h-4 text-cream-800/50 ml-auto" />
                 </summary>
                 <div className="mt-3 flex flex-col gap-3">
                   {isLoggedIn ? (
                     <>
                       <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-slate-600 mb-1">Credit Source</label>
+                        <label className="text-xs font-semibold text-cream-800/60 mb-1">Credit Source</label>
 
-                        <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${creditSource === 'personal' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'}`}>
+                        <label className={`flex items-center justify-between p-2.5 bg-cream-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-cream-100 ${creditSource === 'personal' ? 'border-brand-500 bg-brand-50' : 'border-cream-200'}`}>
                           <div className="flex items-center gap-2">
                             <input
                               type="radio"
@@ -1317,25 +1337,25 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                               value="personal"
                               checked={creditSource === 'personal'}
                               onChange={() => handleCreditSourceChange('personal')}
-                              className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                              className="w-4 h-4 text-brand-500 focus:ring-brand-500"
                             />
-                            <span className="text-sm font-medium text-slate-700">Personal Credits</span>
+                            <span className="text-sm font-medium text-cream-800/80">Personal Credits</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-sm font-bold text-indigo-600">{displayPersonalCredits}</span>
+                            <span className="text-sm font-bold text-brand-500">{displayPersonalCredits}</span>
                             {demoCreditsRemaining > 0 && (
-                              <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                              <p className="text-[11px] text-cream-800/50 flex items-center gap-1">
                                 Free demo credits included
                                 <InfoHint
                                   text="If you still have unused demo credits when you purchase any paid plan, those unused demo credits are converted into real credits and added to your wallet automatically."
-                                  iconClassName="text-indigo-500 h-3.5 w-3.5"
+                                  iconClassName="text-brand-500 h-3.5 w-3.5"
                                 />
                               </p>
                             )}
                           </div>
                         </label>
 
-                        <label className={`flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-slate-100 ${creditSource === 'team' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200'}`}>
+                        <label className={`flex items-center justify-between p-2.5 bg-cream-50 rounded-lg border-2 cursor-pointer transition-all hover:bg-cream-100 ${creditSource === 'team' ? 'border-brand-500 bg-brand-50' : 'border-cream-200'}`}>
                           <div className="flex items-center gap-2">
                             <input
                               type="radio"
@@ -1343,9 +1363,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                               value="team"
                               checked={creditSource === 'team'}
                               onChange={() => handleCreditSourceChange('team')}
-                              className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                              className="w-4 h-4 text-brand-500 focus:ring-brand-500"
                             />
-                            <span className="text-sm font-medium text-slate-700">Team Credits</span>
+                            <span className="text-sm font-medium text-cream-800/80">Team Credits</span>
                           </div>
                         </label>
 
@@ -1368,9 +1388,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200">
+                      <div className="pt-2 border-t border-cream-200">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-slate-600">Default Project</span>
+                          <span className="text-xs font-semibold text-cream-800/60">Default Project</span>
                           {defaultProject && (
                             <button
                               onClick={() => {
@@ -1402,12 +1422,12 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                         )}
 
                         {creditSource !== 'team' && !hasAnyActiveSubscription && (
-                          <div className="mt-2 rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-3">
+                          <div className="mt-2 rounded-lg border border-brand-100 bg-gradient-to-br from-brand-50 to-purple-50 p-3">
                             <div className="flex items-start gap-2">
-                              <Sparkles className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                              <Sparkles className="w-4 h-4 text-brand-500 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
-                                <p className="text-sm font-semibold text-indigo-900">Unlock full staging power</p>
-                                <p className="mt-1 text-xs text-indigo-800 leading-relaxed">
+                                <p className="text-sm font-semibold text-brand-900">Unlock full staging power</p>
+                                <p className="mt-1 text-xs text-brand-600 leading-relaxed">
                                   Pick a plan pro or up to remove watermarks, get higher-quality renders, save unlimited projects, and stage at full resolution.
                                 </p>
                                 <a
@@ -1419,7 +1439,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                                       pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     }
                                   }}
-                                  className="mt-2 inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 transition"
+                                  className="mt-2 inline-flex items-center gap-1 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-600 transition"
                                 >
                                   See plans →
                                 </a>
@@ -1431,19 +1451,19 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                     </>
                   ) : (
                     <>
-                      <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
+                      <div className="rounded-xl border border-brand-100 bg-brand-50 p-3">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-indigo-600" />
-                          <p className="text-sm font-semibold text-indigo-900">Guest Demo Credits</p>
+                          <Sparkles className="w-4 h-4 text-brand-500" />
+                          <p className="text-sm font-semibold text-brand-900">Guest Demo Credits</p>
                         </div>
-                        <p className="mt-1 text-sm text-indigo-800">
+                        <p className="mt-1 text-sm text-brand-600">
                           You have <b>{mounted ? demoCreditsRemaining : '—'} free demo credits</b> left on this device this month.
                         </p>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200">
+                      <div className="pt-2 border-t border-cream-200">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-slate-600">Project</span>
+                          <span className="text-xs font-semibold text-cream-800/60">Project</span>
                         </div>
                         <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-lg">
                           <p className="text-xs text-amber-700">Sign up or log in to save and reuse projects across sessions.</p>
@@ -1456,20 +1476,20 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
 
               {/* Area Type & Options */}
               {!isMultiImageMode && (
-                <details className="bg-white rounded-xl shadow border border-slate-100 p-3">
-                  <summary className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer list-none">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">2</span>
-                    <Settings className="w-5 h-5 text-indigo-500" />
+                <details className="bg-white border border-cream-200 rounded-2xl p-5">
+                  <summary className="flex items-center gap-2 text-sm font-bold text-cream-800/80 cursor-pointer list-none">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-500 text-white text-xs font-bold shrink-0">2</span>
+                    <Settings className="w-5 h-5 text-brand-500" />
                     <span>Area & Style</span>
-                    <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />
+                    <ChevronDown className="w-4 h-4 text-cream-800/50 ml-auto" />
                   </summary>
                   <div className="mt-3 flex flex-col gap-2">
                     <div className="flex gap-2 mb-2">
                       <button
                         type="button"
                         className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${areaType === "interior"
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                          ? "bg-brand-500 text-white border-brand-500 shadow"
+                          : "bg-white text-cream-800/80 border-cream-200 hover:bg-cream-100"
                           }`}
                         onClick={() => {
                           setAreaType("interior");
@@ -1481,8 +1501,8 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                       <button
                         type="button"
                         className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${areaType === "exterior"
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                          ? "bg-brand-500 text-white border-brand-500 shadow"
+                          : "bg-white text-cream-800/80 border-cream-200 hover:bg-cream-100"
                           }`}
                         onClick={() => {
                           setAreaType("exterior");
@@ -1494,7 +1514,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                     </div>
 
                     {isMultiImageMode && (
-                      <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
+                      <div className="bg-white border border-cream-200 rounded-2xl p-5 flex flex-col gap-2">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
@@ -1502,7 +1522,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                             onChange={(e) => setUseCustomStyling(e.target.checked)}
                             className="w-4 h-4 rounded"
                           />
-                          <span className="text-md font-semibold text-slate-700">
+                          <span className="text-md font-semibold text-cream-800/80">
                             Customize styling for each image
                           </span>
                         </label>
@@ -1510,7 +1530,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                           <button
                             type="button"
                             onClick={openCustomStylingModal}
-                            className="w-full px-3 py-2 text-md font-semibold text-indigo-600 border border-indigo-300 rounded-lg hover:bg-indigo-50 transition-all"
+                            className="w-full px-3 py-2 text-md font-semibold text-brand-500 border border-brand-100 rounded-lg hover:bg-brand-50 transition-all"
                           >
                             View All & Customize
                           </button>
@@ -1561,28 +1581,28 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               )}
 
               {/* Prompt & Action with mode toggle */}
-              <div className="bg-white rounded-xl shadow border border-slate-100 p-3 flex flex-col gap-2">
+              <div className="bg-white border border-cream-200 rounded-2xl p-5 flex flex-col gap-2">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">3</span>
-                  <Sparkles className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm font-bold text-slate-700">Refine & Generate</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-500 text-white text-xs font-bold shrink-0">3</span>
+                  <Sparkles className="w-5 h-5 text-brand-500" />
+                  <span className="text-sm font-bold text-cream-800/80">Refine & Generate</span>
                   <InfoHint
                     text="Single image staging may take up to 40-45 seconds on average."
                     className="inline-flex"
-                    iconClassName="text-indigo-500 h-4 w-4"
+                    iconClassName="text-brand-500 h-4 w-4"
                   />
                 </div>
                 <div className="flex gap-2 mb-2">
                   <button
                     type="button"
-                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${mode === 'generate' ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}`}
+                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${mode === 'generate' ? 'bg-brand-500 text-white border-brand-500 shadow' : 'bg-white text-cream-800/80 border-cream-200 hover:bg-cream-100'}`}
                     onClick={() => setMode('generate')}
                   >
                     Generate New Image
                   </button>
                   <button
                     type="button"
-                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${mode === 'restage' ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}`}
+                    className={`flex-1 px-3 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 ${mode === 'restage' ? 'bg-brand-500 text-white border-brand-500 shadow' : 'bg-white text-cream-800/80 border-cream-200 hover:bg-cream-100'}`}
                     onClick={() => setMode('restage')}
                     disabled={!stagedImageUrls.length}
                   >
@@ -1590,18 +1610,18 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   </button>
                 </div>
                 <div className="mb-2 flex items-center justify-start">
-                  <label className="text-sm font-medium text-slate-700">Prompt</label>
+                  <label className="text-sm font-medium text-cream-800/80">Prompt</label>
                   <InfoHint
                     text="Custom prompts are applied very literally. To get the best results, keep your prompt short and focused, but make sure it includes all essential instructions. The AI will primarily follow the changes you specify, so avoid long or repetitive prompts."
                     className="inline-flex"
-                    iconClassName="text-indigo-500 h-4 w-4 ml-4"
+                    iconClassName="text-brand-500 h-4 w-4 ml-4"
                     position="right"
                   />
                 </div>
 
                 <textarea
                   placeholder={mode === 'restage' ? "Enter prompt to restage (required)" : "e.g. kid friendly, bright colors (optional)"}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-cream-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   maxLength={100}
@@ -1609,7 +1629,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   disabled={mode === 'restage' && !stagedImageUrls.length}
                   rows={2}
                 />
-                <div className="text-xs text-slate-400 mt-1 text-right">{(prompt || '').length} / 100</div>
+                <div className="text-xs text-cream-800/40 mt-1 text-right">{(prompt || '').length} / 100</div>
                 <label className="flex items-center gap-2 mt-2 select-none">
                   <input
                     type="checkbox"
@@ -1622,10 +1642,10 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                       }
                     }}
                   />
-                  <span className="text-xs text-slate-700">Remove all furniture (empty room)</span>
+                  <span className="text-xs text-cream-800/80">Remove all furniture (empty room)</span>
                 </label>
                 <Button
-                  className="w-full text-sm font-bold mt-1 h-11"
+                  className="w-full bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold mt-1 h-11 rounded-xl shadow-sm"
                   onClick={async () => {
                     if (shouldRequireTeamSelectionForStaging) {
                       setError('Please select a team before staging with team credits.');
@@ -1710,34 +1730,34 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   <BonusBanner position="bottom" afterUpload={true} />
                 )}
                 {singleStageStartTs && !isMultiImageMode && (
-                  <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
-                    <p className="text-xs font-semibold text-indigo-800">
+                  <div className="mt-3 p-3 rounded-lg border border-brand-100 bg-brand-50">
+                    <p className="text-xs font-semibold text-brand-600">
                       {mode === 'restage' ? 'Restaging your image…' : 'Staging your image…'}
                     </p>
-                    <p className="text-[11px] text-indigo-700 mt-1">
+                    <p className="text-[11px] text-brand-600 mt-1">
                       Estimated time: ~{SINGLE_STAGE_ESTIMATE_SEC}s (remaining {singleRemainingSec}s, elapsed {singleElapsedSec}s)
                     </p>
-                    <p className="text-[11px] text-indigo-700 mt-1">
+                    <p className="text-[11px] text-brand-600 mt-1">
                       Please keep this page open while staging runs.
                     </p>
                   </div>
                 )}
 
                 {(multiProgress.active || isBatchProcessing) && imagesToStageCount > 1 && (
-                  <div className="mt-3 p-3 rounded-lg border border-indigo-200 bg-indigo-50">
-                    <p className="text-xs font-semibold text-indigo-800">
+                  <div className="mt-3 p-3 rounded-lg border border-brand-100 bg-brand-50">
+                    <p className="text-xs font-semibold text-brand-600">
                       Processing {multiProgress.totalImages} images ({multiProgress.completedVariants}/{multiProgress.expectedTotalVariants} variants {isBatchProcessing && !multiProgress.active ? '- preparing next batch...' : ''})
                     </p>
-                    <div className="w-full h-2 bg-indigo-100 rounded-full overflow-hidden mt-2">
+                    <div className="w-full h-2 bg-brand-100 rounded-full overflow-hidden mt-2">
                       <div
-                        className="h-2 bg-indigo-600 transition-all duration-300"
+                        className="h-2 bg-brand-500 transition-all duration-300"
                         style={{ width: `${progressPct}%` }}
                       />
                     </div>
-                    <p className="text-[11px] text-indigo-700 mt-2">
+                    <p className="text-[11px] text-brand-600 mt-2">
                       Estimated remaining time: {estimatedRemainingSeconds}s (elapsed {elapsedSeconds}s)
                     </p>
-                    <p className="text-[11px] text-indigo-700 mt-1">
+                    <p className="text-[11px] text-brand-600 mt-1">
                       Please keep this page open while staging runs. Closing the page may impact overall processing performance.
                     </p>
                   </div>
@@ -1769,7 +1789,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
             <div
               ref={imageAreaRef}
               id="slider-container"
-              className="border-t-4 border-blue-600 md:border-t-white lg:col-span-2 relative aspect-video bg-slate-100 overflow-hidden select-none min-h-80"
+              className="border-t-4 border-blue-600 md:border-t-white lg:col-span-2 relative aspect-video bg-cream-100 overflow-hidden select-none min-h-80"
               style={{ minWidth: 0 }}
             >
               <img
@@ -1814,7 +1834,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                         downloadImage(url);
                       }}
                     >
-                      <Download className="w-6 h-6 text-indigo-600" />
+                      <Download className="w-6 h-6 text-brand-500" />
                     </button>
                     <button
                       className="bg-white bg-opacity-80 rounded-full p-2 shadow hover:bg-opacity-100 transition"
@@ -1825,7 +1845,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                         setFullscreenImageUrl(url);
                       }}
                     >
-                      <Maximize2 className="w-6 h-6 text-indigo-600" />
+                      <Maximize2 className="w-6 h-6 text-brand-500" />
                     </button>
                   </div>
                   {isDemo && !isWatermarkFreeUpload && hasGeneratedResults && (
@@ -1876,24 +1896,24 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                 style={{ left: `${sliderPosition}%` }}
               >
                 <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-indigo-600 cursor-ew-resize"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-brand-500 cursor-ew-resize"
                   onMouseDown={handleStart}
                   onTouchStart={handleStart}
                   style={{ zIndex: 20 }}
                 >
-                  <MoveHorizontal className="w-5 h-5 text-indigo-600" />
+                  <MoveHorizontal className="w-5 h-5 text-brand-500" />
                 </div>
               </div>
 
               {restageLoading && (
                 <div className="absolute inset-0 z-30 bg-black/35 flex items-center justify-center">
                   <div className="bg-white/95 rounded-xl px-4 py-3 shadow-lg flex items-center gap-2">
-                    <Loader className="w-5 h-5 animate-spin text-indigo-600" />
+                    <Loader className="w-5 h-5 animate-spin text-brand-500" />
                     <div className="flex flex-col leading-tight">
-                      <span className="text-sm font-semibold text-slate-800">
+                      <span className="text-sm font-semibold text-brand-900">
                         Restaging {isMultiImageMode ? `photo ${selectedPhotoIdx + 1} of ${Math.max(1, totalStagedPhotos)}` : "image"}...
                       </span>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-cream-800/50">
                         {isMultiImageMode ? "This is the currently selected staged image." : "This is the currently selected image."}
                       </span>
                     </div>
@@ -1910,20 +1930,20 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-indigo-600" />
+              <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-brand-500" />
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Generate New Image</h2>
+              <h2 className="text-xl font-bold text-brand-900">Generate New Image</h2>
             </div>
 
-            <div className="space-y-3 mb-6 text-sm text-slate-700">
-              <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+            <div className="space-y-3 mb-6 text-sm text-cream-800/80">
+              <div className="flex items-start gap-3 p-3 bg-brand-50 rounded-lg border border-brand-100">
                 <span className="text-lg"><Folder className="text-amber-400" /></span>
                 <div>
-                  <p className="font-semibold text-indigo-900">
+                  <p className="font-semibold text-brand-900">
                     {imagesToStageCount || 1} upload{(imagesToStageCount || 1) > 1 ? 's' : ''} = {creditsToUseCount || 1} credit{(creditsToUseCount || 1) > 1 ? 's' : ''}
                   </p>
-                  <p className="text-indigo-800 mt-1">
+                  <p className="text-brand-600 mt-1">
                     Each image you upload is transformed into 3 staged/furnished versions.
                     Credits are charged per upload, not per generated image.
                   </p>
@@ -1939,7 +1959,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-6 p-3 bg-slate-100 rounded-lg">
+            <div className="flex items-center gap-2 mb-6 p-3 bg-cream-100 rounded-lg">
               <input
                 type="checkbox"
                 id="dontShowAgain"
@@ -1950,9 +1970,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                     localStorage.setItem('elevate_hide_generation_confirmation', e.target.checked.toString());
                   }
                 }}
-                className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                className="w-4 h-4 rounded border-cream-200 cursor-pointer"
               />
-              <label htmlFor="dontShowAgain" className="text-sm text-slate-700 cursor-pointer flex-1">
+              <label htmlFor="dontShowAgain" className="text-sm text-cream-800/80 cursor-pointer flex-1">
                 Don't show this again
               </label>
             </div>
@@ -1964,9 +1984,9 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                 checked={aiConsentAcknowledged}
                 onChange={(e) => void handleAiConsentChange(e.target.checked)}
                 disabled={aiConsentSaving}
-                className="mt-1 w-4 h-4 rounded border-slate-300 cursor-pointer"
+                className="mt-1 w-4 h-4 rounded border-cream-200 cursor-pointer"
               />
-              <label htmlFor="aiConsent" className="text-sm text-slate-700 cursor-pointer flex-1">
+              <label htmlFor="aiConsent" className="text-sm text-cream-800/80 cursor-pointer flex-1">
                 I understand this is AI-generated staging and it may make mistakes. Elevate Spaces is not responsible for any errors in the generated output.
               </label>
             </div>
@@ -1977,7 +1997,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   setShowConfirmation(false);
                   setPendingGenerationAction(null);
                 }}
-                className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition"
+                className="flex-1 px-4 py-2 border border-cream-200 text-cream-800/80 font-semibold rounded-lg hover:bg-cream-50 transition"
               >
                 Cancel
               </button>
@@ -2004,7 +2024,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   setPendingGenerationAction(null);
                 }}
                 disabled={!aiConsentAcknowledged || aiConsentSaving}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition disabled:bg-slate-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 transition disabled:bg-cream-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Generate & Use {creditsToUseCount || 1} Credit{(creditsToUseCount || 1) > 1 ? 's' : ''}
               </button>
@@ -2017,18 +2037,18 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-indigo-600" />
+              <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-brand-500" />
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Remove All Furniture</h2>
+              <h2 className="text-xl font-bold text-brand-900">Remove All Furniture</h2>
             </div>
-            <p className="text-sm text-slate-700 mb-6">
+            <p className="text-sm text-cream-800/80 mb-6">
               When enabled, the AI will remove all furniture from the room, leaving it empty. This can change lighting and shadows.
             </p>
             <div className="flex justify-end">
               <button
                 onClick={() => setShowRemoveFurnitureInfo(false)}
-                className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+                className="px-4 py-2 bg-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 transition"
               >
                 Got it
               </button>
@@ -2057,7 +2077,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
       <div className="max-w-2xl mx-auto mt-4 flex flex-col gap-4 px-4">
         {isMultiImageMode && totalStagedPhotos > 0 && (
           <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-slate-700">
+            <div className="text-sm font-semibold text-cream-800/80">
               Photo {selectedPhotoIdx + 1} of {totalStagedPhotos}
             </div>
 
@@ -2065,7 +2085,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               <button
                 onClick={() => setSelectedPhotoIdx(Math.max(0, selectedPhotoIdx - 1))}
                 disabled={selectedPhotoIdx === 0}
-                className="px-3 py-1 rounded bg-slate-200 text-slate-700 disabled:opacity-50 hover:bg-slate-300 transition text-xs font-semibold"
+                className="px-3 py-1 rounded bg-cream-200 text-cream-800/80 disabled:opacity-50 hover:bg-cream-200 transition text-xs font-semibold"
               >
                 ← Prev
               </button>
@@ -2082,8 +2102,8 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                         setSelectedImageIdx(0);
                       }}
                       className={`w-12 h-12 rounded border-2 transition overflow-hidden ${selectedPhotoIdx === photoIdx
-                        ? 'border-indigo-600 shadow-lg'
-                        : 'border-slate-300 hover:border-slate-400'
+                        ? 'border-brand-500 shadow-lg'
+                        : 'border-cream-200 hover:border-cream-800/40'
                         }`}
                     >
                       {photoUrls[0] && (
@@ -2101,7 +2121,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
               <button
                 onClick={() => setSelectedPhotoIdx(Math.min(totalStagedPhotos - 1, selectedPhotoIdx + 1))}
                 disabled={selectedPhotoIdx === totalStagedPhotos - 1}
-                className="px-3 py-1 rounded bg-slate-200 text-slate-700 disabled:opacity-50 hover:bg-slate-300 transition text-xs font-semibold"
+                className="px-3 py-1 rounded bg-cream-200 text-cream-800/80 disabled:opacity-50 hover:bg-cream-200 transition text-xs font-semibold"
               >
                 Next →
               </button>
@@ -2113,7 +2133,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
         {(hasGeneratedResults || loading || restageLoading || multiProgress.active || isBatchProcessing) && (
         <div className="flex flex-col items-center lg:flex-row lg:items-center lg:justify-center gap-2">
           {hasGeneratedResults && (
-            <div className="text-sm font-semibold text-slate-700 mr-8">
+            <div className="text-sm font-semibold text-cream-800/80 mr-8">
               {isMultiImageMode
                 ? `Version ${selectedImageIdx + 1} for Photo ${selectedPhotoIdx + 1}`
                 : `Version ${selectedImageIdx + 1}`}
@@ -2131,7 +2151,7 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                   type="button"
                   onClick={() => setSelectedImageIdx(idx)}
                   disabled={!variantUrl}
-                  className="relative w-20 h-14 rounded border-2 flex items-center justify-center bg-slate-50 transition-all overflow-hidden"
+                  className="relative w-20 h-14 rounded border-2 flex items-center justify-center bg-cream-50 transition-all overflow-hidden"
                   style={{
                     borderColor: selectedImageIdx === idx ? '#6366f1' : '#e5e7eb',
                     boxShadow: selectedImageIdx === idx ? '0 0 0 2px #6366f1' : undefined,
@@ -2147,11 +2167,11 @@ export default function Demo({ onCreditsUpdate }: DemoProps) {
                       decoding="async"
                     />
                   ) : isVariantLoading ? (
-                    <div className="flex h-full w-full items-center justify-center bg-slate-50">
-                      <Loader className="h-4 w-4 animate-spin text-indigo-600" />
+                    <div className="flex h-full w-full items-center justify-center bg-cream-50">
+                      <Loader className="h-4 w-4 animate-spin text-brand-500" />
                     </div>
                   ) : (
-                    <div className="h-full w-full bg-linear-to-br from-slate-100 via-white to-slate-100" />
+                    <div className="h-full w-full bg-linear-to-br from-cream-100 via-white to-cream-100" />
                   )}
                 </button>
               );

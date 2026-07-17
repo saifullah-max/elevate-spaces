@@ -414,23 +414,23 @@ export function PhotographerApplicationWorkflow() {
 
   if (loadingProfile) {
     return (
-      <div className="flex min-h-80 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+      <div className="flex min-h-80 items-center justify-center rounded-2xl border border-cream-200 bg-white shadow-sm">
+        <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
       </div>
     );
   }
 
   if (!isAuthed) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
         <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600">
+          <div className="rounded-xl bg-brand-50 p-3 text-brand-500">
             <Sparkles className="h-5 w-5" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-slate-900">Sign in to apply as a photographer</h3>
-            <p className="text-sm text-slate-600">You need an account before submitting your photographer profile.</p>
-            <Link href="/sign-in" className="inline-flex text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:underline">
+            <h3 className="text-lg font-semibold text-brand-900">Sign in to apply as a photographer</h3>
+            <p className="text-sm text-cream-800/70">You need an account before submitting your photographer profile.</p>
+            <Link href="/sign-in" className="inline-flex text-sm font-semibold text-brand-500 hover:text-brand-600 hover:underline">
               Go to sign in
             </Link>
           </div>
@@ -441,16 +441,16 @@ export function PhotographerApplicationWorkflow() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Photographer application</h2>
-            <p className="mt-1 text-sm text-slate-600">Add service areas, social links, documents, portfolio, pricing, and refund policy.</p>
+            <h2 className="text-2xl font-bold text-brand-900">Photographer application</h2>
+            <p className="mt-1 text-sm text-cream-800/70">Add service areas, social links, documents, portfolio, pricing, and refund policy.</p>
           </div>
           <button
             type="button"
             onClick={() => void loadProfile()}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-cream-200 px-4 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-50"
           >
             <RefreshCw className="h-4 w-4" /> Refresh status
           </button>
@@ -458,7 +458,7 @@ export function PhotographerApplicationWorkflow() {
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <StatusBadge mode={mode} />
-          {profile?.submission_count ? <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Submission #{profile.submission_count}</span> : null}
+          {profile?.submission_count ? <span className="rounded-full bg-cream-100 px-3 py-1 text-xs font-semibold text-cream-800/80">Submission #{profile.submission_count}</span> : null}
         </div>
 
         {mode === "rejected" && (
@@ -470,9 +470,9 @@ export function PhotographerApplicationWorkflow() {
         )}
 
         {mode === "locked" && profile?.application_status !== "APPROVED" && (
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="mt-4 rounded-xl border border-cream-200 bg-cream-50 p-4 text-sm text-cream-800/80">
             <div className="flex items-center gap-2 font-semibold">
-              <Lock className="h-4 w-4 text-slate-500" /> Your application is currently locked.
+              <Lock className="h-4 w-4 text-cream-800/50" /> Your application is currently locked.
             </div>
           </div>
         )}
@@ -488,7 +488,7 @@ export function PhotographerApplicationWorkflow() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.85fr)]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        <section className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <FieldInput label="Business name" value={applicationForm.businessName} onChange={(value) => handleApplicationChange("businessName", value)} disabled={!isApplicationEditable} placeholder="Your business or studio name" />
             <FieldInput label="Photographer type" value={applicationForm.photographerType} onChange={(value) => handleApplicationChange("photographerType", value)} disabled={!isApplicationEditable} placeholder="Events, interiors, drone" />
@@ -550,7 +550,7 @@ export function PhotographerApplicationWorkflow() {
 
           {isApplicationEditable ? (
             <div className="mt-5 flex flex-wrap gap-3">
-              <Button onClick={handleSubmitApplication} disabled={savingApplication} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button onClick={handleSubmitApplication} disabled={savingApplication} className="bg-brand-500 hover:bg-brand-600">
                 {savingApplication ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                 {mode === "rejected" ? "Resubmit application" : "Submit application"}
               </Button>
@@ -570,7 +570,7 @@ export function PhotographerApplicationWorkflow() {
               />
 
               <div className="mt-4 rounded-xl border border-amber-200 bg-white p-4">
-                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <label className="flex items-center gap-2 text-sm font-semibold text-cream-800/80">
                   <Paperclip className="h-4 w-4 text-amber-700" /> Attach images or docs
                 </label>
                 <input
@@ -578,7 +578,7 @@ export function PhotographerApplicationWorkflow() {
                   multiple
                   accept="application/pdf,image/jpeg,image/png,image/webp,.doc,.docx,.txt"
                   onChange={(event) => void handleResponseAttachments(event.target.files)}
-                  className="mt-2 block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-amber-800"
+                  className="mt-2 block w-full text-sm text-cream-800/70 file:mr-4 file:rounded-full file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-amber-800"
                 />
               </div>
 
@@ -592,12 +592,12 @@ export function PhotographerApplicationWorkflow() {
           ) : null}
 
           {responseHistory && responseHistory.length > 0 ? (
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Your previous responses</h4>
+            <section className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-cream-800/50">Your previous responses</h4>
               <div className="mt-4 space-y-4">
                 {responseHistory.map((response, index) => (
-                  <div key={`${response.submittedAt}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted {new Date(response.submittedAt).toLocaleString()}</p>
+                  <div key={`${response.submittedAt}-${index}`} className="rounded-xl border border-cream-200 bg-cream-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Submitted {new Date(response.submittedAt).toLocaleString()}</p>
                     <div className="prose prose-slate mt-3 max-w-none text-sm" dangerouslySetInnerHTML={{ __html: response.contentHtml }} />
                   </div>
                 ))}
@@ -625,13 +625,13 @@ function FieldInput({
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-cream-800/80">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
         placeholder={placeholder}
-        className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+        className="rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-brand-500 disabled:cursor-not-allowed disabled:bg-cream-100 disabled:text-cream-800/50"
       />
     </label>
   );
@@ -652,13 +652,13 @@ function FieldTextarea({
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-cream-800/80">{label}</span>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
         placeholder={placeholder}
-        className="min-h-28 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+        className="min-h-28 rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-brand-500 disabled:cursor-not-allowed disabled:bg-cream-100 disabled:text-cream-800/50"
       />
     </label>
   );
@@ -682,14 +682,14 @@ function ArrayField({
   disabled?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-xl border border-cream-200 bg-cream-50 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <label className="text-sm font-semibold text-slate-700">{title}</label>
+        <label className="text-sm font-semibold text-cream-800/80">{title}</label>
         <button
           type="button"
           onClick={onAdd}
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
+          className="inline-flex items-center gap-1 rounded-md border border-cream-200 bg-white px-2 py-1 text-xs font-semibold text-cream-800/80 disabled:opacity-60"
         >
           <Plus className="h-3.5 w-3.5" /> Add
         </button>
@@ -702,13 +702,13 @@ function ArrayField({
               onChange={(event) => onChange(index, event.target.value)}
               disabled={disabled}
               placeholder={placeholder}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm"
             />
             <button
               type="button"
               onClick={() => onRemove(index)}
               disabled={disabled || values.length === 1}
-              className="rounded-md border border-slate-300 px-2 text-sm text-slate-600 disabled:opacity-50"
+              className="rounded-md border border-cream-200 px-2 text-sm text-cream-800/70 disabled:opacity-50"
             >
               -
             </button>
@@ -733,14 +733,14 @@ function RefundPolicyField({
   disabled?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-xl border border-cream-200 bg-cream-50 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <label className="text-sm font-semibold text-slate-700">Refund policy rules</label>
+        <label className="text-sm font-semibold text-cream-800/80">Refund policy rules</label>
         <button
           type="button"
           onClick={onAdd}
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
+          className="inline-flex items-center gap-1 rounded-md border border-cream-200 bg-white px-2 py-1 text-xs font-semibold text-cream-800/80 disabled:opacity-60"
         >
           <Plus className="h-3.5 w-3.5" /> Add
         </button>
@@ -753,20 +753,20 @@ function RefundPolicyField({
               onChange={(event) => onChange(index, "hoursBefore", event.target.value)}
               disabled={disabled}
               placeholder="Hours before event"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm"
             />
             <input
               value={rule.refundPercent}
               onChange={(event) => onChange(index, "refundPercent", event.target.value)}
               disabled={disabled}
               placeholder="Refund %"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm"
             />
             <button
               type="button"
               onClick={() => onRemove(index)}
               disabled={disabled || rules.length === 1}
-              className="rounded-md border border-slate-300 px-2 text-sm text-slate-600 disabled:opacity-50"
+              className="rounded-md border border-cream-200 px-2 text-sm text-cream-800/70 disabled:opacity-50"
             >
               -
             </button>
@@ -791,17 +791,17 @@ function FileField({
   disabled?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <label className="block text-sm font-semibold text-slate-700">{title}</label>
+    <div className="rounded-xl border border-cream-200 bg-cream-50 p-4">
+      <label className="block text-sm font-semibold text-cream-800/80">{title}</label>
       <input
         type="file"
         accept="application/pdf,image/jpeg,image/png,image/webp"
         onChange={(event) => onChange(event.target.files?.[0] || null)}
         disabled={disabled}
-        className="mt-2 block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 disabled:opacity-60"
+        className="mt-2 block w-full text-sm text-cream-800/70 file:mr-4 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-600 disabled:opacity-60"
       />
-      <p className="mt-2 text-xs text-slate-500">{hint}</p>
-      {file ? <p className="mt-2 text-xs font-medium text-slate-700">Selected: {file.name}</p> : null}
+      <p className="mt-2 text-xs text-cream-800/50">{hint}</p>
+      {file ? <p className="mt-2 text-xs font-medium text-cream-800/80">Selected: {file.name}</p> : null}
     </div>
   );
 }
@@ -820,32 +820,32 @@ function PortfolioField({
   onRemove: (index: number) => void;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <label className="block text-sm font-semibold text-slate-700">Portfolio images (3 to 5)</label>
+    <div className="rounded-xl border border-cream-200 bg-cream-50 p-4">
+      <label className="block text-sm font-semibold text-cream-800/80">Portfolio images (3 to 5)</label>
       <input
         type="file"
         multiple
         accept="image/jpeg,image/png,image/webp"
         onChange={(event) => onSelect(event.target.files)}
         disabled={disabled || items.length >= 5}
-        className="mt-2 block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 disabled:opacity-60"
+        className="mt-2 block w-full text-sm text-cream-800/70 file:mr-4 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-600 disabled:opacity-60"
       />
       <div className="mt-3 space-y-2">
         {items.map((item, index) => (
           <div key={`${item.file.name}-${index}`} className="grid grid-cols-[1.3fr_1fr_auto] gap-2">
-            <input value={item.file.name} readOnly className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700" />
+            <input value={item.file.name} readOnly className="rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm text-cream-800/80" />
             <input
               value={item.serviceType}
               onChange={(event) => onChangeType(index, event.target.value)}
               disabled={disabled}
               placeholder="Service type"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="rounded-lg border border-cream-200 bg-white px-3 py-2 text-sm"
             />
             <button
               type="button"
               onClick={() => onRemove(index)}
               disabled={disabled}
-              className="rounded-md border border-slate-300 px-2 text-sm text-slate-600 disabled:opacity-50"
+              className="rounded-md border border-cream-200 px-2 text-sm text-cream-800/70 disabled:opacity-50"
             >
               -
             </button>
@@ -868,7 +868,7 @@ function StatusBadge({ mode }: { mode: ApplicationMode }) {
     },
     locked: {
       label: "Locked for review",
-      className: "bg-slate-100 text-slate-700",
+      className: "bg-cream-100 text-cream-800/80",
     },
     needs_more_info: {
       label: "Needs more info",

@@ -181,7 +181,7 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
 
         {loading ? (
           <div className="py-8 flex items-center justify-center">
-            <Loader className="w-6 h-6 animate-spin text-indigo-600" />
+            <Loader className="w-6 h-6 animate-spin text-brand-500" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -211,14 +211,14 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
                     <div className="flex items-center justify-between p-2 border rounded">
                       <div>
                         <div className="font-semibold">{currentPhotographer.user?.name || currentPhotographer.user?.email}</div>
-                        <div className="text-xs text-slate-500">{currentPhotographer.user?.email}</div>
+                        <div className="text-xs text-cream-800/50">{currentPhotographer.user?.email}</div>
                       </div>
                       <Button variant="outline" onClick={confirmRemove} disabled={actionLoading}>
                         {actionLoading ? 'Removing...' : <Trash2 className="w-4 h-4" />}
                       </Button>
                     </div>
                   ) : (
-                    <div className="p-2 text-sm text-slate-600">No photographer assigned yet.</div>
+                    <div className="p-2 text-sm text-cream-800/70">No photographer assigned yet.</div>
                   )}
                 </div>
 
@@ -233,7 +233,7 @@ export default function ProjectPhotographerManager({ open, onOpenChange, project
                       onChange={(e) => setPhotographerEmail(e.target.value)}
                       disabled={actionLoading || !!currentPhotographer}
                     />
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-cream-800/50">
                       If the person already has an account they'll be added immediately and notified by email. Otherwise an invitation email will be sent.
                     </p>
                   </div>

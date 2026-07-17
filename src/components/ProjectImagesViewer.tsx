@@ -148,14 +148,14 @@ export function ProjectImagesViewer({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[96vw] w-[82vw] max-h-[92vh] overflow-hidden p-0 sm:max-w-[96vw]">
-        <div className="flex h-[92vh] flex-col overflow-hidden rounded-lg bg-slate-50">
-          <DialogHeader className="border-b border-slate-200 bg-white px-6 py-4 text-left">
+        <div className="flex h-[92vh] flex-col overflow-hidden rounded-lg bg-cream-50">
+          <DialogHeader className="border-b border-cream-200 bg-white px-6 py-4 text-left">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <DialogTitle className="text-2xl">Project Images: {projectName}</DialogTitle>
-                <p className="mt-1 text-sm text-slate-500">Choose a thumbnail to preview it in the main viewer.</p>
+                <p className="mt-1 text-sm text-cream-800/50">Choose a thumbnail to preview it in the main viewer.</p>
               </div>
-              <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              <div className="rounded-full bg-cream-100 px-3 py-1 text-xs font-semibold text-cream-800/70">
                 {imageGroups.length} group{imageGroups.length === 1 ? "" : "s"}
               </div>
             </div>
@@ -164,7 +164,7 @@ export function ProjectImagesViewer({
           <div className="flex-1 overflow-y-auto px-6 py-5">
             {loading ? (
               <div className="flex items-center justify-center py-24">
-                <Loader className="h-8 w-8 animate-spin text-indigo-600" />
+                <Loader className="h-8 w-8 animate-spin text-brand-500" />
               </div>
             ) : error ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4">
@@ -174,36 +174,36 @@ export function ProjectImagesViewer({
                 </Button>
               </div>
             ) : imageGroups.length === 0 ? (
-              <div className="flex min-h-[50vh] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white">
+              <div className="flex min-h-[50vh] items-center justify-center rounded-xl border border-dashed border-cream-200 bg-white">
                 <div className="text-center">
-                  <ImageIcon className="mx-auto mb-3 h-12 w-12 text-slate-300" />
-                  <p className="text-lg text-slate-600">No images in this project yet</p>
+                  <ImageIcon className="mx-auto mb-3 h-12 w-12 text-cream-800/30" />
+                  <p className="text-lg text-cream-800/70">No images in this project yet</p>
                 </div>
               </div>
             ) : (
               <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
                     <div className="mb-4 flex items-start justify-between gap-3">
                       <div>
-                        <div className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-brand-500">
                           {selectedPreview.type === "original" ? "Original" : "Staged version"}
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold text-brand-900">
                           {selectedPreview.type === "original"
                             ? "Original Image"
                             : `Staged Version ${selectedPreview.versionIdx + 1}`}
                         </h3>
                       </div>
-                      <div className="text-right text-xs text-slate-500">
+                      <div className="text-right text-xs text-cream-800/50">
                         Image {selectedGroupIdx + 1} of {imageGroups.length}
                         <br />
                         {selectedPreview.type === "original" ? "Original" : `Version ${selectedPreview.versionIdx + 1}`}
                       </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                      <div className="relative aspect-16/10 w-full bg-slate-100">
+                    <div className="overflow-hidden rounded-2xl border border-cream-200 bg-cream-100">
+                      <div className="relative aspect-16/10 w-full bg-cream-100">
                         {currentMainImage ? (
                           <img
                             src={currentMainImage.url}
@@ -214,12 +214,12 @@ export function ProjectImagesViewer({
                         ) : null}
                       </div>
 
-                      <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3">
+                      <div className="flex items-center justify-between gap-3 border-t border-cream-200 bg-white px-4 py-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900">
+                          <p className="truncate text-sm font-semibold text-brand-900">
                             {selectedPreview.type === "original" ? "Original Image" : `Staged Version ${selectedPreview.versionIdx + 1}`}
                           </p>
-                          <p className="truncate text-xs text-slate-500">
+                          <p className="truncate text-xs text-cream-800/50">
                             {selectedPreview.type === "original" ? currentOriginal?.filename : currentVersion?.filename}
                           </p>
                         </div>
@@ -254,19 +254,19 @@ export function ProjectImagesViewer({
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-semibold text-slate-900">Staged versions</h3>
-                        <p className="text-xs text-slate-500">Click a thumbnail to preview it in the main viewer.</p>
+                        <h3 className="text-sm font-semibold text-brand-900">Staged versions</h3>
+                        <p className="text-xs text-cream-800/50">Click a thumbnail to preview it in the main viewer.</p>
                       </div>
-                      <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                      <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">
                         {currentGroup?.stagedVersions.length || 0} variants
                       </span>
                     </div>
 
                     {currentGroup?.stagedVersions.length === 0 ? (
-                      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-10 text-center text-sm text-slate-500">
+                      <div className="rounded-xl border border-dashed border-cream-200 bg-cream-50 py-10 text-center text-sm text-cream-800/50">
                         No staged versions available
                       </div>
                     ) : (
@@ -278,23 +278,23 @@ export function ProjectImagesViewer({
                               key={version.id}
                               type="button"
                               onClick={() => setSelectedPreview({ type: "staged", versionIdx: idx })}
-                              className={`group overflow-hidden rounded-xl border-2 bg-slate-50 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
-                                isSelected ? "border-indigo-600 ring-2 ring-indigo-200" : "border-slate-200"
+                              className={`group overflow-hidden rounded-xl border-2 bg-cream-50 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
+                                isSelected ? "border-brand-500 ring-2 ring-brand-100" : "border-cream-200"
                               }`}
                             >
-                              <div className="relative aspect-4/3 bg-slate-100">
+                              <div className="relative aspect-4/3 bg-cream-100">
                                 <img
                                   src={version.url}
                                   alt={`Version ${idx + 1}`}
                                   className="h-full w-full object-cover transition group-hover:scale-[1.02]"
                                 />
                               </div>
-                              <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-white px-3 py-2">
+                              <div className="flex items-center justify-between gap-2 border-t border-cream-200 bg-white px-3 py-2">
                                 <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-slate-900">Version {idx + 1}</p>
-                                  <p className="truncate text-[11px] text-slate-500">{version.filename}</p>
+                                  <p className="text-xs font-semibold text-brand-900">Version {idx + 1}</p>
+                                  <p className="truncate text-[11px] text-cream-800/50">{version.filename}</p>
                                 </div>
-                                <Download className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600" />
+                                <Download className="h-4 w-4 shrink-0 text-cream-800/40 group-hover:text-brand-500" />
                               </div>
                             </button>
                           );
@@ -305,10 +305,10 @@ export function ProjectImagesViewer({
                 </div>
 
                 <div className="space-y-4">
-                  {/* <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  {/* <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
                     <div className="mb-3 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-slate-900">Navigation</h3>
-                      <span className="text-xs text-slate-500">
+                      <h3 className="text-sm font-semibold text-brand-900">Navigation</h3>
+                      <span className="text-xs text-cream-800/50">
                         {selectedGroupIdx + 1}/{imageGroups.length}
                       </span>
                     </div>
@@ -333,35 +333,35 @@ export function ProjectImagesViewer({
                   </div> */}
 
                   {currentGroup?.metadata && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <h3 className="mb-3 text-sm font-semibold text-slate-900">Details</h3>
-                      <div className="space-y-3 text-xs text-slate-600">
+                    <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
+                      <h3 className="mb-3 text-sm font-semibold text-brand-900">Details</h3>
+                      <div className="space-y-3 text-xs text-cream-800/70">
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           {currentGroup.metadata.roomType && (
-                            <div className="rounded-lg bg-slate-50 p-3">
-                              <span className="font-semibold text-slate-700">Room Type</span>
-                              <p className="mt-1 text-sm text-slate-900">{currentGroup.metadata.roomType}</p>
+                            <div className="rounded-lg bg-cream-50 p-3">
+                              <span className="font-semibold text-cream-800/80">Room Type</span>
+                              <p className="mt-1 text-sm text-brand-900">{currentGroup.metadata.roomType}</p>
                             </div>
                           )}
                           {currentGroup.metadata.stagingStyle && (
-                            <div className="rounded-lg bg-slate-50 p-3">
-                              <span className="font-semibold text-slate-700">Style</span>
-                              <p className="mt-1 text-sm text-slate-900">{currentGroup.metadata.stagingStyle}</p>
+                            <div className="rounded-lg bg-cream-50 p-3">
+                              <span className="font-semibold text-cream-800/80">Style</span>
+                              <p className="mt-1 text-sm text-brand-900">{currentGroup.metadata.stagingStyle}</p>
                             </div>
                           )}
                         </div>
 
                         {currentGroup.metadata.prompt && (
-                          <div className="rounded-lg bg-slate-50 p-3">
-                            <span className="font-semibold text-slate-700">Prompt</span>
-                            <p className="mt-1 line-clamp-4 text-sm text-slate-900">{currentGroup.metadata.prompt}</p>
+                          <div className="rounded-lg bg-cream-50 p-3">
+                            <span className="font-semibold text-cream-800/80">Prompt</span>
+                            <p className="mt-1 line-clamp-4 text-sm text-brand-900">{currentGroup.metadata.prompt}</p>
                           </div>
                         )}
 
                         {currentGroup.metadata.uploadedBy && (
-                          <div className="rounded-lg bg-slate-50 p-3">
-                            <span className="font-semibold text-slate-700">Uploaded by</span>
-                            <p className="mt-1 text-sm text-slate-900">
+                          <div className="rounded-lg bg-cream-50 p-3">
+                            <span className="font-semibold text-cream-800/80">Uploaded by</span>
+                            <p className="mt-1 text-sm text-brand-900">
                               {currentGroup.metadata.uploadedBy.name || currentGroup.metadata.uploadedBy.email}
                             </p>
                           </div>
@@ -371,9 +371,9 @@ export function ProjectImagesViewer({
                   )}
 
                   {currentMainImage?.url && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
                       <Button
-                        className="w-full bg-indigo-600 hover:bg-indigo-700"
+                        className="w-full bg-brand-500 hover:bg-brand-600"
                         onClick={() =>
                           handleDownload(
                             currentMainImage.url,
@@ -394,7 +394,7 @@ export function ProjectImagesViewer({
           </div>
 
           {imageGroups.length > 1 && (
-            <div className="border-t border-slate-200 bg-white px-6 py-4">
+            <div className="border-t border-cream-200 bg-white px-6 py-4">
               <div className="flex flex-wrap gap-2">
                 {imageGroups.map((_, idx) => (
                   <button
@@ -403,8 +403,8 @@ export function ProjectImagesViewer({
                     onClick={() => handleSelectGroup(idx)}
                     className={`inline-flex min-w-12 items-center justify-center rounded-full border px-3 py-2 text-sm font-semibold transition ${
                       selectedGroupIdx === idx
-                        ? "border-indigo-600 bg-indigo-600 text-white shadow"
-                        : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100"
+                        ? "border-brand-500 bg-brand-500 text-white shadow"
+                        : "border-cream-200 bg-cream-50 text-cream-800/80 hover:border-cream-200 hover:bg-cream-100"
                     }`}
                   >
                     {idx + 1}
@@ -422,7 +422,7 @@ export function ProjectImagesViewer({
           >
             <button
               onClick={() => setFullscreenImage(null)}
-              className="absolute right-4 top-4 rounded-full bg-white p-2 text-black transition hover:bg-slate-200"
+              className="absolute right-4 top-4 rounded-full bg-white p-2 text-black transition hover:bg-cream-200"
             >
               <X className="h-6 w-6" />
             </button>

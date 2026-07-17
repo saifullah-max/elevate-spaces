@@ -76,14 +76,14 @@ export default function RecentUploads() {
 
   return (
     <section className="max-w-6xl mx-auto py-10 md:py-12 px-4">
-      <h2 className="text-2xl font-bold mb-6 text-slate-900">
+      <h2 className="text-2xl font-bold mb-6 text-brand-900">
         Recent Uploads
       </h2>
       <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
         Uploaded images are automatically deleted after 30 days. Save any important images before then, as deleted images cannot be restored.
       </p>
 
-      {loading && <div className="text-slate-500">Loading...</div>}
+      {loading && <div className="text-cream-800/50">Loading...</div>}
       {error && <div className="text-red-600">{error}</div>}
 
       {!loading && uploads.length > 0 && (
@@ -98,11 +98,11 @@ export default function RecentUploads() {
                   setView(pair.staged ? "staged" : "original");
                 }}
                 className="
-                  bg-white rounded-xl border border-slate-200 cursor-pointer
+                  bg-white rounded-xl border border-cream-200 cursor-pointer
                   hover:shadow-lg hover:-translate-y-1 transition
                 "
               >
-                <div className="aspect-4/3 md:aspect-video bg-slate-100 overflow-hidden rounded-t-xl">
+                <div className="aspect-4/3 md:aspect-video bg-cream-100 overflow-hidden rounded-t-xl">
                   <Image
                     src={pair.original.url}
                     alt={pair.original.filename}
@@ -113,7 +113,7 @@ export default function RecentUploads() {
                   />
                 </div>
 
-                <div className="p-3 text-xs text-slate-600">
+                <div className="p-3 text-xs text-cream-800/70">
                   <p className="font-semibold truncate">
                     {pair.original.filename}
                   </p>
@@ -213,14 +213,14 @@ export default function RecentUploads() {
                 <h3 className="text-sm md:text-base font-semibold">
                   Image Preview
                 </h3>
-                <p className="text-[11px] md:text-xs text-slate-500 truncate max-w-55">
+                <p className="text-[11px] md:text-xs text-cream-800/50 truncate max-w-55">
                   {activeImage.filename}
                 </p>
               </div>
 
               <button
                 onClick={() => setSelected(null)}
-                className="h-8 w-8 md:h-9 md:w-9 rounded-full hover:bg-slate-100 flex items-center justify-center"
+                className="h-8 w-8 md:h-9 md:w-9 rounded-full hover:bg-cream-100 flex items-center justify-center"
               >
                 <X size={16} className="md:hidden" />
                 <X size={18} className="hidden md:block" />
@@ -239,7 +239,7 @@ export default function RecentUploads() {
                       rounded-full border transition
                       ${view === type
                         ? "bg-emerald-600 text-white border-emerald-600"
-                        : "bg-white text-slate-600 hover:bg-slate-100"
+                        : "bg-white text-cream-800/70 hover:bg-cream-100"
                       }
                     `}
                   >
@@ -251,14 +251,14 @@ export default function RecentUploads() {
 
             {view === "staged" && selected.stagedVariants && selected.stagedVariants.length > 0 && (
               <div className="px-4 md:px-5 pb-2">
-                <p className="text-xs text-slate-500 mb-2">Variants</p>
+                <p className="text-xs text-cream-800/50 mb-2">Variants</p>
                 <div className="flex gap-2 overflow-x-auto">
                   {selected.stagedVariants.map((variant, idx) => (
                     <button
                       key={variant.id || `${variant.url}-${idx}`}
                       onClick={() => setSelectedVariantIdx(idx)}
                       className={`shrink-0 w-16 h-12 rounded border-2 overflow-hidden ${
-                        idx === selectedVariantIdx ? "border-emerald-600" : "border-slate-200"
+                        idx === selectedVariantIdx ? "border-emerald-600" : "border-cream-200"
                       }`}
                     >
                       <Image
@@ -276,7 +276,7 @@ export default function RecentUploads() {
             )}
 
             {/* Image */}
-            <div className="flex-1 flex items-center justify-center bg-slate-50 px-3 py-2 md:p-4 overflow-auto">
+            <div className="flex-1 flex items-center justify-center bg-cream-50 px-3 py-2 md:p-4 overflow-auto">
               <Image
                 src={activeImage.url}
                 alt={activeImage.filename}
@@ -294,7 +294,7 @@ export default function RecentUploads() {
             <div className="px-4 md:px-5 py-3 md:py-4 border-t flex justify-end gap-2 md:gap-3">
               <button
                 onClick={() => setSelected(null)}
-                className="px-3 py-1.5 md:px-5 md:py-2.5 text-xs md:text-sm border rounded-md md:rounded-lg hover:bg-slate-100"
+                className="px-3 py-1.5 md:px-5 md:py-2.5 text-xs md:text-sm border rounded-md md:rounded-lg hover:bg-cream-100"
               >
                 Close
               </button>

@@ -140,18 +140,18 @@ export default function MessagesPage() {
   if (!checked) return null;
 
   return (
-    <div className="min-h-screen bg-slate-100 p-3 md:p-6">
+    <div className="min-h-screen bg-cream-100 p-3 md:p-6">
       <div className="mx-auto grid h-[calc(100vh-2rem)] max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <aside className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-4">
-            <h1 className="text-xl font-black text-slate-900">Messages</h1>
-            <p className="text-sm text-slate-500">1:1 chats with photographers and clients</p>
+        <aside className="flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm">
+          <div className="border-b border-cream-200 p-4">
+            <h1 className="text-xl font-black text-brand-900">Messages</h1>
+            <p className="text-sm text-cream-800/50">1:1 chats with photographers and clients</p>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
-            {loadingList && <p className="p-3 text-sm text-slate-500">Loading contacts...</p>}
+            {loadingList && <p className="p-3 text-sm text-cream-800/50">Loading contacts...</p>}
             {!loadingList && sortedConversations.length === 0 && (
-              <p className="p-3 text-sm text-slate-500">No conversations yet. Open a profile and tap Chat.</p>
+              <p className="p-3 text-sm text-cream-800/50">No conversations yet. Open a profile and tap Chat.</p>
             )}
 
             <div className="space-y-1">
@@ -163,11 +163,11 @@ export default function MessagesPage() {
                     type="button"
                     onClick={() => void loadConversation(item.peer.id)}
                     className={`w-full rounded-xl px-3 py-3 text-left transition-colors ${
-                      active ? "bg-slate-900 text-white" : "bg-white text-slate-800 hover:bg-slate-100"
+                      active ? "bg-brand-900 text-white" : "bg-white text-brand-900 hover:bg-cream-100"
                     }`}
                   >
                     <p className="truncate text-sm font-semibold">{item.peer.name || item.peer.email}</p>
-                    <p className={`truncate text-xs ${active ? "text-slate-300" : "text-slate-500"}`}>
+                    <p className={`truncate text-xs ${active ? "text-cream-800/30" : "text-cream-800/50"}`}>
                       {item.lastMessage?.body || (item.lastMessage?.attachments?.length ? "Sent an attachment" : "No messages")}
                     </p>
                   </button>
@@ -177,36 +177,36 @@ export default function MessagesPage() {
           </div>
         </aside>
 
-        <section className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 p-4">
+        <section className="flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-cream-200 p-4">
             <div>
-              <p className="text-sm text-slate-500">Conversation with</p>
-              <h2 className="text-lg font-bold text-slate-900">{activePeer ? activePeer.name || activePeer.email : "Select a contact"}</h2>
+              <p className="text-sm text-cream-800/50">Conversation with</p>
+              <h2 className="text-lg font-bold text-brand-900">{activePeer ? activePeer.name || activePeer.email : "Select a contact"}</h2>
             </div>
 
             {activePeer ? (
               <div className="flex gap-2">
-                <Link href={`/hire-photographer`} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <Link href={`/hire-photographer`} className="inline-flex items-center gap-1 rounded-lg border border-cream-200 px-3 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-50">
                   <MessageCircle className="h-4 w-4" /> Marketplace
                 </Link>
               </div>
             ) : null}
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50 p-4">
+          <div className="flex-1 overflow-y-auto bg-cream-50 p-4">
             {loadingConversation ? (
-              <div className="flex h-full items-center justify-center text-slate-500">
+              <div className="flex h-full items-center justify-center text-cream-800/50">
                 <Loader2 className="h-5 w-5 animate-spin" />
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-slate-500">Start the conversation with a text or file.</div>
+              <div className="flex h-full items-center justify-center text-cream-800/50">Start the conversation with a text or file.</div>
             ) : (
               <div className="space-y-3">
                 {messages.map((message) => {
                   const mine = message.sender_id !== activePeerId;
                   return (
                     <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm ${mine ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
+                      <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm ${mine ? "bg-brand-900 text-white" : "bg-white text-brand-900"}`}>
                         {message.body ? <p className="whitespace-pre-wrap">{message.body}</p> : null}
                         {message.attachments?.length ? (
                           <div className="mt-2 space-y-1">
@@ -216,14 +216,14 @@ export default function MessagesPage() {
                                 href={file.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className={`block underline ${mine ? "text-slate-200" : "text-indigo-700"}`}
+                                className={`block underline ${mine ? "text-cream-800/30" : "text-brand-600"}`}
                               >
                                 {file.name}
                               </a>
                             ))}
                           </div>
                         ) : null}
-                        <p className={`mt-2 text-xs ${mine ? "text-slate-300" : "text-slate-500"}`}>
+                        <p className={`mt-2 text-xs ${mine ? "text-cream-800/30" : "text-cream-800/50"}`}>
                           {new Date(message.created_at).toLocaleString()}
                         </p>
                       </div>
@@ -234,16 +234,16 @@ export default function MessagesPage() {
             )}
           </div>
 
-          <div className="border-t border-slate-200 p-3">
+          <div className="border-t border-cream-200 p-3">
             <div className="mb-2 flex flex-wrap gap-2">
               {pendingFiles.map((file, index) => (
-                <span key={`${file.name}-${index}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
+                <span key={`${file.name}-${index}`} className="rounded-full bg-cream-100 px-3 py-1 text-xs text-cream-800/80">
                   {file.name}
                 </span>
               ))}
             </div>
             <div className="flex items-end gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-cream-200 px-3 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-50">
                 <Paperclip className="h-4 w-4" />
                 <input
                   type="file"
@@ -260,13 +260,13 @@ export default function MessagesPage() {
                 value={messageText}
                 onChange={(event) => setMessageText(event.target.value)}
                 placeholder="Type your message"
-                className="min-h-12 flex-1 resize-y rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                className="min-h-12 flex-1 resize-y rounded-xl border border-cream-200 px-3 py-2 text-sm"
               />
               <button
                 type="button"
                 onClick={handleSend}
                 disabled={sending || !activePeerId}
-                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
               >
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send
               </button>

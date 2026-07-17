@@ -93,31 +93,31 @@ export default async function AcceptInvitePage() {
 
     if (!token) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-                <div className="bg-white rounded-2xl shadow-xl p-8 border border-indigo-100 max-w-md w-full text-center">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 via-white to-cream-50">
+                <div className="bg-white rounded-2xl shadow-xl p-8 border border-brand-100 max-w-md w-full text-center">
                     <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                    <h1 className="text-xl font-semibold text-slate-800">Invalid Invitation</h1>
-                    <p className="text-slate-600 mt-2">The invitation link is missing a token.</p>
+                    <h1 className="text-xl font-semibold text-brand-900">Invalid Invitation</h1>
+                    <p className="text-cream-800/70 mt-2">The invitation link is missing a token.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-indigo-100 max-w-md w-full">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 via-white to-cream-50 px-4">
+            <div className="bg-white rounded-2xl shadow-xl p-8 border border-brand-100 max-w-md w-full">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-indigo-100 p-3 rounded-lg">
-                        <Users className="w-6 h-6 text-indigo-600" />
+                    <div className="bg-brand-100 p-3 rounded-lg">
+                        <Users className="w-6 h-6 text-brand-500" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Accept Team Invite</h1>
-                        <p className="text-slate-500 text-sm">Join your team in seconds</p>
+                        <h1 className="text-2xl font-bold text-brand-900">Accept Team Invite</h1>
+                        <p className="text-cream-800/50 text-sm">Join your team in seconds</p>
                     </div>
                 </div>
 
                 {loading && !successMessage && !error && (
-                    <div className="text-center text-slate-600">Processing invitation...</div>
+                    <div className="text-center text-cream-800/70">Processing invitation...</div>
                 )}
 
                 {successMessage && (
@@ -129,7 +129,7 @@ export default async function AcceptInvitePage() {
                         <div className="mt-4">
                             <Button
                                 onClick={() => router.push("/sign-in")}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700"
+                                className="w-full bg-brand-500 hover:bg-brand-600"
                             >
                                 Go to Sign In
                             </Button>
@@ -184,7 +184,7 @@ export default async function AcceptInvitePage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700"
+                            className="w-full bg-brand-500 hover:bg-brand-600"
                         >
                             {loading ? "Creating account..." : "Create Account & Accept Invite"}
                         </Button>

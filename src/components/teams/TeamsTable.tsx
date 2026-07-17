@@ -43,14 +43,14 @@ export function TeamsTable({
     };
     if (!teams || teams.teams.length === 0) {
         return (
-            <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg border border-cream-200 overflow-hidden">
                 <div className="text-center py-16 px-4">
-                    <Users className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                    <h3 className="text-xl font-semibold text-slate-700 mb-2">No teams yet</h3>
-                    <p className="text-slate-500 mb-6">Create your first team to start collaborating</p>
+                    <Users className="w-16 h-16 mx-auto mb-4 text-cream-800/30" />
+                    <h3 className="text-xl font-semibold text-cream-800/80 mb-2">No teams yet</h3>
+                    <p className="text-cream-800/50 mb-6">Create your first team to start collaborating</p>
                     <Button
                         onClick={onEmptyStateClick}
-                        className="bg-indigo-600 hover:bg-indigo-700"
+                        className="bg-brand-500 hover:bg-brand-600"
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Create Your First Team
@@ -61,10 +61,10 @@ export function TeamsTable({
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-lg border border-cream-200 overflow-hidden">
             <Table className="w-full">
                 <TableHeader>
-                    <TableRow className="bg-slate-100">
+                    <TableRow className="bg-cream-100">
                         <TableHead className="font-semibold text-left py-3 px-4 text-sm">Team Name</TableHead>
                         <TableHead className="font-semibold text-left py-3 px-4 text-sm">Description</TableHead>
                         <TableHead className="font-semibold text-left py-3 px-4 text-sm">Owner</TableHead>
@@ -77,19 +77,19 @@ export function TeamsTable({
                 </TableHeader>
                 <TableBody>
                     {teams.teams.map((team) => (
-                        <TableRow key={team.id} className="hover:bg-slate-50">
+                        <TableRow key={team.id} className="hover:bg-cream-50">
                             <TableCell className="font-medium py-3 px-4">{team.name}</TableCell>
-                            <TableCell className="text-slate-600 max-w-xs truncate py-3 px-4">
+                            <TableCell className="text-cream-800/70 max-w-xs truncate py-3 px-4">
                                 {team.description || "-"}
                             </TableCell>
                             <TableCell className="py-3 px-4">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-500 font-semibold text-sm">
                                         {team.owner.name?.[0]?.toUpperCase() || "?"}
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium">{team.owner.name || "Unknown"}</p>
-                                        <p className="text-xs text-slate-500">{team.owner.email}</p>
+                                        <p className="text-xs text-cream-800/50">{team.owner.email}</p>
                                     </div>
                                 </div>
                             </TableCell>
@@ -107,10 +107,10 @@ export function TeamsTable({
                                     </span>
                                 </div>
                             </TableCell>
-                            <TableCell className="text-sm text-slate-600 py-3 px-4">
+                            <TableCell className="text-sm text-cream-800/70 py-3 px-4">
                                 {new Date(team.created_at).toLocaleDateString()}
                             </TableCell>
-                            <TableCell className="text-sm text-slate-600 py-3 px-4">
+                            <TableCell className="text-sm text-cream-800/70 py-3 px-4">
                                 {team.wallet}
                             </TableCell>
                             <TableCell className="text-left py-3 px-4">
@@ -141,8 +141,8 @@ export function TeamsTable({
                                         )}
                                         {onDeleteClick && (
                                             <>
-                                                <div className="flex items-center px-2 py-1.5 text-xs text-slate-500 cursor-default">
-                                                    <div className="flex-1 h-px bg-slate-200"></div>
+                                                <div className="flex items-center px-2 py-1.5 text-xs text-cream-800/50 cursor-default">
+                                                    <div className="flex-1 h-px bg-cream-200"></div>
                                                 </div>
                                                 <DropdownMenuItem
                                                     onClick={() => onDeleteClick(team)}

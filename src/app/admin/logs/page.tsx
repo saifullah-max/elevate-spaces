@@ -271,14 +271,14 @@ export default function AdminLogsPage() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-cream-200 p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-1">Analytics & Logs</h1>
-            <p className="text-slate-600">MongoDB audit trail and platform analytics</p>
+            <h1 className="font-display text-3xl font-bold text-brand-900 mb-1">Analytics & Logs</h1>
+            <p className="text-cream-800/70">MongoDB audit trail and platform analytics</p>
           </div>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-full sm:w-48 bg-white border-slate-300">
+            <SelectTrigger className="w-full sm:w-48 bg-white border-cream-200">
               <SelectValue placeholder="Select month" />
             </SelectTrigger>
             <SelectContent>
@@ -295,31 +295,31 @@ export default function AdminLogsPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-cream-200 shadow-sm">
             <CardHeader className="pb-3">
-              <CardDescription className="text-slate-600 font-medium">Total Requests</CardDescription>
-              <CardTitle className="text-4xl font-bold text-slate-900">{stats.totalRequests.toLocaleString()}</CardTitle>
+              <CardDescription className="text-cream-800/70 font-medium">Total Requests</CardDescription>
+              <CardTitle className="text-4xl font-bold text-brand-900">{stats.totalRequests.toLocaleString()}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-500">HTTP request logs</p>
+              <p className="text-sm text-cream-800/50">HTTP request logs</p>
             </CardContent>
           </Card>
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-cream-200 shadow-sm">
             <CardHeader className="pb-3">
-              <CardDescription className="text-slate-600 font-medium">Total Payments</CardDescription>
-              <CardTitle className="text-4xl font-bold text-slate-900">{stats.totalPayments.toLocaleString()}</CardTitle>
+              <CardDescription className="text-cream-800/70 font-medium">Total Payments</CardDescription>
+              <CardTitle className="text-4xl font-bold text-brand-900">{stats.totalPayments.toLocaleString()}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-500">Payment transactions</p>
+              <p className="text-sm text-cream-800/50">Payment transactions</p>
             </CardContent>
           </Card>
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-cream-200 shadow-sm">
             <CardHeader className="pb-3">
-              <CardDescription className="text-slate-600 font-medium">Multi-Image Runs</CardDescription>
-              <CardTitle className="text-4xl font-bold text-slate-900">{stats.totalMultiImageRuns.toLocaleString()}</CardTitle>
+              <CardDescription className="text-cream-800/70 font-medium">Multi-Image Runs</CardDescription>
+              <CardTitle className="text-4xl font-bold text-brand-900">{stats.totalMultiImageRuns.toLocaleString()}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-slate-500">Batch staging operations</p>
+              <p className="text-sm text-cream-800/50">Batch staging operations</p>
             </CardContent>
           </Card>
         </div>
@@ -327,36 +327,36 @@ export default function AdminLogsPage() {
 
       {/* Tabs Section */}
       <Tabs defaultValue="requests" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white border border-slate-200 p-1 rounded-lg shadow-sm">
+        <TabsList className="grid w-full grid-cols-3 bg-white border border-cream-200 p-1 rounded-lg shadow-sm">
           <TabsTrigger
             value="requests"
             onClick={() => fetchRequestLogs()}
-            className="data-[state=active]:bg-[#003580] data-[state=active]:text-white"
+            className="data-[state=active]:bg-brand-500 data-[state=active]:text-white"
           >
             Requests
           </TabsTrigger>
           <TabsTrigger
             value="payments"
             onClick={() => fetchPaymentLogs()}
-            className="data-[state=active]:bg-[#003580] data-[state=active]:text-white"
+            className="data-[state=active]:bg-brand-500 data-[state=active]:text-white"
           >
             Payments
           </TabsTrigger>
           <TabsTrigger
             value="multi-image"
             onClick={() => fetchMultiImageLogs()}
-            className="data-[state=active]:bg-[#003580] data-[state=active]:text-white"
+            className="data-[state=active]:bg-brand-500 data-[state=active]:text-white"
           >
             Multi-Image
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests" className="mt-6">
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="border-b border-slate-200 bg-slate-50">
+          <Card className="border-cream-200 shadow-sm">
+            <CardHeader className="border-b border-cream-200 bg-cream-50">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-xl text-slate-900">Request Logs</CardTitle>
+                  <CardTitle className="text-xl text-brand-900">Request Logs</CardTitle>
                   <CardDescription>HTTP requests (POST, PATCH, DELETE, sensitive GETs)</CardDescription>
                 </div>
                 <LogExportDialog
@@ -370,20 +370,20 @@ export default function AdminLogsPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">{loading ? (
-              <div className="p-8 text-center text-slate-500">Loading...</div>
+              <div className="p-8 text-center text-cream-800/50">Loading...</div>
             ) : (
               <>
-                <div className="border-b border-slate-200 bg-white p-4">
+                <div className="border-b border-cream-200 bg-white p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <input
                       value={requestSearch}
                       onChange={(event) => setRequestSearch(event.target.value)}
                       onKeyDown={(event) => event.key === 'Enter' && handleRequestSearch()}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#003580]"
+                      className="w-full rounded-lg border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
                       placeholder="Search name, email, location, IP, path"
                     />
                     <div className="flex gap-2 sm:shrink-0">
-                      <Button onClick={handleRequestSearch} className="bg-[#003580] text-white hover:bg-[#002a66]">
+                      <Button onClick={handleRequestSearch} className="bg-brand-500 text-white hover:bg-brand-600">
                         Search
                       </Button>
                       <Button variant="outline" onClick={handleClearRequestSearch}>
@@ -395,15 +395,15 @@ export default function AdminLogsPage() {
                 <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50 hover:bg-slate-50">
-                      <TableHead className="font-semibold text-slate-700">Time</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Method</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Path</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Name</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Email</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Location</TableHead>
-                      <TableHead className="font-semibold text-slate-700">Response Time</TableHead>
+                    <TableRow className="bg-cream-50 hover:bg-cream-50">
+                      <TableHead className="font-semibold text-cream-800/80">Time</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Method</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Path</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Status</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Name</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Email</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Location</TableHead>
+                      <TableHead className="font-semibold text-cream-800/80">Response Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -438,23 +438,23 @@ export default function AdminLogsPage() {
                   </TableBody>
                 </Table>
                 </div>
-                <div className="flex justify-between items-center p-4 border-t border-slate-200 bg-slate-50">
+                <div className="flex justify-between items-center p-4 border-t border-cream-200 bg-cream-50">
                   <Button
                     variant="outline"
                     onClick={() => fetchRequestLogs(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="border-slate-300"
+                    className="border-cream-200"
                   >
                     Previous
                   </Button>
-                  <span className="text-sm text-slate-600 font-medium">
+                  <span className="text-sm text-cream-800/70 font-medium">
                     Page {currentPage} of {totalPages}
                   </span>
                   <Button
                     variant="outline"
                     onClick={() => fetchRequestLogs(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="border-slate-300"
+                    className="border-cream-200"
                   >
                     Next
                   </Button>
@@ -466,11 +466,11 @@ export default function AdminLogsPage() {
         </TabsContent>
 
         <TabsContent value="payments" className="mt-6">
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="border-b border-slate-200 bg-slate-50">
+          <Card className="border-cream-200 shadow-sm">
+            <CardHeader className="border-b border-cream-200 bg-cream-50">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-xl text-slate-900">Payment Logs</CardTitle>
+                  <CardTitle className="text-xl text-brand-900">Payment Logs</CardTitle>
                   <CardDescription>Transaction history with email delivery status</CardDescription>
                 </div>
                 <LogExportDialog
@@ -484,20 +484,20 @@ export default function AdminLogsPage() {
             </CardHeader>
             <CardContent className="p-0">
               {loading ? (
-                <div className="p-8 text-center text-slate-500">Loading...</div>
+                <div className="p-8 text-center text-cream-800/50">Loading...</div>
               ) : (
                 <>
                   <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50 hover:bg-slate-50">
-                        <TableHead className="font-semibold text-slate-700">Time</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Transaction ID</TableHead>
-                        <TableHead className="font-semibold text-slate-700">User</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Amount</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Credits</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Email Sent</TableHead>
+                      <TableRow className="bg-cream-50 hover:bg-cream-50">
+                        <TableHead className="font-semibold text-cream-800/80">Time</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Transaction ID</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">User</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Amount</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Credits</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Status</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Email Sent</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -529,23 +529,23 @@ export default function AdminLogsPage() {
                     </TableBody>
                   </Table>
                   </div>
-                  <div className="flex justify-between items-center p-4 border-t border-slate-200 bg-slate-50">
+                  <div className="flex justify-between items-center p-4 border-t border-cream-200 bg-cream-50">
                     <Button
                       variant="outline"
                       onClick={() => fetchPaymentLogs(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="border-slate-300"
+                      className="border-cream-200"
                     >
                       Previous
                     </Button>
-                    <span className="text-sm text-slate-600 font-medium">
+                    <span className="text-sm text-cream-800/70 font-medium">
                       Page {currentPage} of {totalPages}
                     </span>
                     <Button
                       variant="outline"
                       onClick={() => fetchPaymentLogs(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="border-slate-300"
+                      className="border-cream-200"
                     >
                       Next
                     </Button>
@@ -557,11 +557,11 @@ export default function AdminLogsPage() {
         </TabsContent>
 
         <TabsContent value="multi-image" className="mt-6">
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="border-b border-slate-200 bg-slate-50">
+          <Card className="border-cream-200 shadow-sm">
+            <CardHeader className="border-b border-cream-200 bg-cream-50">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-xl text-slate-900">Multi-Image Logs</CardTitle>
+                  <CardTitle className="text-xl text-brand-900">Multi-Image Logs</CardTitle>
                   <CardDescription>Batch processing run analytics</CardDescription>
                 </div>
                 <LogExportDialog
@@ -575,21 +575,21 @@ export default function AdminLogsPage() {
             </CardHeader>
             <CardContent className="p-0">
               {loading ? (
-                <div className="p-8 text-center text-slate-500">Loading...</div>
+                <div className="p-8 text-center text-cream-800/50">Loading...</div>
               ) : (
                 <>
                   <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-slate-50 hover:bg-slate-50">
-                        <TableHead className="font-semibold text-slate-700">Time</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Run ID</TableHead>
-                        <TableHead className="font-semibold text-slate-700">User</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Images</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Completed/Expected</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Duration</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                        <TableHead className="font-semibold text-slate-700">Quota</TableHead>
+                      <TableRow className="bg-cream-50 hover:bg-cream-50">
+                        <TableHead className="font-semibold text-cream-800/80">Time</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Run ID</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">User</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Images</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Completed/Expected</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Duration</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Status</TableHead>
+                        <TableHead className="font-semibold text-cream-800/80">Quota</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -627,23 +627,23 @@ export default function AdminLogsPage() {
                     </TableBody>
                   </Table>
                   </div>
-                  <div className="flex justify-between items-center p-4 border-t border-slate-200 bg-slate-50">
+                  <div className="flex justify-between items-center p-4 border-t border-cream-200 bg-cream-50">
                     <Button
                       variant="outline"
                       onClick={() => fetchMultiImageLogs(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="border-slate-300"
+                      className="border-cream-200"
                     >
                       Previous
                     </Button>
-                    <span className="text-sm text-slate-600 font-medium">
+                    <span className="text-sm text-cream-800/70 font-medium">
                       Page {currentPage} of {totalPages}
                     </span>
                     <Button
                       variant="outline"
                       onClick={() => fetchMultiImageLogs(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="border-slate-300"
+                      className="border-cream-200"
                     >
                       Next
                     </Button>

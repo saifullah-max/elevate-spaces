@@ -46,19 +46,19 @@ export function AgreementChecklistModal({
         <div className="max-h-[55vh] overflow-y-auto pr-1">
           <div className="space-y-4">
             {agreements.map((agreement) => (
-              <label key={agreement.id} className="flex items-start gap-3 text-sm text-slate-700">
+              <label key={agreement.id} className="flex items-start gap-3 text-sm text-cream-800/80">
                 <input
                   type="checkbox"
                   checked={Boolean(values[agreement.id])}
                   onChange={(event) => onToggle(agreement.id, event.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                  className="mt-0.5 h-4 w-4 rounded border-cream-200 text-brand-500 focus:ring-brand-500"
                 />
                 <span>
                   {agreement.label}
                   {agreement.required ? (
                     <span className="ml-1 text-red-600">*</span>
                   ) : (
-                    <span className="ml-2 text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Optional</span>
+                    <span className="ml-2 text-xs text-cream-800/40 bg-cream-100 px-2 py-0.5 rounded-full">Optional</span>
                   )}
                 </span>
               </label>

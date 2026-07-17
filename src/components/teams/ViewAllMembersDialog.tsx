@@ -73,9 +73,9 @@ export function ViewAllMembersDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-187.5 max-h-[85vh] overflow-hidden flex flex-col">
-                <DialogHeader className="border-b border-slate-200 pb-4">
-                    <DialogTitle className="text-2xl font-bold text-slate-900">Team Members</DialogTitle>
-                    <DialogDescription className="text-slate-600">
+                <DialogHeader className="border-b border-cream-200 pb-4">
+                    <DialogTitle className="text-2xl font-bold text-brand-900">Team Members</DialogTitle>
+                    <DialogDescription className="text-cream-800/70">
                         {team?.name} • Manage team members and invitations
                     </DialogDescription>
                 </DialogHeader>
@@ -116,11 +116,11 @@ export function ViewAllMembersDialog({
                             {/* Accepted Members */}
                             {acceptedMembers.length > 0 && (
                                 <div>
-                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-cream-200">
                                         <div className="bg-green-100 p-2 rounded-lg">
                                             <Check className="w-5 h-5 text-green-700" />
                                         </div>
-                                        <h3 className="font-bold text-slate-900 text-lg">
+                                        <h3 className="font-bold text-brand-900 text-lg">
                                             Active Members ({acceptedMembers.length})
                                         </h3>
                                     </div>
@@ -162,11 +162,11 @@ export function ViewAllMembersDialog({
                             {/* Pending Invitations */}
                             {pendingInvites.length > 0 && (
                                 <div>
-                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-cream-200">
                                         <div className="bg-amber-100 p-2 rounded-lg">
                                             <Clock className="w-5 h-5 text-amber-700" />
                                         </div>
-                                        <h3 className="font-bold text-slate-900 text-lg">
+                                        <h3 className="font-bold text-brand-900 text-lg">
                                             Pending Invitations ({pendingInvites.length})
                                         </h3>
                                     </div>
@@ -202,11 +202,11 @@ export function ViewAllMembersDialog({
                             {/* Failed Invitations */}
                             {failedInvites.length > 0 && (
                                 <div>
-                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-cream-200">
                                         <div className="bg-red-100 p-2 rounded-lg">
                                             <X className="w-5 h-5 text-red-700" />
                                         </div>
-                                        <h3 className="font-bold text-slate-900 text-lg">
+                                        <h3 className="font-bold text-brand-900 text-lg">
                                             Failed Invitations ({failedInvites.length})
                                         </h3>
                                     </div>
@@ -233,8 +233,8 @@ export function ViewAllMembersDialog({
                             )}
                         </div>
                     ) : (
-                        <div className="text-center py-12 text-slate-500">
-                            <Users className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                        <div className="text-center py-12 text-cream-800/50">
+                            <Users className="w-12 h-12 mx-auto mb-3 text-cream-800/30" />
                             <p className="font-medium">No members or invitations</p>
                         </div>
                     )}

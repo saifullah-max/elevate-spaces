@@ -316,7 +316,7 @@ export function PaymentsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
       </div>
     );
   }
@@ -326,25 +326,25 @@ export function PaymentsTab() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Total Spent</CardTitle>
+            <CardTitle className="text-sm text-cream-800/50">Total Spent</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{formatCurrency(summary?.summary.totalSpent || 0)}</CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Total Transactions</CardTitle>
+            <CardTitle className="text-sm text-cream-800/50">Total Transactions</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{summary?.summary.totalPurchases || 0}</CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Active Subscriptions</CardTitle>
+            <CardTitle className="text-sm text-cream-800/50">Active Subscriptions</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{summary?.breakdown.active || 0}</CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-500">Total Renewals</CardTitle>
+            <CardTitle className="text-sm text-cream-800/50">Total Renewals</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{summary?.summary.totalRenewals || 0}</CardContent>
         </Card>
@@ -356,12 +356,12 @@ export function PaymentsTab() {
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
         </TabsList>
 
-        <div className="mt-4 rounded-xl border border-indigo-100 bg-linear-to-r from-indigo-50 via-white to-sky-50 px-4 py-3 text-sm text-slate-700">
-          <div className="flex items-center gap-2 font-medium text-indigo-700">
+        <div className="mt-4 rounded-xl border border-brand-100 bg-linear-to-r from-brand-50 via-white to-cream-50 px-4 py-3 text-sm text-cream-800/80">
+          <div className="flex items-center gap-2 font-medium text-brand-600">
             <Sparkles className="h-4 w-4" />
             Unified billing view
           </div>
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs text-cream-800/70">
             Includes personal plans, monthly or annual billing, team purchases, and extra seat transactions.
           </p>
         </div>
@@ -389,7 +389,7 @@ export function PaymentsTab() {
                 <TableBody>
                   {transactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-slate-500">
+                      <TableCell colSpan={9} className="text-center text-cream-800/50">
                         No transactions found
                       </TableCell>
                     </TableRow>
@@ -397,13 +397,13 @@ export function PaymentsTab() {
                     transactions.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
-                            <div className="flex items-center gap-2 font-medium text-slate-900">
+                            <div className="flex items-center gap-2 font-medium text-brand-900">
                               <span>{transaction.packageName || "-"}</span>
                               {activeSubscriptionIds.has(transaction.id) ? (
                                 <Badge className="border-transparent bg-emerald-50 text-emerald-800 hover:bg-emerald-50">Active</Badge>
                               ) : null}
                             </div>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                          <div className="mt-1 flex items-center gap-2 text-xs text-cream-800/50">
                             <span>{getScopeLabel(transaction.scope)}</span>
                             {transaction.teamName ? <span>• {transaction.teamName}</span> : null}
                           </div>
@@ -416,7 +416,7 @@ export function PaymentsTab() {
                         <TableCell>
                           <Badge variant="outline">{getBillingCycleLabel(transaction.billingCycle)}</Badge>
                         </TableCell>
-                        <TableCell className="font-semibold text-slate-900">{formatCurrency(transaction.amount)}</TableCell>
+                        <TableCell className="font-semibold text-brand-900">{formatCurrency(transaction.amount)}</TableCell>
                         <TableCell>{transaction.credits || "-"}</TableCell>
                         <TableCell>
                           <Badge variant={transaction.status === "completed" ? "default" : "secondary"}>
@@ -459,42 +459,42 @@ export function PaymentsTab() {
               <div className="space-y-4">
                 <CardTitle>Invoice & Transaction Receipts</CardTitle>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                <div className="rounded-2xl border border-cream-200 bg-cream-50 p-4 shadow-sm">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Search</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">Search</label>
                       <input
                         type="text"
                         placeholder="Invoice #, package, team"
                         value={invoiceSearch}
                         onChange={(event) => setInvoiceSearch(event.target.value)}
                         onKeyDown={(event) => event.key === "Enter" && handleInvoiceSearch()}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-500"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-brand-900 placeholder-cream-800/50"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">From Date</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">From Date</label>
                       <input
                         type="date"
                         value={invoiceDateFrom}
                         onChange={(event) => setInvoiceDateFrom(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-brand-900"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">To Date</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">To Date</label>
                       <input
                         type="date"
                         value={invoiceDateTo}
                         onChange={(event) => setInvoiceDateTo(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-brand-900"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Min Amount ($)</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">Min Amount ($)</label>
                       <input
                         type="number"
                         min="0"
@@ -502,12 +502,12 @@ export function PaymentsTab() {
                         placeholder="0.00"
                         value={invoiceMinAmount ?? ""}
                         onChange={(event) => setInvoiceMinAmount(event.target.value ? parseFloat(event.target.value) : undefined)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-brand-900"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Max Amount ($)</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">Max Amount ($)</label>
                       <input
                         type="number"
                         min="0"
@@ -515,16 +515,16 @@ export function PaymentsTab() {
                         placeholder="999.99"
                         value={invoiceMaxAmount ?? ""}
                         onChange={(event) => setInvoiceMaxAmount(event.target.value ? parseFloat(event.target.value) : undefined)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-brand-900"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Month</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">Month</label>
                       <select
                         value={selectedMonth}
                         onChange={(event) => setSelectedMonth(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-cream-800/80"
                       >
                         <option value="all">All months</option>
                         {monthOptions.map((month) => (
@@ -536,11 +536,11 @@ export function PaymentsTab() {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Plan For</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">Plan For</label>
                       <select
                         value={invoicePlanFor}
                         onChange={(event) => setInvoicePlanFor(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-cream-800/80"
                       >
                         <option value="all">All</option>
                         <option value="personal">Personal</option>
@@ -549,11 +549,11 @@ export function PaymentsTab() {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Auto Renewal</label>
+                      <label className="mb-1 block text-sm font-medium text-cream-800/80">Auto Renewal</label>
                       <select
                         value={invoiceAutoRenewFilter}
                         onChange={(event) => setInvoiceAutoRenewFilter(event.target.value)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+                        className="w-full rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-cream-800/80"
                       >
                         <option value="all">All</option>
                         <option value="enabled">Enabled</option>
@@ -563,7 +563,7 @@ export function PaymentsTab() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={handleInvoiceSearch} disabled={invoiceSearchLoading} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Button onClick={handleInvoiceSearch} disabled={invoiceSearchLoading} className="bg-brand-500 text-white hover:bg-brand-600">
                       {invoiceSearchLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -576,10 +576,10 @@ export function PaymentsTab() {
                     <Button onClick={clearInvoiceFilters} variant="outline" disabled={invoiceSearchLoading}>
                       Clear Filters
                     </Button>
-                    <div className="ml-auto flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <span className="rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-slate-200">{filteredInvoices.length} shown</span>
-                      {invoicePlanFor !== "all" ? <span className="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700 ring-1 ring-indigo-100">Plan: {invoicePlanFor}</span> : null}
-                      {invoiceAutoRenewFilter !== "all" ? <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 ring-1 ring-slate-200">Auto-renew: {invoiceAutoRenewFilter}</span> : null}
+                    <div className="ml-auto flex flex-wrap items-center gap-2 text-xs text-cream-800/50">
+                      <span className="rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-cream-200">{filteredInvoices.length} shown</span>
+                      {invoicePlanFor !== "all" ? <span className="rounded-full bg-brand-50 px-3 py-1 text-brand-600 ring-1 ring-brand-100">Plan: {invoicePlanFor}</span> : null}
+                      {invoiceAutoRenewFilter !== "all" ? <span className="rounded-full bg-cream-100 px-3 py-1 text-cream-800/80 ring-1 ring-cream-200">Auto-renew: {invoiceAutoRenewFilter}</span> : null}
                     </div>
                   </div>
                 </div>
@@ -604,7 +604,7 @@ export function PaymentsTab() {
                 <TableBody>
                   {filteredInvoices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-slate-500">
+                      <TableCell colSpan={9} className="text-center text-cream-800/50">
                         No invoices found
                       </TableCell>
                     </TableRow>
@@ -616,11 +616,11 @@ export function PaymentsTab() {
                       return (
                         <TableRow key={invoice.id}>
                           <TableCell>
-                            <div className="font-medium text-slate-900">{invoice.invoiceNumber}</div>
+                            <div className="font-medium text-brand-900">{invoice.invoiceNumber}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="font-medium text-slate-900">{invoice.packageName}</div>
-                            <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                            <div className="font-medium text-brand-900">{invoice.packageName}</div>
+                            <div className="mt-1 flex items-center gap-2 text-xs text-cream-800/50">
                               <span>{getScopeLabel(invoice.planFor || invoice.scope)}</span>
                               {invoice.teamName ? <span>• {invoice.teamName}</span> : null}
                             </div>
@@ -638,7 +638,7 @@ export function PaymentsTab() {
                           </TableCell>
                           <TableCell>{formatDate(invoice.dateSubscribed || invoice.issueDate)}</TableCell>
                           <TableCell>{formatDate(invoice.validTill || null)}</TableCell>
-                          <TableCell className="font-semibold text-slate-900">{formatCurrency(invoice.amount)}</TableCell>
+                          <TableCell className="font-semibold text-brand-900">{formatCurrency(invoice.amount)}</TableCell>
                           <TableCell className="text-right">
                             <Button
                               variant="outline"

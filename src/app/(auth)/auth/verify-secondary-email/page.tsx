@@ -40,24 +40,24 @@ function VerifySecondaryEmailInner() {
   }, [token]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-indigo-50 via-white to-purple-50">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-brand-50 via-white to-cream-50">
+      <div className="bg-white border border-cream-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
         {status === "pending" && (
           <>
-            <Loader2 className="w-10 h-10 mx-auto animate-spin text-indigo-600" />
+            <Loader2 className="w-10 h-10 mx-auto animate-spin text-brand-500" />
             <h1 className="text-xl font-semibold">Confirming your secondary email…</h1>
-            <p className="text-sm text-slate-600">This will only take a moment.</p>
+            <p className="text-sm text-cream-800/70">This will only take a moment.</p>
           </>
         )}
         {status === "success" && (
           <>
             <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-600" />
             <h1 className="text-xl font-semibold">Secondary email confirmed</h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-cream-800/70">
               {message || "You can now sign in with either email on this account."}
             </p>
             <Link href="/settings" className="inline-block">
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700">Back to settings</Button>
+              <Button className="w-full bg-brand-500 hover:bg-brand-600">Back to settings</Button>
             </Link>
           </>
         )}
@@ -65,7 +65,7 @@ function VerifySecondaryEmailInner() {
           <>
             <AlertTriangle className="w-12 h-12 mx-auto text-amber-500" />
             <h1 className="text-xl font-semibold">This link has expired</h1>
-            <p className="text-sm text-slate-600">{message || "Open Settings and resend the confirmation link."}</p>
+            <p className="text-sm text-cream-800/70">{message || "Open Settings and resend the confirmation link."}</p>
             <Link href="/settings" className="inline-block">
               <Button variant="outline" className="w-full">Go to settings</Button>
             </Link>
@@ -75,7 +75,7 @@ function VerifySecondaryEmailInner() {
           <>
             <AlertTriangle className="w-12 h-12 mx-auto text-red-500" />
             <h1 className="text-xl font-semibold">Email no longer available</h1>
-            <p className="text-sm text-slate-600">{message || "Another account has claimed this email. Choose a different address in Settings."}</p>
+            <p className="text-sm text-cream-800/70">{message || "Another account has claimed this email. Choose a different address in Settings."}</p>
             <Link href="/settings" className="inline-block">
               <Button variant="outline" className="w-full">Go to settings</Button>
             </Link>
@@ -85,7 +85,7 @@ function VerifySecondaryEmailInner() {
           <>
             <AlertTriangle className="w-12 h-12 mx-auto text-red-500" />
             <h1 className="text-xl font-semibold">We couldn&apos;t confirm this email</h1>
-            <p className="text-sm text-slate-600">{message || "The link is invalid or has already been used."}</p>
+            <p className="text-sm text-cream-800/70">{message || "The link is invalid or has already been used."}</p>
             <Link href="/settings" className="inline-block">
               <Button variant="outline" className="w-full">Go to settings</Button>
             </Link>
@@ -100,9 +100,9 @@ export default function VerifySecondaryEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-indigo-50 via-white to-purple-50">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
-            <Loader2 className="w-10 h-10 mx-auto animate-spin text-indigo-600" />
+        <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-brand-50 via-white to-cream-50">
+          <div className="bg-white border border-cream-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
+            <Loader2 className="w-10 h-10 mx-auto animate-spin text-brand-500" />
             <h1 className="text-xl font-semibold">Loading…</h1>
           </div>
         </div>

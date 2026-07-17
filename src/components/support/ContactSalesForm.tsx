@@ -64,23 +64,23 @@ export default function ContactSalesForm({ onClose }: { onClose?: () => void }) 
     <form onSubmit={handleSubmit} className="space-y-4 mt-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Full name (optional)</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Full name (optional)</label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Email address</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Email address</label>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Phone number (optional)</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Phone number (optional)</label>
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Preferred contact method</label>
-          <select value={preferredContactMethod} onChange={(e) => setPreferredContactMethod(e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Preferred contact method</label>
+          <select value={preferredContactMethod} onChange={(e) => setPreferredContactMethod(e.target.value)} className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm">
             <option value="">Any</option>
             <option value="email">Email</option>
             <option value="phone">Phone</option>
@@ -90,44 +90,44 @@ export default function ContactSalesForm({ onClose }: { onClose?: () => void }) 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Company name (optional)</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Company name (optional)</label>
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Team size</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Team size</label>
           <Input value={teamSize} onChange={(e) => setTeamSize(e.target.value)} placeholder="e.g. 12 agents" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Estimated monthly credit volume</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Estimated monthly credit volume</label>
           <Input value={estimatedMonthlyCreditVolume} onChange={(e) => setEstimatedMonthlyCreditVolume(e.target.value)} placeholder="e.g. 2000 credits" />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Preferred start date</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Preferred start date</label>
           <Input type="date" value={preferredStartDate} onChange={(e) => setPreferredStartDate(e.target.value)} />
         </div>
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Primary use case</label>
+        <label className="mb-1 block text-sm font-medium text-cream-800/80">Primary use case</label>
         <Input value={primaryUseCase} onChange={(e) => setPrimaryUseCase(e.target.value)} placeholder="e.g. short term rentals, design" />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">Optional message</label>
-        <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Any additional details" />
+        <label className="mb-1 block text-sm font-medium text-cream-800/80">Optional message</label>
+        <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm" placeholder="Any additional details" />
       </div>
 
       {error && <div className="text-sm text-red-700">{error}</div>}
 
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
+        <button type="submit" disabled={submitting} className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600">
           {submitting ? 'Sending...' : 'Send'}
         </button>
         {onClose ? (
-          <button type="button" onClick={onClose} className="text-sm text-slate-600 hover:underline">Cancel</button>
+          <button type="button" onClick={onClose} className="text-sm text-cream-800/70 hover:underline">Cancel</button>
         ) : null}
       </div>
     </form>

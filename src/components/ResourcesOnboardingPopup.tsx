@@ -57,7 +57,7 @@ export function ResourcesOnboardingPopup() {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Maybe later
           </Button>
-          <Button onClick={handleGoToResources} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={handleGoToResources} className="bg-brand-500 hover:bg-brand-600">
             Open resources
           </Button>
         </div>

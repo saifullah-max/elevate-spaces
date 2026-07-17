@@ -89,7 +89,7 @@ export function UploadArea({ limitReached, setFile, setFiles, setStagedImageUrls
         {selectedFiles.length > 0 && (
           <button
             onClick={() => onCustomStylingModalChange?.(true)}
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition"
+            className="text-sm text-brand-500 hover:text-brand-600 font-semibold transition"
           >
             View all uploaded images ({selectedFiles.length}/15)
           </button>
@@ -98,16 +98,16 @@ export function UploadArea({ limitReached, setFile, setFiles, setStagedImageUrls
         <div
           data-meta-event="upload-photo"
           onClick={limitReached ? undefined : handleDivClick}
-          className={`border-2 border-dashed border-slate-300 rounded-lg p-6 text-center ${limitReached
+          className={`border-2 border-dashed border-cream-200 rounded-lg p-6 text-center ${limitReached
             ? "cursor-not-allowed opacity-60"
-            : "cursor-pointer hover:border-indigo-500"
+            : "cursor-pointer hover:border-brand-500"
             } bg-white transition-colors group`}
         >
-          <UploadCloud className="w-8 h-8 mx-auto text-slate-400 mb-2 group-hover:text-indigo-500 transition-colors" />
-          <span className="text-xs text-slate-600 font-medium block">
+          <UploadCloud className="w-8 h-8 mx-auto text-cream-800/40 mb-2 group-hover:text-brand-500 transition-colors" />
+          <span className="text-xs text-cream-800/70 font-medium block">
             {limitReached ? "Demo Limit Reached" : "Click to Upload"}
           </span>
-          <span className="text-[10px] text-slate-400 block mt-1">
+          <span className="text-[10px] text-cream-800/40 block mt-1">
             JPG/PNG, single or multiple
           </span>
 

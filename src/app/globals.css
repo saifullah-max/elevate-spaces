@@ -148,3 +148,39 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* React-toastify: override defaults to match Elevate brand toast style */
+.Toastify__toast-container {
+  width: auto;
+  max-width: 420px;
+  padding: 0;
+}
+.Toastify__toast {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  min-height: 0;
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  font-family: inherit;
+}
+.Toastify__toast-body {
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.Toastify__toast--error,
+.Toastify__toast--success,
+.Toastify__toast--info {
+  background: transparent;
+}
+.Toastify__progress-bar { display: none; }
+
+/* Prevent any stray element from pushing horizontal scroll on mobile */
+html, body { overflow-x: hidden; }

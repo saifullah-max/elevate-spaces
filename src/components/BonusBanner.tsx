@@ -163,26 +163,30 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
     return (
       <div
         ref={topBannerRef}
-        className="fixed top-0 left-0 right-0 z-[100] text-white px-4 py-2.5 shadow-md"
+        className="fixed top-0 left-0 right-0 z-[100] text-white px-3 sm:px-4 py-2 shadow-md overflow-hidden"
         style={{ backgroundColor: "#4747C4" }}
       >
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <Sparkles className="w-4 h-4 shrink-0" />
             <div className="min-w-0">
-              <span className="text-sm font-semibold">{content.message} </span>
-              <span className="text-xs text-white/80 hidden sm:inline">{content.subMessage}</span>
+              <span className="text-xs sm:text-sm font-semibold line-clamp-2 sm:line-clamp-none">
+                {content.message}
+              </span>
+              <span className="text-xs text-white/80 hidden md:inline ml-1">
+                {content.subMessage}
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={content.urgent ? () => (window.location.href = "/#pricing") : handleSignUp}
-              className="bg-white text-xs font-bold px-4 py-1.5 rounded-lg hover:bg-indigo-50 transition whitespace-nowrap"
+              className="bg-white text-[11px] sm:text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-cream-50 transition whitespace-nowrap"
               style={{ color: "#4747C4" }}
             >
               {content.cta}
             </button>
-            <button onClick={handleDismiss} className="text-white/70 hover:text-white transition">
+            <button onClick={handleDismiss} className="text-white/70 hover:text-white transition p-0.5">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -208,7 +212,7 @@ export default function BonusBanner({ position = "top", afterUpload = false }: B
       </div>
       <button
         onClick={content.urgent ? () => (window.location.href = "/#pricing") : handleSignUp}
-        className="mt-3 w-full bg-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-indigo-50 transition"
+        className="mt-3 w-full bg-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-brand-50 transition"
         style={{ color: "#4747C4" }}
       >
         {content.cta}

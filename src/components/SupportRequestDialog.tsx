@@ -146,51 +146,51 @@ export function SupportRequestDialog({ open, onOpenChange, defaultFullName = "",
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Full name</label>
+                <label className="mb-1 block text-sm font-medium text-cream-800/80">Full name</label>
                 <Input value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Your full name" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Email address</label>
+                <label className="mb-1 block text-sm font-medium text-cream-800/80">Email address</label>
                 <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Brief description</label>
+              <label className="mb-1 block text-sm font-medium text-cream-800/80">Brief description</label>
               <textarea
                 value={briefDescription}
                 onChange={(event) => setBriefDescription(event.target.value)}
                 rows={4}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-cream-200 focus:ring-2 focus:ring-cream-200"
                 placeholder="Briefly describe your request or issue"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Order number</label>
+              <label className="mb-1 block text-sm font-medium text-cream-800/80">Order number</label>
               <Input value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder="Order number or invoice ID" />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Additional context</label>
+              <label className="mb-1 block text-sm font-medium text-cream-800/80">Additional context</label>
               <textarea
                 value={additionalContext}
                 onChange={(event) => setAdditionalContext(event.target.value)}
                 rows={4}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-cream-200 focus:ring-2 focus:ring-cream-200"
                 placeholder="Add any extra details, screenshots, or context here"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Screenshots</label>
-              <div className="flex items-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3">
-                <Upload className="h-4 w-4 text-slate-500" />
+              <label className="mb-2 block text-sm font-medium text-cream-800/80">Screenshots</label>
+              <div className="flex items-center gap-3 rounded-lg border border-dashed border-cream-200 bg-cream-50 px-4 py-3">
+                <Upload className="h-4 w-4 text-cream-800/50" />
                 <div className="flex-1">
-                  <p className="text-sm text-slate-700">Attach screenshots if available</p>
-                  <p className="text-xs text-slate-500">Up to 3 images. PNG/JPG preferred.</p>
+                  <p className="text-sm text-cream-800/80">Attach screenshots if available</p>
+                  <p className="text-xs text-cream-800/50">Up to 3 images. PNG/JPG preferred.</p>
                 </div>
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-cream-200 bg-white px-3 py-2 text-xs font-semibold text-cream-800/80 hover:bg-cream-50">
                   <Paperclip className="h-4 w-4" />
                   Add files
                   <input type="file" className="hidden" accept="image/*" multiple onChange={handleFileChange} />
@@ -200,10 +200,10 @@ export function SupportRequestDialog({ open, onOpenChange, defaultFullName = "",
               {screenshots.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {screenshots.map((attachment, index) => (
-                    <div key={`${attachment.file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                    <div key={`${attachment.file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border border-cream-200 px-3 py-2 text-sm">
                       <div className="min-w-0">
-                        <p className="truncate font-medium text-slate-800">{attachment.file.name}</p>
-                        <p className="text-xs text-slate-500">{Math.round(attachment.file.size / 1024)} KB</p>
+                        <p className="truncate font-medium text-brand-900">{attachment.file.name}</p>
+                        <p className="text-xs text-cream-800/50">{Math.round(attachment.file.size / 1024)} KB</p>
                       </div>
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeScreenshot(index)}>
                         <X className="h-4 w-4" />

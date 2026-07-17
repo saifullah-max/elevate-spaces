@@ -34,7 +34,7 @@ function PaymentErrorHandler() {
   const Icon = config.icon;
 
   return (
-    <div className={`min-h-screen bg-linear-to-br ${config.bgColor} to-slate-100 flex items-center justify-center p-4`}>
+    <div className={`min-h-screen bg-linear-to-br ${config.bgColor} to-cream-100 flex items-center justify-center p-4`}>
       <div className="max-w-md w-full">
         {/* Error Card */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -62,8 +62,8 @@ function PaymentErrorHandler() {
             {/* Common Reasons */}
             {!isCancel && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-slate-900 text-sm">Common reasons for payment failure:</h3>
-                <ul className="space-y-1.5 text-sm text-slate-600">
+                <h3 className="font-semibold text-brand-900 text-sm">Common reasons for payment failure:</h3>
+                <ul className="space-y-1.5 text-sm text-cream-800/70">
                   <li className="flex gap-2">
                     <span className="text-red-600 font-bold">•</span>
                     <span>Insufficient funds in your account</span>
@@ -93,7 +93,7 @@ function PaymentErrorHandler() {
             </div>
 
             {/* Actions */}
-            <div className="space-y-3 pt-4 border-t border-slate-200">
+            <div className="space-y-3 pt-4 border-t border-cream-200">
               <Link
                 href="/#pricing"
                 className={`w-full block text-center px-6 py-3 font-semibold rounded-lg transition-colors ${
@@ -107,7 +107,7 @@ function PaymentErrorHandler() {
 
               <button
                 onClick={() => window.history.back()}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 text-slate-900 font-semibold rounded-lg hover:bg-slate-200 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cream-100 text-brand-900 font-semibold rounded-lg hover:bg-cream-200 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Go Back
@@ -116,7 +116,7 @@ function PaymentErrorHandler() {
           </div>
 
           {/* Footer */}
-          <div className="bg-slate-50 px-8 py-4 text-center text-xs text-slate-500 border-t border-slate-200">
+          <div className="bg-cream-50 px-8 py-4 text-center text-xs text-cream-800/50 border-t border-cream-200">
             <p>
               Questions?{" "}
               <SupportModalTrigger className="text-blue-600 hover:underline font-medium cursor-pointer">
@@ -140,7 +140,7 @@ export default function PaymentError() {
       <div className="min-h-screen bg-linear-to-br from-red-50 to-rose-50 flex items-center justify-center p-4">
         <div className="text-center space-y-4">
           <Loader className="w-12 h-12 text-red-600 animate-spin mx-auto" />
-          <h1 className="text-2xl font-bold text-slate-900">Loading...</h1>
+          <h1 className="text-2xl font-bold text-brand-900">Loading...</h1>
         </div>
       </div>
     }>

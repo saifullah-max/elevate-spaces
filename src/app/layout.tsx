@@ -1,6 +1,6 @@
 import 'react-toastify/dist/ReactToastify.css';
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/providers/ReduxProvider";
 import { RootClientLayout } from "@/components/RootClientLayout";
@@ -15,10 +15,16 @@ import BonusBanner from "@/components/BonusBanner";
 const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.elevatespacesai.com";
@@ -99,7 +105,7 @@ export default function RootLayout({
         <AnalyticsScripts />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} font-sans antialiased`}
       >
         <ReduxProvider>
           <RootClientLayout>

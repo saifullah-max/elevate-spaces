@@ -247,14 +247,14 @@ export function ProfileImageCropDialog({
         </DialogHeader>
 
         {!hasSourceFile ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-sm text-cream-800/70">
             Select an image first.
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex justify-center">
               <div
-                className={`relative overflow-hidden rounded-full border-4 border-indigo-100 bg-slate-100 ${hasImage ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'}`}
+                className={`relative overflow-hidden rounded-full border-4 border-brand-100 bg-cream-100 ${hasImage ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'}`}
                 style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
@@ -268,8 +268,8 @@ export function ProfileImageCropDialog({
                   className="block h-full w-full"
                 />
                 {isImageLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-100/70">
-                    <Loader className="h-5 w-5 animate-spin text-indigo-600" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-cream-100/70">
+                    <Loader className="h-5 w-5 animate-spin text-brand-500" />
                   </div>
                 )}
               </div>
@@ -278,7 +278,7 @@ export function ProfileImageCropDialog({
             {imageError ? (
               <p className="text-xs text-red-600 text-center">{imageError}</p>
             ) : (
-              <p className="text-xs text-slate-500 text-center">Drag image to position inside the circle.</p>
+              <p className="text-xs text-cream-800/50 text-center">Drag image to position inside the circle.</p>
             )}
 
             <div className="flex justify-end gap-2">
