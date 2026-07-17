@@ -101,15 +101,15 @@ export default function PhotographerApprovalDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-cream-200 p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Photographer Application</h1>
-            <p className="text-slate-600 mt-1">Review complete profile details and update status.</p>
+            <h1 className="text-3xl font-bold text-brand-900">Photographer Application</h1>
+            <p className="text-cream-800/70 mt-1">Review complete profile details and update status.</p>
           </div>
           <Link
             href="/admin/photographer-approvals"
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            className="rounded-md border border-cream-200 px-4 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-100"
           >
             Back to Approvals
           </Link>
@@ -117,28 +117,28 @@ export default function PhotographerApprovalDetailPage() {
       </div>
 
       {loadingApplication && !application && (
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-slate-500">Loading details...</div>
+        <div className="rounded-lg border border-cream-200 bg-white p-8 text-center text-cream-800/50">Loading details...</div>
       )}
 
       {application && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <p className="text-sm text-slate-500">Applicant</p>
-              <p className="text-lg font-bold text-slate-900">{application.user.name || "Unnamed Photographer"}</p>
+            <div className="rounded-lg border border-cream-200 bg-white p-4">
+              <p className="text-sm text-cream-800/50">Applicant</p>
+              <p className="text-lg font-bold text-brand-900">{application.user.name || "Unnamed Photographer"}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <p className="text-sm text-slate-500">Current Status</p>
-              <p className="text-lg font-bold text-slate-900">{formatStatus(application.application_status)}</p>
+            <div className="rounded-lg border border-cream-200 bg-white p-4">
+              <p className="text-sm text-cream-800/50">Current Status</p>
+              <p className="text-lg font-bold text-brand-900">{formatStatus(application.application_status)}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <p className="text-sm text-slate-500">Submitted</p>
-              <p className="text-lg font-bold text-slate-900">{new Date(application.created_at).toLocaleString()}</p>
+            <div className="rounded-lg border border-cream-200 bg-white p-4">
+              <p className="text-sm text-cream-800/50">Submitted</p>
+              <p className="text-lg font-bold text-brand-900">{new Date(application.created_at).toLocaleString()}</p>
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-6 space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Details</h2>
+          <div className="rounded-lg border border-cream-200 bg-white p-6 space-y-4">
+            <h2 className="text-xl font-bold text-brand-900">Details</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Info label="Email" value={application.user.email} />
               <Info label="Business Name" value={application.business_name} />
@@ -161,23 +161,23 @@ export default function PhotographerApprovalDetailPage() {
 
             {application.photographer_responses && application.photographer_responses.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-slate-900">Photographer Updates</h3>
+                <h3 className="text-lg font-semibold text-brand-900">Photographer Updates</h3>
                 {application.photographer_responses.map((response, index) => (
-                  <div key={`${response.submittedAt}-${index}`} className="rounded-md border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted {new Date(response.submittedAt).toLocaleString()}</p>
-                    <div className="mt-2 rounded-md border border-slate-200 bg-white p-3 text-slate-800 whitespace-pre-wrap">
+                  <div key={`${response.submittedAt}-${index}`} className="rounded-md border border-cream-200 bg-cream-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Submitted {new Date(response.submittedAt).toLocaleString()}</p>
+                    <div className="mt-2 rounded-md border border-cream-200 bg-white p-3 text-brand-900 whitespace-pre-wrap">
                       <div dangerouslySetInnerHTML={{ __html: response.contentHtml }} />
                     </div>
                     {response.attachments && response.attachments.length > 0 && (
                       <div className="mt-3 space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Attachments</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Attachments</p>
                         <div className="flex flex-wrap gap-2">
                           {response.attachments.map((attachment, attachmentIndex) => (
                             <a
                               key={`${attachment.name}-${attachmentIndex}`}
                               href={attachment.dataUrl}
                               download={attachment.name}
-                              className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                              className="rounded-full border border-cream-200 bg-white px-3 py-1 text-xs font-medium text-cream-800/80 hover:bg-cream-100"
                             >
                               {attachment.name}
                             </a>
@@ -202,9 +202,9 @@ export default function PhotographerApprovalDetailPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-6 space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Update Application Status</h2>
-            <p className="text-sm text-slate-600">
+          <div className="rounded-lg border border-cream-200 bg-white p-6 space-y-4">
+            <h2 className="text-xl font-bold text-brand-900">Update Application Status</h2>
+            <p className="text-sm text-cream-800/70">
               Select the next status. Feedback is required when choosing Needs more info.
             </p>
 
@@ -220,7 +220,7 @@ export default function PhotographerApprovalDetailPage() {
                     className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
                       active
                         ? "border-indigo-600 bg-indigo-50 text-indigo-900"
-                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                        : "border-cream-200 bg-white text-cream-800/80 hover:bg-cream-50"
                     }`}
                   >
                     {option.label}
@@ -231,20 +231,20 @@ export default function PhotographerApprovalDetailPage() {
 
             {selectedStatus === "NEEDS_MORE_INFO" && (
               <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-cream-800/80">
                   Add the exact information the photographer must provide
                 </label>
                 <textarea
                   value={adminFeedback}
                   onChange={(event) => setAdminFeedback(event.target.value)}
                   placeholder="Tell them what files, clarifications, or corrections you need..."
-                  className="min-h-32 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-600"
+                  className="min-h-32 w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-indigo-600"
                 />
               </div>
             )}
 
             {selectedStatus !== "NEEDS_MORE_INFO" && adminFeedback && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-cream-800/50">
                 Existing feedback is stored on the profile but only required for Needs more info.
               </p>
             )}
@@ -254,7 +254,7 @@ export default function PhotographerApprovalDetailPage() {
                 type="button"
                 onClick={handleReview}
                 disabled={savingReview || selectedStatus === application.application_status}
-                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
+                className="rounded-md bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
               >
                 {savingReview ? "Saving..." : `Save ${formatStatus(selectedStatus)}`}
               </button>
@@ -270,7 +270,7 @@ function Info({ label, value, isUrl = false }: { label: string; value: string | 
   if (isUrl && value) {
     return (
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">{label}</p>
         <a href={value} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline break-all">
           {value}
         </a>
@@ -280,8 +280,8 @@ function Info({ label, value, isUrl = false }: { label: string; value: string | 
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="text-slate-800">{value || "-"}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">{label}</p>
+      <p className="text-brand-900">{value || "-"}</p>
     </div>
   );
 }
@@ -289,8 +289,8 @@ function Info({ label, value, isUrl = false }: { label: string; value: string | 
 function InfoBlock({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-800 whitespace-pre-wrap">{value || "-"}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">{label}</p>
+      <p className="mt-1 rounded-md border border-cream-200 bg-cream-50 p-3 text-brand-900 whitespace-pre-wrap">{value || "-"}</p>
     </div>
   );
 }

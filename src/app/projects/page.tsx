@@ -275,13 +275,13 @@ export default function ProjectsPage() {
                         <button
                             type="button"
                             aria-label="Project rules"
-                            className="text-slate-500 hover:text-indigo-600 transition flex items-center gap-2"
+                            className="text-cream-800/50 hover:text-brand-500 transition flex items-center gap-2"
                         >
                             <Info className="w-5 h-5" />
                             <span>How projects work</span>
                         </button>
 
-                        <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition absolute left-0 top-full mt-2 z-30 w-80 rounded-lg border border-slate-200 bg-white p-3 shadow-lg text-xs text-slate-700">
+                        <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition absolute left-0 top-full mt-2 z-30 w-80 rounded-lg border border-cream-200 bg-white p-3 shadow-lg text-xs text-cream-800/80">
                             <p className="mb-2">
                                 <span className="font-semibold">Team projects</span> are created inside a team and are visible to the team owner and any team admins — not just the person who created them.
                             </p>
@@ -305,13 +305,13 @@ export default function ProjectsPage() {
                     </Button>
                 </div>
                 <div className="space-y-6">
-                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200">
-                            <h2 className="text-xl font-semibold text-slate-900">Personal projects</h2>
+                    <div className="bg-white rounded-2xl shadow-lg border border-cream-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-cream-200">
+                            <h2 className="text-xl font-semibold text-brand-900">Personal projects</h2>
                         </div>
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-50">
+                                <TableRow className="bg-cream-50">
                                     <TableHead className="font-semibold text-left">Project</TableHead>
                                     <TableHead className="font-semibold text-left">Created By</TableHead>
                                     <TableHead className="font-semibold text-left">Address</TableHead>
@@ -322,11 +322,11 @@ export default function ProjectsPage() {
                             <TableBody>
                                 {personalProjects.length ? (
                                     personalProjects.map((project) => (
-                                        <TableRow key={project.id} className="hover:bg-slate-50">
+                                        <TableRow key={project.id} className="hover:bg-cream-50">
                                             <TableCell className="font-medium">{project.name}</TableCell>
                                             <TableCell>{project.created_by?.name || project.created_by?.email || "-"}</TableCell>
-                                            <TableCell className="text-slate-600">{project.address || "-"}</TableCell>
-                                            <TableCell className="text-slate-600">{new Date(project.created_at).toLocaleDateString()}</TableCell>
+                                            <TableCell className="text-cream-800/70">{project.address || "-"}</TableCell>
+                                            <TableCell className="text-cream-800/70">{new Date(project.created_at).toLocaleDateString()}</TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -355,7 +355,7 @@ export default function ProjectsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center text-slate-500 py-10">
+                                        <TableCell colSpan={5} className="text-center text-cream-800/50 py-10">
                                             No personal projects yet.
                                         </TableCell>
                                     </TableRow>
@@ -364,13 +364,13 @@ export default function ProjectsPage() {
                         </Table>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200">
-                            <h2 className="text-xl font-semibold text-slate-900">Projects linked to a team</h2>
+                    <div className="bg-white rounded-2xl shadow-lg border border-cream-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-cream-200">
+                            <h2 className="text-xl font-semibold text-brand-900">Projects linked to a team</h2>
                         </div>
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-50">
+                                <TableRow className="bg-cream-50">
                                     <TableHead className="font-semibold text-left">Project</TableHead>
                                     <TableHead className="font-semibold text-left">Team</TableHead>
                                     <TableHead className="font-semibold text-left">Created By</TableHead>
@@ -382,12 +382,12 @@ export default function ProjectsPage() {
                             <TableBody>
                                 {teamProjects.length ? (
                                     teamProjects.map((project) => (
-                                        <TableRow key={project.id} className="hover:bg-slate-50">
+                                        <TableRow key={project.id} className="hover:bg-cream-50">
                                             <TableCell className="font-medium">{project.name}</TableCell>
                                             <TableCell>{project.team?.name || "-"}</TableCell>
                                             <TableCell>{project.created_by?.name || project.created_by?.email || "-"}</TableCell>
-                                            <TableCell className="text-slate-600">{project.address || "-"}</TableCell>
-                                            <TableCell className="text-slate-600">{new Date(project.created_at).toLocaleDateString()}</TableCell>
+                                            <TableCell className="text-cream-800/70">{project.address || "-"}</TableCell>
+                                            <TableCell className="text-cream-800/70">{new Date(project.created_at).toLocaleDateString()}</TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -416,7 +416,7 @@ export default function ProjectsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center text-slate-500 py-10">
+                                        <TableCell colSpan={6} className="text-center text-cream-800/50 py-10">
                                             No team projects yet.
                                         </TableCell>
                                     </TableRow>
@@ -480,7 +480,7 @@ export default function ProjectsPage() {
                                 Cancel
                             </Button>
                             <Button
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                                className="flex-1 bg-brand-500 hover:bg-brand-600"
                                 onClick={handleRenameProject}
                                 disabled={renameLoading || !renameProjectName.trim()}
                             >
@@ -495,17 +495,17 @@ export default function ProjectsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
 
                     {/* Modal Card */}
-                    <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-200 p-6 max-h-[90vh] overflow-y-auto">
+                    <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-cream-200 p-6 max-h-[90vh] overflow-y-auto">
 
                         {/* Close Button */}
                         <button
                             onClick={() => setShowModal(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition"
+                            className="absolute top-4 right-4 text-cream-800/40 hover:text-cream-800/80 transition"
                         >
                             ✕
                         </button>
 
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2">
+                        <h1 className="text-2xl font-bold text-brand-900 mb-2">
                             {projectMode === 'personal' ? 'Add Personal Project' : 'Add Project to the Team'}
                         </h1>
 
@@ -517,7 +517,7 @@ export default function ProjectsPage() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="mb-4 flex items-start gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
+                            <div className="mb-4 flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 p-3 text-xs text-brand-900">
                                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
                                 <p>
                                     Personal projects are private — only you can see them. They require your own active personal plan (team subscriptions don&apos;t cover personal projects).
@@ -536,7 +536,7 @@ export default function ProjectsPage() {
                                         id="project-team"
                                         value={teamId}
                                         onChange={(e) => setTeamId(e.target.value)}
-                                        className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white"
+                                        className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all bg-white"
                                     >
                                         <option value="">Select a team…</option>
                                         {teamOptions.map((team) => (
@@ -598,7 +598,7 @@ export default function ProjectsPage() {
                                             placeholder="photographer@email.com"
                                             className="mt-1"
                                         />
-                                        <p className="mt-1 text-xs text-slate-500">
+                                        <p className="mt-1 text-xs text-cream-800/50">
                                             If the email is not already on the team, a team invite and restricted project invite will be created.
                                         </p>
                                     </div>
@@ -616,7 +616,7 @@ export default function ProjectsPage() {
                                         placeholder="photographer@email.com"
                                         className="mt-1"
                                     />
-                                    <p className="mt-1 text-xs text-slate-500">
+                                    <p className="mt-1 text-xs text-cream-800/50">
                                         Anyone can be invited to a personal project. If the email belongs to an existing user they&apos;ll be added immediately; otherwise they&apos;ll receive an invitation to join the project.
                                     </p>
                                 </div>
@@ -630,7 +630,7 @@ export default function ProjectsPage() {
                                     id="project-description"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
+                                    className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all resize-none"
                                     rows={3}
                                 />
                             </div>
@@ -651,7 +651,7 @@ export default function ProjectsPage() {
                                 <Button
                                     type="submit"
                                     disabled={loading}
-                                    className="bg-indigo-600 hover:bg-indigo-700 w-full"
+                                    className="bg-brand-500 hover:bg-brand-600 w-full"
                                 >
                                     {loading ? "Creating..." : "Create Project"}
                                 </Button>

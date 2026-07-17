@@ -90,22 +90,22 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <header className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Analytics overview</p>
-            <h1 className="mt-1 text-3xl font-bold text-slate-900">Welcome back, {userName}</h1>
-            <p className="mt-1 text-sm text-slate-600">Key metrics across visitors, signups, and revenue.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-500">Analytics overview</p>
+            <h1 className="mt-1 font-display text-3xl font-bold text-brand-900">Welcome back, {userName}</h1>
+            <p className="mt-1 text-sm text-cream-800/70">Key metrics across visitors, signups, and revenue.</p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <div className="inline-flex rounded-xl border border-cream-200 bg-cream-50 p-1">
               {(Object.keys(RANGE_LABELS) as Range[]).map((option) => (
                 <button
                   key={option}
                   type="button"
                   onClick={() => setRange(option)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    range === option ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"
+                    range === option ? "bg-white text-brand-900 shadow-sm" : "text-cream-800/70 hover:text-brand-900"
                   }`}
                 >
                   {RANGE_LABELS[option]}
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={() => void loadData(range)}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg border border-cream-200 px-3 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-50 disabled:opacity-60"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
@@ -159,8 +159,8 @@ function KpiGrid({ data, loading }: { data: AnalyticsOverview | null; loading: b
         label: "Unique visitors",
         value: formatNumber(totals?.uniqueVisitors || 0),
         delta: pctChange(totals?.uniqueVisitors || 0, totals?.totalPageViewsPrev ? Math.max(1, Math.round((totals.totalPageViewsPrev * (totals.uniqueVisitors / Math.max(totals.totalPageViews, 1))))) : 0),
-        icon: <Eye className="h-5 w-5 text-indigo-600" />,
-        iconBg: "bg-indigo-50",
+        icon: <Eye className="h-5 w-5 text-brand-500" />,
+        iconBg: "bg-brand-50",
       },
       {
         label: "Page views",
@@ -194,8 +194,8 @@ function KpiGrid({ data, loading }: { data: AnalyticsOverview | null; loading: b
         label: "Active users",
         value: formatNumber(totals?.activeUsers || 0),
         delta: 0,
-        icon: <Users className="h-5 w-5 text-violet-600" />,
-        iconBg: "bg-violet-50",
+        icon: <Users className="h-5 w-5 text-accent-600" />,
+        iconBg: "bg-accent-500/10",
       },
     ],
     [totals]
@@ -204,17 +204,17 @@ function KpiGrid({ data, loading }: { data: AnalyticsOverview | null; loading: b
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {items.map((item) => (
-        <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div key={item.label} className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
           <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${item.iconBg}`}>{item.icon}</div>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">{item.label}</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{loading && !data ? "—" : item.value}</p>
+          <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-cream-800/50">{item.label}</p>
+          <p className="mt-1 text-2xl font-bold text-brand-900">{loading && !data ? "—" : item.value}</p>
           {item.delta !== 0 ? (
             <p className={`mt-1 inline-flex items-center gap-1 text-xs font-semibold ${item.delta >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
               {item.delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {formatPercent(Math.abs(item.delta), 1)} vs prev
             </p>
           ) : (
-            <p className="mt-1 text-xs text-slate-400">in window</p>
+            <p className="mt-1 text-xs text-cream-800/40">in window</p>
           )}
         </div>
       ))}
@@ -245,17 +245,17 @@ function TrendChartCard({ data }: { data: AnalyticsOverview | null }) {
   const lastDate = series[series.length - 1]?.date;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Visitors vs signups</h2>
-          <p className="text-sm text-slate-500">Daily page views and new signups across the selected window.</p>
+          <h2 className="text-lg font-semibold text-brand-900">Visitors vs signups</h2>
+          <p className="text-sm text-cream-800/50">Daily page views and new signups across the selected window.</p>
         </div>
         <div className="flex items-center gap-3 text-xs">
-          <span className="inline-flex items-center gap-2 text-slate-600">
-            <span className="h-2 w-2 rounded-full bg-indigo-500" /> Page views
+          <span className="inline-flex items-center gap-2 text-cream-800/70">
+            <span className="h-2 w-2 rounded-full bg-brand-500" /> Page views
           </span>
-          <span className="inline-flex items-center gap-2 text-slate-600">
+          <span className="inline-flex items-center gap-2 text-cream-800/70">
             <span className="h-2 w-2 rounded-full bg-emerald-500" /> Signups
           </span>
         </div>
@@ -263,7 +263,7 @@ function TrendChartCard({ data }: { data: AnalyticsOverview | null }) {
 
       <div className="mt-4 overflow-x-auto">
         {series.length === 0 ? (
-          <div className="flex h-60 items-center justify-center text-sm text-slate-400">No data yet for this window.</div>
+          <div className="flex h-60 items-center justify-center text-sm text-cream-800/40">No data yet for this window.</div>
         ) : (
           <svg viewBox={`0 0 ${width} ${height}`} className="block min-w-[480px]">
             {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
@@ -283,7 +283,7 @@ function TrendChartCard({ data }: { data: AnalyticsOverview | null }) {
                 x={padding.left - 6}
                 y={padding.top + innerHeight * tick + 4}
                 textAnchor="end"
-                className="fill-slate-400 text-[10px]"
+                className="fill-current text-cream-800/40 text-[10px]"
               >
                 {Math.round(maxValue * (1 - tick))}
               </text>
@@ -292,12 +292,12 @@ function TrendChartCard({ data }: { data: AnalyticsOverview | null }) {
             <path d={pageViewsPath} fill="none" stroke="#6366f1" strokeWidth={2.5} />
             <path d={signupsPath} fill="none" stroke="#10b981" strokeWidth={2.5} strokeDasharray="4 4" />
             {firstDate ? (
-              <text x={padding.left} y={height - 6} className="fill-slate-400 text-[10px]">
+              <text x={padding.left} y={height - 6} className="fill-current text-cream-800/40 text-[10px]">
                 {firstDate}
               </text>
             ) : null}
             {lastDate ? (
-              <text x={padding.left + innerWidth} y={height - 6} textAnchor="end" className="fill-slate-400 text-[10px]">
+              <text x={padding.left + innerWidth} y={height - 6} textAnchor="end" className="fill-current text-cream-800/40 text-[10px]">
                 {lastDate}
               </text>
             ) : null}
@@ -312,18 +312,18 @@ function FunnelCard({ data }: { data: AnalyticsOverview | null }) {
   const steps = data?.funnel || [];
   const maxValue = steps[0]?.value || 1;
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Conversion funnel</h2>
-          <p className="text-sm text-slate-500">From anonymous visit through to a paid booking.</p>
+          <h2 className="text-lg font-semibold text-brand-900">Conversion funnel</h2>
+          <p className="text-sm text-cream-800/50">From anonymous visit through to a paid booking.</p>
         </div>
-        <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">In window</span>
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">In window</span>
       </div>
 
       <div className="mt-4 space-y-3">
         {steps.length === 0 ? (
-          <p className="text-sm text-slate-400">No funnel data yet.</p>
+          <p className="text-sm text-cream-800/40">No funnel data yet.</p>
         ) : (
           steps.map((step, index) => {
             const widthPct = Math.max(6, (step.value / Math.max(maxValue, 1)) * 100);
@@ -332,17 +332,17 @@ function FunnelCard({ data }: { data: AnalyticsOverview | null }) {
             return (
               <div key={step.label}>
                 <div className="flex items-baseline justify-between text-sm">
-                  <span className="font-semibold text-slate-700">{step.label}</span>
-                  <span className="font-bold text-slate-900">{formatNumber(step.value)}</span>
+                  <span className="font-semibold text-cream-800/80">{step.label}</span>
+                  <span className="font-bold text-brand-900">{formatNumber(step.value)}</span>
                 </div>
-                <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-cream-100">
                   <div
-                    className="h-3 rounded-full bg-linear-to-r from-indigo-500 to-violet-500"
+                    className="h-3 rounded-full bg-linear-to-r from-brand-500 to-accent-500"
                     style={{ width: `${widthPct}%` }}
                   />
                 </div>
                 {index > 0 ? (
-                  <p className={`mt-1 text-[11px] font-semibold ${dropoff > 50 ? "text-rose-500" : "text-slate-500"}`}>
+                  <p className={`mt-1 text-[11px] font-semibold ${dropoff > 50 ? "text-rose-500" : "text-cream-800/50"}`}>
                     {dropoff > 0 ? `Dropoff ${formatPercent(dropoff, 1)}` : "No dropoff"}
                   </p>
                 ) : null}
@@ -358,17 +358,17 @@ function FunnelCard({ data }: { data: AnalyticsOverview | null }) {
 function DeviceCard({ data }: { data: AnalyticsOverview | null }) {
   const breakdown = data?.deviceBreakdown || { desktop: 0, mobile: 0, tablet: 0, unknown: 0 };
   const entries = [
-    { key: "desktop", label: "Desktop", icon: <Monitor className="h-4 w-4" />, color: "text-indigo-600 bg-indigo-50" },
+    { key: "desktop", label: "Desktop", icon: <Monitor className="h-4 w-4" />, color: "text-brand-500 bg-brand-50" },
     { key: "mobile", label: "Mobile", icon: <Smartphone className="h-4 w-4" />, color: "text-emerald-600 bg-emerald-50" },
     { key: "tablet", label: "Tablet", icon: <Tablet className="h-4 w-4" />, color: "text-amber-600 bg-amber-50" },
-    { key: "unknown", label: "Other", icon: <Globe className="h-4 w-4" />, color: "text-slate-600 bg-slate-100" },
+    { key: "unknown", label: "Other", icon: <Globe className="h-4 w-4" />, color: "text-cream-800/70 bg-cream-100" },
   ];
   const total = entries.reduce((acc, entry) => acc + (breakdown[entry.key] || 0), 0);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">Devices</h2>
-      <p className="text-sm text-slate-500">Where visitors came from.</p>
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-brand-900">Devices</h2>
+      <p className="text-sm text-cream-800/50">Where visitors came from.</p>
       <div className="mt-4 space-y-3">
         {entries.map((entry) => {
           const value = breakdown[entry.key] || 0;
@@ -379,12 +379,12 @@ function DeviceCard({ data }: { data: AnalyticsOverview | null }) {
                 <span className={`inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold ${entry.color}`}>
                   {entry.icon} {entry.label}
                 </span>
-                <span className="font-bold text-slate-900">{formatNumber(value)}</span>
+                <span className="font-bold text-brand-900">{formatNumber(value)}</span>
               </div>
-              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                <div className="h-2 rounded-full bg-slate-900" style={{ width: `${pct}%` }} />
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-cream-100">
+                <div className="h-2 rounded-full bg-brand-900" style={{ width: `${pct}%` }} />
               </div>
-              <p className="mt-1 text-[11px] text-slate-500">{formatPercent(pct, 1)}</p>
+              <p className="mt-1 text-[11px] text-cream-800/50">{formatPercent(pct, 1)}</p>
             </div>
           );
         })}
@@ -397,34 +397,34 @@ function CitiesCard({ data }: { data: AnalyticsOverview | null }) {
   const cities = data?.topCities || [];
   const max = cities[0]?.visitors || 0;
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-brand-900">
             <MapPin className="h-4 w-4 text-rose-600" /> Top cities
           </h2>
-          <p className="text-sm text-slate-500">Where most of your visitors are.</p>
+          <p className="text-sm text-cream-800/50">Where most of your visitors are.</p>
         </div>
         <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Top 5</span>
       </div>
       <div className="mt-4 space-y-2">
         {cities.length === 0 ? (
-          <p className="text-sm text-slate-400">No location data yet — usually takes a few visits to populate.</p>
+          <p className="text-sm text-cream-800/40">No location data yet — usually takes a few visits to populate.</p>
         ) : (
           cities.map((row, index) => {
             const pct = max > 0 ? (row.visitors / max) * 100 : 0;
             return (
               <div key={row.location}>
                 <div className="flex items-baseline justify-between text-sm">
-                  <span className="flex min-w-0 items-center gap-2 text-slate-700">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[10px] font-bold text-slate-600">
+                  <span className="flex min-w-0 items-center gap-2 text-cream-800/80">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-cream-100 text-[10px] font-bold text-cream-800/70">
                       {index + 1}
                     </span>
                     <span className="truncate">{row.location}</span>
                   </span>
-                  <span className="ml-3 font-bold text-slate-900">{formatNumber(row.visitors)}</span>
+                  <span className="ml-3 font-bold text-brand-900">{formatNumber(row.visitors)}</span>
                 </div>
-                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-cream-100">
                   <div className="h-2 rounded-full bg-linear-to-r from-rose-500 to-amber-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -440,12 +440,12 @@ function ReferrerCard({ data }: { data: AnalyticsOverview | null }) {
   const referrers = data?.topReferrers || [];
   const max = referrers[0]?.count || 0;
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">Top referrers</h2>
-      <p className="text-sm text-slate-500">Sources sending traffic.</p>
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-brand-900">Top referrers</h2>
+      <p className="text-sm text-cream-800/50">Sources sending traffic.</p>
       <div className="mt-4 space-y-2">
         {referrers.length === 0 ? (
-          <p className="text-sm text-slate-400">No referrer data yet.</p>
+          <p className="text-sm text-cream-800/40">No referrer data yet.</p>
         ) : (
           referrers.map((row) => {
             let label = row.source;
@@ -459,11 +459,11 @@ function ReferrerCard({ data }: { data: AnalyticsOverview | null }) {
             return (
               <div key={row.source}>
                 <div className="flex items-baseline justify-between text-sm">
-                  <span className="truncate text-slate-700">{label || "Direct"}</span>
-                  <span className="ml-3 font-bold text-slate-900">{formatNumber(row.count)}</span>
+                  <span className="truncate text-cream-800/80">{label || "Direct"}</span>
+                  <span className="ml-3 font-bold text-brand-900">{formatNumber(row.count)}</span>
                 </div>
-                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${pct}%` }} />
+                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-cream-100">
+                  <div className="h-2 rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             );
@@ -478,13 +478,13 @@ function CommunityCard({ data }: { data: AnalyticsOverview | null }) {
   const photographers = data?.photographers || { total: 0, approved: 0, pending: 0, rejected: 0 };
   const bookings = data?.bookings || { total: 0, pending: 0, confirmed: 0, cancelled: 0 };
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">Community</h2>
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-brand-900">Community</h2>
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <MiniStat icon={<Camera className="h-4 w-4 text-emerald-600" />} label="Approved photographers" value={photographers.approved} />
         <MiniStat icon={<Camera className="h-4 w-4 text-amber-600" />} label="Pending photographers" value={photographers.pending} />
         <MiniStat icon={<CheckCircle className="h-4 w-4 text-blue-600" />} label="Confirmed bookings" value={bookings.confirmed} />
-        <MiniStat icon={<ImageIcon className="h-4 w-4 text-slate-600" />} label="Total bookings" value={bookings.total} />
+        <MiniStat icon={<ImageIcon className="h-4 w-4 text-cream-800/70" />} label="Total bookings" value={bookings.total} />
       </div>
     </div>
   );
@@ -492,39 +492,39 @@ function CommunityCard({ data }: { data: AnalyticsOverview | null }) {
 
 function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+    <div className="rounded-xl border border-cream-100 bg-cream-50 p-3">
+      <div className="flex items-center gap-2 text-xs font-semibold text-cream-800/70">
         {icon} {label}
       </div>
-      <p className="mt-1 text-xl font-bold text-slate-900">{formatNumber(value)}</p>
+      <p className="mt-1 text-xl font-bold text-brand-900">{formatNumber(value)}</p>
     </div>
   );
 }
 
 function QuickActions() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-        <FileText className="h-5 w-5 text-slate-600" /> Quick actions
+    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+      <h3 className="flex items-center gap-2 text-lg font-bold text-brand-900">
+        <FileText className="h-5 w-5 text-cream-800/70" /> Quick actions
       </h3>
       <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         <li>
-          <Link href="/admin/users" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+          <Link href="/admin/users" className="flex items-center gap-2 rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/80 hover:bg-cream-50">
             <CheckCircle className="h-4 w-4 text-blue-600" /> Manage users and pending deletions
           </Link>
         </li>
         <li>
-          <Link href="/admin/photographer-approvals" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+          <Link href="/admin/photographer-approvals" className="flex items-center gap-2 rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/80 hover:bg-cream-50">
             <CheckCircle className="h-4 w-4 text-blue-600" /> Review photographer applications
           </Link>
         </li>
         <li>
-          <Link href="/admin/logs" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+          <Link href="/admin/logs" className="flex items-center gap-2 rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/80 hover:bg-cream-50">
             <CheckCircle className="h-4 w-4 text-blue-600" /> System logs and analytics history
           </Link>
         </li>
         <li>
-          <Link href="/admin/legal-pages" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+          <Link href="/admin/legal-pages" className="flex items-center gap-2 rounded-lg border border-cream-200 px-3 py-2 text-sm text-cream-800/80 hover:bg-cream-50">
             <CheckCircle className="h-4 w-4 text-blue-600" /> Edit legal pages and policies
           </Link>
         </li>

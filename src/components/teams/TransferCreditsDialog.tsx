@@ -74,7 +74,7 @@ export function TransferCreditsDialog({
                         <Label htmlFor="transfer-member">Photographer</Label>
                         <select
                             id="transfer-member"
-                            className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                            className="w-full h-10 rounded-md border border-cream-200 bg-white px-3 text-sm"
                             value={selectedMemberId}
                             onChange={(e) => onMemberChange(e.target.value)}
                         >
@@ -86,7 +86,7 @@ export function TransferCreditsDialog({
                             ))}
                         </select>
                         {transferableMembers.length === 0 && (
-                            <p className="text-xs text-slate-500">No photographers available in this team</p>
+                            <p className="text-xs text-cream-800/50">No photographers available in this team</p>
                         )}
                     </div>
 
@@ -116,7 +116,7 @@ export function TransferCreditsDialog({
                         </Button>
                         <Button 
                             type="submit" 
-                            className="bg-indigo-600 hover:bg-indigo-700" 
+                            className="bg-brand-500 hover:bg-brand-600" 
                             disabled={loading || availableCredits === 0 || transferableMembers.length === 0}
                         >
                             {loading ? "Transferring..." : "Transfer"}

@@ -95,16 +95,16 @@ export default function PhotographerRequestsPage() {
   if (!checked) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+    <div className="min-h-screen bg-cream-50 p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <Link href="/photographer" className="text-sm font-semibold text-indigo-600 hover:underline">
+              <Link href="/photographer" className="text-sm font-semibold text-brand-500 hover:underline">
                 Back to photographer dashboard
               </Link>
-              <h1 className="mt-2 text-3xl font-black text-slate-900">Incoming hire requests</h1>
-              <p className="mt-2 text-slate-600">
+              <h1 className="mt-2 text-3xl font-black text-brand-900">Incoming hire requests</h1>
+              <p className="mt-2 text-cream-800/70">
                 See who wants to hire you, review the requested date, and accept or decline each request.
               </p>
             </div>
@@ -114,21 +114,21 @@ export default function PhotographerRequestsPage() {
                 <button
                   type="button"
                   onClick={() => setMenuOpen((previous) => !previous)}
-                  className="rounded-md border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50"
+                  className="rounded-md border border-cream-200 bg-white p-2 text-cream-800/80 hover:bg-cream-50"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
               </div>
 
               {menuOpen && (
-                <div className="absolute right-0 top-10 z-20 min-w-52 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+                <div className="absolute right-0 top-10 z-20 min-w-52 rounded-lg border border-cream-200 bg-white p-2 shadow-lg">
                   <button
                     type="button"
                     onClick={() => {
                       setShowDeclinedOnly(true);
                       setMenuOpen(false);
                     }}
-                    className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                    className="w-full rounded-md px-3 py-2 text-left text-sm text-cream-800/80 hover:bg-cream-100"
                   >
                     View declined requests
                   </button>
@@ -138,7 +138,7 @@ export default function PhotographerRequestsPage() {
                       setShowDeclinedOnly(false);
                       setMenuOpen(false);
                     }}
-                    className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                    className="w-full rounded-md px-3 py-2 text-left text-sm text-cream-800/80 hover:bg-cream-100"
                   >
                     View active requests
                   </button>
@@ -154,13 +154,13 @@ export default function PhotographerRequestsPage() {
         </div>
 
         {loading && visibleRequests.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+          <div className="rounded-2xl border border-cream-200 bg-white p-8 text-center text-cream-800/50">
             Loading requests...
           </div>
         ) : null}
 
         {!loading && visibleRequests.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+          <div className="rounded-2xl border border-cream-200 bg-white p-8 text-center text-cream-800/50">
             {showDeclinedOnly
               ? "No declined requests found."
               : "No active hire requests right now."}
@@ -179,14 +179,14 @@ export default function PhotographerRequestsPage() {
             const declinedAt = request.status_updated_at ? new Date(request.status_updated_at) : null;
 
             return (
-              <article key={request.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <article key={request.id} className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
                     <div>
-                      <h2 className="text-xl font-bold text-slate-900">
+                      <h2 className="text-xl font-bold text-brand-900">
                         {request.user?.name || request.user?.email || "Client"}
                       </h2>
-                      <p className="text-sm text-slate-500">{request.user?.email || "No email available"}</p>
+                      <p className="text-sm text-cream-800/50">{request.user?.email || "No email available"}</p>
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-5">
@@ -207,16 +207,16 @@ export default function PhotographerRequestsPage() {
                     ) : null}
 
                     {request.client_note_html ? (
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Client note</p>
-                        <div className="mt-2 text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: request.client_note_html }} />
+                      <div className="rounded-xl border border-cream-200 bg-cream-50 p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Client note</p>
+                        <div className="mt-2 text-sm text-brand-900" dangerouslySetInnerHTML={{ __html: request.client_note_html }} />
                       </div>
                     ) : null}
 
                     {request.photographer_note_html ? (
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Your feedback</p>
-                        <div className="mt-2 text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: request.photographer_note_html }} />
+                      <div className="rounded-xl border border-cream-200 bg-cream-50 p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Your feedback</p>
+                        <div className="mt-2 text-sm text-brand-900" dangerouslySetInnerHTML={{ __html: request.photographer_note_html }} />
                       </div>
                     ) : null}
                   </div>
@@ -233,7 +233,7 @@ export default function PhotographerRequestsPage() {
                             }))
                           }
                           placeholder="Optional note/feedback for client"
-                          className="min-h-24 w-72 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                          className="min-h-24 w-72 rounded-lg border border-cream-200 px-3 py-2 text-sm"
                         />
 
                         <div className="flex flex-wrap gap-2">
@@ -269,18 +269,18 @@ export default function PhotographerRequestsPage() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className="text-2xl font-black text-slate-900">{value}</p>
+    <div className="rounded-2xl border border-cream-200 bg-cream-50 p-4">
+      <p className="text-sm text-cream-800/50">{label}</p>
+      <p className="text-2xl font-black text-brand-900">{value}</p>
     </div>
   );
 }
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-medium text-slate-800">{value}</p>
+    <div className="rounded-xl border border-cream-200 bg-cream-50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">{label}</p>
+      <p className="mt-1 text-sm font-medium text-brand-900">{value}</p>
     </div>
   );
 }

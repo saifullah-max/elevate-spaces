@@ -137,20 +137,20 @@ export default function PhotographerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+    <div className="min-h-screen bg-cream-50 p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <header className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-3xl font-black text-slate-900">Photographer Marketplace</h1>
-              <p className="mt-2 text-slate-600">
+              <h1 className="text-3xl font-black text-brand-900">Photographer Marketplace</h1>
+              <p className="mt-2 text-cream-800/70">
                 Milestone 6 frontend: marketplace listings, photographer onboarding, admin review workflow, and booking placeholders.
               </p>
             </div>
 
             <Link
               href="/photographer/requests"
-              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+              className="inline-flex items-center justify-center rounded-xl bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
             >
               View incoming requests
             </Link>
@@ -163,7 +163,7 @@ export default function PhotographerPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`rounded-xl border px-4 py-2 text-sm font-bold ${
-                activeTab === tab ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"
+                activeTab === tab ? "border-brand-900 bg-brand-900 text-white" : "border-cream-200 bg-white text-cream-800/80"
               }`}
             >
               {tab === "directory" && "Directory"}
@@ -176,19 +176,19 @@ export default function PhotographerPage() {
         {activeTab === "directory" && (
           <section className="space-y-4">
             {directory.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 text-slate-500">
+              <div className="rounded-2xl border border-cream-200 bg-white p-8 text-cream-800/50">
                 No approved photographers found yet.
               </div>
             )}
 
             {directory.map((item) => (
-              <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <article key={item.id} className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-6">
                   <div>
-                    <h3 className="text-xl font-black text-slate-900">{item.user.name || "Photographer"}</h3>
-                    <p className="text-sm text-slate-500">{item.user.email}</p>
-                    <p className="mt-3 text-slate-700">{item.bio || "No bio provided yet."}</p>
-                    <p className="mt-2 text-sm text-slate-500">Availability: {item.availability || "Not set"}</p>
+                    <h3 className="text-xl font-black text-brand-900">{item.user.name || "Photographer"}</h3>
+                    <p className="text-sm text-cream-800/50">{item.user.email}</p>
+                    <p className="mt-3 text-cream-800/80">{item.bio || "No bio provided yet."}</p>
+                    <p className="mt-2 text-sm text-cream-800/50">Availability: {item.availability || "Not set"}</p>
                   </div>
 
                   {isAuthed && (
@@ -199,9 +199,9 @@ export default function PhotographerPage() {
                         onChange={(event) =>
                           setBookingDateById((previous) => ({ ...previous, [item.id]: event.target.value }))
                         }
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                        className="w-full rounded-lg border border-cream-200 px-3 py-2"
                       />
-                      <label className="flex items-center gap-2 text-sm text-slate-700">
+                      <label className="flex items-center gap-2 text-sm text-cream-800/80">
                         <input
                           type="checkbox"
                           checked={Boolean(paymentConfirmedById[item.id])}
@@ -218,7 +218,7 @@ export default function PhotographerPage() {
                           setTransactionIdById((previous) => ({ ...previous, [item.id]: event.target.value }))
                         }
                         placeholder="Transaction ID"
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                        className="w-full rounded-lg border border-cream-200 px-3 py-2"
                       />
                       <button
                         onClick={() => handleBookingRequest(item.id)}
@@ -239,14 +239,14 @@ export default function PhotographerPage() {
 
         {activeTab === "bookings" && (
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-xl font-black">My Booking Requests</h2>
               <div className="space-y-3">
-                {myBookings.length === 0 && <p className="text-slate-500">No bookings found.</p>}
+                {myBookings.length === 0 && <p className="text-cream-800/50">No bookings found.</p>}
                 {myBookings.map((booking) => (
-                  <div key={booking.id} className="space-y-2 rounded-lg border border-slate-200 p-3">
+                  <div key={booking.id} className="space-y-2 rounded-lg border border-cream-200 p-3">
                     <p className="font-semibold">{new Date(booking.date).toLocaleString()}</p>
-                    <p className="text-sm text-slate-500">Status: {booking.status}</p>
+                    <p className="text-sm text-cream-800/50">Status: {booking.status}</p>
                     {booking.status === "PENDING" && booking.user_id === authUserId ? (
                       <button
                         onClick={() => handleWithdrawBookingRequest(booking.id)}
@@ -261,16 +261,16 @@ export default function PhotographerPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-xl font-black">Received Booking Requests</h2>
-              {!canSeeReceivedBookings && <p className="text-slate-500">Become an approved photographer to manage received bookings.</p>}
+              {!canSeeReceivedBookings && <p className="text-cream-800/50">Become an approved photographer to manage received bookings.</p>}
               {canSeeReceivedBookings && (
                 <div className="space-y-3">
-                  {receivedBookings.length === 0 && <p className="text-slate-500">No received bookings.</p>}
+                  {receivedBookings.length === 0 && <p className="text-cream-800/50">No received bookings.</p>}
                   {receivedBookings.map((booking) => (
-                    <div key={booking.id} className="space-y-2 rounded-lg border border-slate-200 p-3">
+                    <div key={booking.id} className="space-y-2 rounded-lg border border-cream-200 p-3">
                       <p className="font-semibold">{new Date(booking.date).toLocaleString()}</p>
-                      <p className="text-sm text-slate-500">Status: {booking.status}</p>
+                      <p className="text-sm text-cream-800/50">Status: {booking.status}</p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleUpdateBookingStatus(booking.id, "CONFIRMED")}

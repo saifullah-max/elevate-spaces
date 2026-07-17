@@ -140,9 +140,9 @@ export function TeamCreditsSelector({
   }, [teams, selectedTeamId]);
   if (loading) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-        <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-        <span className="text-sm text-slate-600">Loading teams...</span>
+      <div className="flex items-center gap-2 p-3 bg-cream-50 rounded-lg border border-cream-200">
+        <Loader2 className="w-4 h-4 animate-spin text-brand-500" />
+        <span className="text-sm text-cream-800/70">Loading teams...</span>
       </div>
     );
   }
@@ -174,7 +174,7 @@ export function TeamCreditsSelector({
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+        <label className="text-xs font-semibold text-cream-800/80 uppercase tracking-wide flex items-center gap-1.5">
           <Users className="w-3.5 h-3.5" />
           Select Team (Optional)
         </label>
@@ -182,7 +182,7 @@ export function TeamCreditsSelector({
           value={selectedTeamId || ""}
           onChange={handleTeamChange}
           disabled={disabled}
-          className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full px-3 py-2.5 bg-white border border-cream-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <option value="">-- Select a team --</option>
           {teams.map((team) => (
@@ -204,7 +204,7 @@ export function TeamCreditsSelector({
               <Coins className={`w-4 h-4 ${
                 selectedTeam.remaining > 0 ? 'text-emerald-600' : 'text-red-600'
               }`} />
-              <span className="text-sm font-medium text-slate-900">
+              <span className="text-sm font-medium text-brand-900">
                 {selectedTeam.name}
               </span>
             </div>
@@ -214,7 +214,7 @@ export function TeamCreditsSelector({
               }`}>
                 {selectedTeam.remaining}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-[10px] text-cream-800/50">
                 {selectedTeam.role === 'TEAM_OWNER' ? 'Team Wallet' : `of ${selectedTeam.allocated} credits`}
               </div>
             </div>

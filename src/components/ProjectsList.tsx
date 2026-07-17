@@ -55,7 +55,7 @@ export function ProjectsList() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader className="w-8 h-8 animate-spin text-brand-500" />
       </div>
     );
   }
@@ -73,11 +73,11 @@ export function ProjectsList() {
 
   if (projects.length === 0) {
     return (
-      <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
-        <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">No Projects Yet</h3>
-        <p className="text-slate-600 mb-6">Create a project to organize and view your staged images</p>
-        <Button className="bg-indigo-600 hover:bg-indigo-700">
+      <div className="text-center py-12 bg-cream-50 rounded-lg border-2 border-dashed border-cream-200">
+        <ImageIcon className="w-12 h-12 text-cream-800/40 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-brand-900 mb-2">No Projects Yet</h3>
+        <p className="text-cream-800/70 mb-6">Create a project to organize and view your staged images</p>
+        <Button className="bg-brand-500 hover:bg-brand-600">
           <Plus className="w-4 h-4 mr-2" />
           Create Your First Project
         </Button>
@@ -88,8 +88,8 @@ export function ProjectsList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-slate-900">My Projects ({projects.length})</h2>
-        <Button className="bg-indigo-600 hover:bg-indigo-700">
+        <h2 className="text-2xl font-bold text-brand-900">My Projects ({projects.length})</h2>
+        <Button className="bg-brand-500 hover:bg-brand-600">
           <Plus className="w-4 h-4 mr-2" />
           New Project
         </Button>
@@ -99,28 +99,28 @@ export function ProjectsList() {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden hover:shadow-lg transition-all"
+            className="bg-white rounded-xl shadow border border-cream-200 overflow-hidden hover:shadow-lg transition-all"
           >
             <div className="p-5 space-y-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-lg line-clamp-1">{project.name}</h3>
+                <h3 className="font-bold text-brand-900 text-lg line-clamp-1">{project.name}</h3>
                 {project.address && (
-                  <p className="text-sm text-slate-600 line-clamp-1">{project.address}</p>
+                  <p className="text-sm text-cream-800/70 line-clamp-1">{project.address}</p>
                 )}
               </div>
 
               {project.description && (
-                <p className="text-sm text-slate-600 line-clamp-2">{project.description}</p>
+                <p className="text-sm text-cream-800/70 line-clamp-2">{project.description}</p>
               )}
 
-              <div className="text-xs text-slate-500 pt-2 border-t border-slate-200">
+              <div className="text-xs text-cream-800/50 pt-2 border-t border-cream-200">
                 Created {new Date(project.created_at).toLocaleDateString()}
               </div>
 
               <div className="flex gap-2 pt-2">
                 <Button
                   onClick={() => handleViewImages(project)}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="flex-1 bg-brand-500 hover:bg-brand-600 text-white"
                   size="sm"
                 >
                   <ImageIcon className="w-4 h-4 mr-1" />
@@ -129,7 +129,7 @@ export function ProjectsList() {
                 {project.team_id && (
                   <Button
                     onClick={() => { setManageProjectId(project.id); setShowManagePhotographer(true); }}
-                    className="bg-slate-50 hover:bg-slate-100 text-slate-700"
+                    className="bg-cream-50 hover:bg-cream-100 text-cream-800/80"
                     size="sm"
                   >
                     Manage photographer

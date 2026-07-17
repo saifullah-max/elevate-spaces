@@ -195,11 +195,11 @@ export default function AdminEnterprisePlansPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Enterprise Plan Creator</h1>
-            <p className="mt-1 text-slate-600">
+            <h1 className="font-display text-3xl font-bold text-brand-900">Enterprise Plan Creator</h1>
+            <p className="mt-1 text-cream-800/70">
               Create a custom enterprise subscription link for a team owner. Once paid, activation happens automatically.
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function AdminEnterprisePlansPage() {
             type="button"
             onClick={loadUsers}
             disabled={loadingUsers}
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${loadingUsers ? 'animate-spin' : ''}`} />
             Refresh emails
@@ -215,29 +215,29 @@ export default function AdminEnterprisePlansPage() {
         </div>
 
         <div className="mt-6 space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Owner email</label>
+          <div className="rounded-xl border border-cream-200 bg-cream-50 px-4 py-3">
+            <label className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Owner email</label>
             <div className="mt-2 flex items-center gap-2">
-              <Search className="h-4 w-4 text-slate-400" />
+              <Search className="h-4 w-4 text-cream-800/40" />
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Search and select user email"
-                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+                className="w-full bg-transparent text-sm outline-none placeholder:text-cream-800/40"
                 autoComplete="off"
               />
             </div>
             {!!matchingEmails.length && !selectedEmail && (
-              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+              <div className="mt-3 space-y-2 rounded-lg border border-cream-200 bg-white p-2 shadow-sm">
                 {matchingEmails.map((match) => (
                   <button
                     key={match}
                     type="button"
                     onClick={() => handleEmailSelect(match)}
-                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-cream-800/80 hover:bg-cream-50"
                   >
                     <span>{match}</span>
-                    <span className="text-xs text-slate-400">Select</span>
+                    <span className="text-xs text-cream-800/40">Select</span>
                   </button>
                 ))}
               </div>
@@ -245,11 +245,11 @@ export default function AdminEnterprisePlansPage() {
           </div>
 
           {selectedEmail ? (
-            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Selected email</p>
-                  <p className="mt-1 text-sm font-medium text-slate-900">{selectedEmail}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Selected email</p>
+                  <p className="mt-1 text-sm font-medium text-brand-900">{selectedEmail}</p>
                 </div>
                 <button
                   type="button"
@@ -261,7 +261,7 @@ export default function AdminEnterprisePlansPage() {
                     setOwnerCandidates([]);
                     setPaymentLink('');
                   }}
-                  className="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                  className="rounded-md bg-cream-100 px-3 py-1.5 text-xs font-semibold text-cream-800/80 hover:bg-cream-200"
                 >
                   Clear
                 </button>
@@ -271,24 +271,24 @@ export default function AdminEnterprisePlansPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Plan Configuration</h2>
-        <p className="mt-1 text-sm text-slate-600">
+      <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-brand-900">Plan Configuration</h2>
+        <p className="mt-1 text-sm text-cream-800/70">
           {ownerName ? `Selected owner: ${ownerName}` : 'Select an email suggestion to load teams.'}
         </p>
         {!!ownerCandidates.length && (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-cream-800/50">
             Matches found: {ownerCandidates.length}. Using {ownerCandidates[0]?.email || 'best match'}.
           </p>
         )}
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Team</span>
+            <span className="text-sm font-medium text-cream-800/80">Team</span>
             <select
               value={selectedTeamId}
               onChange={(e) => setSelectedTeamId(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option value="">Select a team</option>
               {teams.map((team) => (
@@ -300,11 +300,11 @@ export default function AdminEnterprisePlansPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Billing cycle</span>
+            <span className="text-sm font-medium text-cream-800/80">Billing cycle</span>
             <select
               value={billingCycle}
               onChange={(e) => setBillingCycle(e.target.value as 'monthly' | 'annual')}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option value="monthly">Monthly</option>
               <option value="annual">Annual</option>
@@ -312,7 +312,7 @@ export default function AdminEnterprisePlansPage() {
           
           {billingCycle === 'monthly' && (
             <div className="space-y-2">
-              <span className="text-sm font-medium text-slate-700">Auto-renew</span>
+              <span className="text-sm font-medium text-cream-800/80">Auto-renew</span>
               <div className="flex items-center gap-4">
                 <label className="inline-flex items-center gap-2 text-sm">
                   <input
@@ -338,54 +338,54 @@ export default function AdminEnterprisePlansPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Normal seats</span>
+            <span className="text-sm font-medium text-cream-800/80">Normal seats</span>
             <input
               type="number"
               min={0}
               value={normalSeats}
               onChange={(e) => setNormalSeats(Number(e.target.value || 0))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Photographer-only seats</span>
+            <span className="text-sm font-medium text-cream-800/80">Photographer-only seats</span>
             <input
               type="number"
               min={0}
               value={photographerSeats}
               onChange={(e) => setPhotographerSeats(Number(e.target.value || 0))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Credits per cycle</span>
+            <span className="text-sm font-medium text-cream-800/80">Credits per cycle</span>
             <input
               type="number"
               min={0}
               value={credits}
               onChange={(e) => setCredits(Number(e.target.value || 0))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Amount payable (USD)</span>
+            <span className="text-sm font-medium text-cream-800/80">Amount payable (USD)</span>
             <input
               type="number"
               min={0}
               step="0.01"
               value={amountUsd}
               onChange={(e) => setAmountUsd(Number(e.target.value || 0))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </label>
         </div>
 
         {selectedTeam && (
-          <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            Team wallet balance: <span className="font-semibold text-slate-900">{selectedTeam.wallet}</span>
+          <p className="mt-4 rounded-lg bg-cream-50 px-3 py-2 text-sm text-cream-800/70">
+            Team wallet balance: <span className="font-semibold text-brand-900">{selectedTeam.wallet}</span>
           </p>
         )}
 
@@ -407,7 +407,7 @@ export default function AdminEnterprisePlansPage() {
             <input
               value={paymentLink}
               readOnly
-              className="mt-2 w-full rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-700"
+              className="mt-2 w-full rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm text-cream-800/80"
             />
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -416,7 +416,7 @@ export default function AdminEnterprisePlansPage() {
                   await navigator.clipboard.writeText(paymentLink);
                   showSuccess('Payment link copied');
                 }}
-                className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
               >
                 Copy link
               </button>
@@ -424,7 +424,7 @@ export default function AdminEnterprisePlansPage() {
                 href={paymentLink}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
+                className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-cream-800/80 ring-1 ring-cream-200 hover:bg-cream-50"
               >
                 Open link
               </a>

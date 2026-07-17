@@ -86,7 +86,7 @@ export function AllocateCreditsDialog({
                         <Label htmlFor="member">Member</Label>
                         <select
                             id="member"
-                            className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                            className="w-full h-10 rounded-md border border-cream-200 bg-white px-3 text-sm"
                             value={selectedMemberId}
                             onChange={(e) => onMemberChange(e.target.value)}
                         >
@@ -142,7 +142,7 @@ export function AllocateCreditsDialog({
                         <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                             Cancel
                         </Button>
-                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700" disabled={loading}>
+                        <Button type="submit" className="bg-brand-500 hover:bg-brand-600" disabled={loading}>
                             {loading ? "Allocating..." : "Allocate"}
                         </Button>
                     </div>

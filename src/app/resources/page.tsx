@@ -1,165 +1,212 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { BookOpen, FileDown, Loader2, PlayCircle } from "lucide-react";
+import dynamic from "next/dynamic";
+import { FileText, Lightbulb, Youtube, Download, Loader2 } from "lucide-react";
 import { getResources, getResourceAssetUrl, type ResourceItem } from "@/services/resources.service";
+
+const Footer = dynamic(() => import("@/components/footer"), { ssr: false });
+
+const STAGING_TIPS = [
+  {
+    title: "Shoot with the widest lens you have",
+    body:
+      "Wide, well-lit photos give the AI more room to place furniture convincingly — avoid heavy fisheye distortion at the edges.",
+  },
+  {
+    title: "Empty rooms stage best",
+    body:
+      "Vacant rooms give the cleanest results. Lightly furnished rooms work too, but heavy clutter can confuse the placement.",
+  },
+  {
+    title: "Match style to the listing's price point",
+    body:
+      "Luxury and Mid-Century read well for higher-end listings; Farmhouse and Coastal tend to perform well for family homes.",
+  },
+  {
+    title: "Generate 2–3 styles before you pick",
+    body:
+      "Use the live preview to sanity-check a style before spending a credit, then compare a couple of finished variants side by side.",
+  },
+];
+
+function youtubeEmbed(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) {
+      const id = u.pathname.replace(/^\//, "");
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+      const embedMatch = u.pathname.match(/\/embed\/([^/?]+)/);
+      if (embedMatch) return url;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceItem[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string>("resources");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-
-    const loadResources = async () => {
+    (async () => {
       try {
         const data = await getResources();
-        if (!mounted) return;
-        setResources(data);
-        if (data.length > 0) {
-          const initial = data.find((resource) => resource.slug === selectedSlug) || data[0];
-          setSelectedSlug(initial.slug);
-        }
-      } catch {
-        if (mounted) {
-          setResources([]);
-        }
+        if (mounted) setResources(data);
+      } catch (err: any) {
+        if (mounted) setError(err?.message || "Failed to load resources");
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
-    };
-
-    loadResources();
+    })();
     return () => {
       mounted = false;
     };
   }, []);
 
-  const selectedResource = useMemo(
-    () => resources.find((resource) => resource.slug === selectedSlug) || resources[0] || null,
-    [resources, selectedSlug]
+  const videoResources = useMemo(
+    () =>
+      resources.filter((r) => Boolean(r.youtube_url || r.video_filename)).slice(0, 4),
+    [resources]
   );
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAF7F2] text-slate-500">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading resources...
-      </div>
-    );
-  }
+  const deckResource = useMemo(() => resources.find((r) => r.pdf_filename), [resources]);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] px-4 py-14">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-          <div className="bg-linear-to-r from-slate-900 via-slate-800 to-indigo-900 px-6 py-10 text-white sm:px-10">
-            <div className="flex items-center gap-2 text-indigo-200">
-              <BookOpen className="h-5 w-5" />
-              <span className="text-sm font-semibold uppercase tracking-wide">Resources</span>
-            </div>
-            <h1 className="mt-3 text-3xl font-bold sm:text-4xl">AI Virtual Staging Resources</h1>
-            <p className="mt-3 max-w-3xl text-sm text-slate-200 sm:text-base">
-              Training notes, process documents, and media files maintained by the admin team.
-            </p>
-          </div>
-
-          {resources.length > 1 ? (
-            <div className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-              {resources.map((resource) => (
-                <button
-                  key={resource.slug}
-                  type="button"
-                  onClick={() => setSelectedSlug(resource.slug)}
-                  className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    resource.slug === selectedSlug
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                  }`}
-                >
-                  {resource.title}
-                </button>
-              ))}
-            </div>
-          ) : null}
+    <div className="bg-cream-50 min-h-screen text-brand-900 antialiased">
+      <section className="max-w-5xl mx-auto px-4 md:px-6 py-14 md:py-20">
+        <div className="text-center max-w-lg mx-auto mb-12">
+          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">Resources</h1>
+          <p className="text-cream-800/60 text-sm md:text-base mt-2">
+            Everything you need to get the most out of Elevate Spaces AI.
+          </p>
         </div>
 
-        {selectedResource ? (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">{selectedResource.slug}</p>
-                  <h2 className="mt-1 text-2xl font-bold text-slate-900">{selectedResource.title}</h2>
-                </div>
-                <p className="text-xs text-slate-500">Updated {new Date(selectedResource.updated_at).toLocaleString()}</p>
-              </div>
-
-              <div className="prose prose-slate mt-6 max-w-none prose-headings:text-slate-900 prose-a:text-indigo-600">
-                <div dangerouslySetInnerHTML={{ __html: selectedResource.content_html || "<p>This resource has not been published yet.</p>" }} />
-              </div>
-            </article>
-
-            <aside className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Downloads</h3>
-                <div className="mt-4 space-y-3">
-                  <AssetLink
-                    label={selectedResource.pdf_filename || "PDF guide"}
-                    href={selectedResource.pdf_filename ? getResourceAssetUrl(selectedResource.slug, "pdf") : null}
-                    icon={<FileDown className="h-4 w-4" />}
-                    helper="Open the attached PDF in browser"
-                  />
-                  <AssetLink
-                    label={selectedResource.video_filename || "Video guide"}
-                    href={selectedResource.video_filename ? getResourceAssetUrl(selectedResource.slug, "video") : null}
-                    icon={<PlayCircle className="h-4 w-4" />}
-                    helper="Stream the attached video"
-                  />
-                </div>
-              </div>
-            </aside>
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-cream-800/60 text-sm">
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading resources…
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
-            <p className="text-lg font-semibold text-slate-900">No resources are published yet.</p>
-            <p className="mt-2">Ask an admin to create the first resource entry from the admin resources page.</p>
-          </div>
+          <>
+            {/* Video walkthroughs */}
+            <div className="mb-14">
+              <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
+                <Youtube className="w-4 h-4" /> Video walkthroughs
+              </h2>
+              {error ? (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-5 text-xs text-red-700">
+                  {error}
+                </div>
+              ) : videoResources.length === 0 ? (
+                <div className="bg-white border border-cream-200 rounded-2xl p-6 text-center text-sm text-cream-800/60">
+                  No video walkthroughs available yet.
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {videoResources.map((r) => {
+                    const embed = youtubeEmbed(r.youtube_url);
+                    return (
+                      <div
+                        key={r.id}
+                        className="bg-white border border-cream-200 rounded-2xl overflow-hidden"
+                      >
+                        <div className="aspect-video bg-cream-100">
+                          {embed ? (
+                            <iframe
+                              className="w-full h-full"
+                              src={embed}
+                              title={r.title}
+                              frameBorder={0}
+                              allowFullScreen
+                              loading="lazy"
+                            />
+                          ) : r.video_filename ? (
+                            <video
+                              className="w-full h-full object-cover"
+                              controls
+                              src={getResourceAssetUrl(r.slug, "video")}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs text-cream-800/40">
+                              No video
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <p className="text-sm font-semibold text-brand-900">{r.title}</p>
+                          {r.content_html && (
+                            <p
+                              className="text-xs text-cream-800/60 mt-1 line-clamp-2"
+                              dangerouslySetInnerHTML={{ __html: r.content_html }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Onboarding deck */}
+            {deckResource && (
+              <div className="mb-14">
+                <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
+                  <FileText className="w-4 h-4" /> Onboarding deck
+                </h2>
+                <div className="bg-white border border-cream-200 rounded-2xl p-6 flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-lg bg-brand-100 text-brand-500 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-900">{deckResource.title}</p>
+                      <p className="text-xs text-cream-800/60">
+                        A quick walkthrough of the platform, credits, and staging styles.
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={getResourceAssetUrl(deckResource.slug, "pdf")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Download deck
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Staging tips */}
+            <div>
+              <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4" /> Staging tips
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-5">
+                {STAGING_TIPS.map((tip) => (
+                  <div
+                    key={tip.title}
+                    className="bg-white border border-cream-200 rounded-2xl p-5"
+                  >
+                    <h3 className="text-sm font-semibold text-brand-900 mb-1.5">{tip.title}</h3>
+                    <p className="text-xs text-cream-800/60 leading-relaxed">{tip.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
-      </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }
-
-function AssetLink({
-  label,
-  href,
-  icon,
-  helper,
-}: {
-  label: string;
-  href: string | null;
-  icon: React.ReactNode;
-  helper: string;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <div className="flex items-center gap-2 text-slate-900">
-        {icon}
-        <p className="font-medium">{label}</p>
-      </div>
-      <p className="mt-1 text-xs text-slate-500">{helper}</p>
-      {href ? (
-        <a href={href} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-sm font-semibold text-indigo-600 hover:underline">
-          Open file
-        </a>
-      ) : (
-        <p className="mt-3 text-sm text-slate-400">Not attached</p>
-      )}
-    </div>
-  );
-}
-

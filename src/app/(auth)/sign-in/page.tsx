@@ -1,29 +1,38 @@
-import SignInFormClient from "@/app/(auth)/sign-in/SignInFormClient";
+"use client";
 
-type SearchParams = Record<string, string | string[] | undefined>;
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { OAUTH_ERROR_MAP, openAuthModal } from "@/lib/authModal";
 
-const getFirstParam = (value: string | string[] | undefined): string | null => {
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
+function SignInRedirect() {
+  const router = useRouter();
+  const params = useSearchParams();
 
-  return value ?? null;
-};
-
-export default async function SignInPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const params = await searchParams;
-
-  const initialOauthError = getFirstParam(params.error);
-  const initialOauthProvider = getFirstParam(params.provider);
+  useEffect(() => {
+    const errKey = params.get("error");
+    const message = errKey ? OAUTH_ERROR_MAP[errKey] || "Authentication failed. Please try again." : null;
+    openAuthModal("login", message);
+    router.replace("/");
+  }, [router, params]);
 
   return (
-    <SignInFormClient
-      initialOauthError={initialOauthError}
-      initialOauthProvider={initialOauthProvider}
-    />
+    <div className="min-h-screen flex items-center justify-center bg-cream-50">
+      <Loader2 className="w-6 h-6 animate-spin text-brand-500" />
+    </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <Loader2 className="w-6 h-6 animate-spin text-brand-500" />
+        </div>
+      }
+    >
+      <SignInRedirect />
+    </Suspense>
   );
 }

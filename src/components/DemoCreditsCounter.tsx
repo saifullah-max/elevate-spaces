@@ -29,21 +29,21 @@ export function DemoCreditsCounter({ demoCount, demoLimit, isDemo }: DemoCredits
     if (percentage >= 100) return 'text-red-600';
     if (percentage >= 80) return 'text-orange-600';
     if (percentage >= 50) return 'text-amber-600';
-    return 'text-indigo-600';
+    return 'text-brand-500';
   };
 
   const getBgColor = () => {
     if (percentage >= 100) return 'bg-red-50 border-red-200';
     if (percentage >= 80) return 'bg-orange-50 border-orange-200';
     if (percentage >= 50) return 'bg-amber-50 border-amber-200';
-    return 'bg-indigo-50 border-indigo-200';
+    return 'bg-brand-50 border-brand-100';
   };
 
   const getBarColor = () => {
     if (percentage >= 100) return 'bg-red-500';
     if (percentage >= 80) return 'bg-orange-500';
     if (percentage >= 50) return 'bg-amber-500';
-    return 'bg-indigo-500';
+    return 'bg-brand-500';
   };
 
   return (
@@ -60,14 +60,14 @@ export function DemoCreditsCounter({ demoCount, demoLimit, isDemo }: DemoCredits
       
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-600">Demo Used:</span>
+          <span className="text-cream-800/70">Demo Used:</span>
           <span className={`font-semibold ${getColor()}`}>
             {demoCount} / {demoLimit}
           </span>
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-cream-200 rounded-full h-2 overflow-hidden">
           <div
             className={`h-full ${getBarColor()} transition-all duration-500 ease-out`}
             style={{ width: `${Math.min(percentage, 100)}%` }}

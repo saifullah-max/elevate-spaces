@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MoreVertical } from 'lucide-react';
+import { Download, MoreVertical } from 'lucide-react';
 
 const INSTALL_DISMISSED_KEY = 'elevate_spaces_pwa_install_dismissed';
 const INSTALL_INSTALLED_KEY = 'elevate_spaces_pwa_installed';
@@ -147,7 +147,7 @@ export function PWAInstall() {
   return (
     <>
       {shouldShowInstallBanner && (
-        <div className="fixed bottom-3 left-3 right-3 z-50 rounded-xl bg-indigo-600 p-4 text-white shadow-lg sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:w-full md:max-w-md">
+        <div className="fixed bottom-3 left-3 right-3 z-50 rounded-xl bg-brand-500 p-4 text-white shadow-lg sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:w-full md:max-w-md">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="font-semibold">Install Elevate Spaces</p>
@@ -169,7 +169,7 @@ export function PWAInstall() {
             {!isIOS && deferredPrompt && (
               <button
                 onClick={handleInstall}
-                className="w-full rounded bg-white px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-gray-100 sm:w-auto"
+                className="w-full rounded bg-white px-4 py-2 text-sm font-semibold text-brand-500 hover:bg-gray-100 sm:w-auto"
               >
                 Install now
               </button>
@@ -187,8 +187,9 @@ export function PWAInstall() {
       {!shouldShowInstallBanner && !isInstalled && (
         <button
           onClick={() => setIsGuideOpen(true)}
-          className="fixed bottom-6 right-6 z-60 rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-indigo-300 hover:bg-indigo-700"
+          className="fixed bottom-5 right-4 md:right-6 z-40 bg-brand-500 hover:bg-brand-600 text-white text-xs md:text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg transition-colors inline-flex items-center gap-2"
         >
+          <Download className="w-3 h-3 md:w-3.5 md:h-3.5" />
           Install guide
         </button>
       )}
@@ -202,11 +203,11 @@ export function PWAInstall() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 text-sm text-slate-700">
+          <div className="space-y-4 text-sm text-cream-800/80">
             {(isWindows || isMac) && (
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 sm:p-4">
-                <p className="font-semibold text-indigo-900">Recommended for this device</p>
-                <p className="mt-1 text-indigo-800">
+              <div className="rounded-lg border border-brand-100 bg-brand-50 p-3 sm:p-4">
+                <p className="font-semibold text-brand-900">Recommended for this device</p>
+                <p className="mt-1 text-brand-900">
                   {isWindows ? 'Windows desktop detected.' : 'Mac desktop detected.'}
                 </p>
               </div>
@@ -214,7 +215,7 @@ export function PWAInstall() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-lg border p-3 sm:p-4">
-                <h3 className="font-semibold text-slate-900">Windows</h3>
+                <h3 className="font-semibold text-brand-900">Windows</h3>
                 <ol className="mt-2 list-decimal space-y-1 pl-5">
                   <li>Open Elevate Spaces in Chrome, Edge, or another Chromium browser.</li>
                   <li>Click the install icon in the address bar, or open the browser menu.</li>
@@ -225,7 +226,7 @@ export function PWAInstall() {
               </div>
 
               <div className="rounded-lg border p-3 sm:p-4">
-                <h3 className="font-semibold text-slate-900">Mac</h3>
+                <h3 className="font-semibold text-brand-900">Mac</h3>
 
                 <ol className="mt-2 list-decimal space-y-1 pl-5">
                   <li>Open Elevate Spaces in Chrome or Edge on macOS.</li>
@@ -257,7 +258,7 @@ export function PWAInstall() {
               </div>
 
               <div className="rounded-lg border p-3 sm:p-4">
-                <h3 className="font-semibold text-slate-900">Android</h3>
+                <h3 className="font-semibold text-brand-900">Android</h3>
                 <ol className="mt-2 list-decimal space-y-1 pl-5">
                   <li>Open Elevate Spaces in Chrome on Android.</li>
                   <li>If the browser prompt appears, tap Install.</li>
@@ -267,7 +268,7 @@ export function PWAInstall() {
               </div>
 
               <div className="rounded-lg border p-3 sm:p-4">
-                <h3 className="font-semibold text-slate-900">iPhone / iPad</h3>
+                <h3 className="font-semibold text-brand-900">iPhone / iPad</h3>
                 <ol className="mt-2 list-decimal space-y-1 pl-5">
                   <li>Open Elevate Spaces in Safari.</li>
                   <li>Tap the Share button at the bottom or top of the screen.</li>

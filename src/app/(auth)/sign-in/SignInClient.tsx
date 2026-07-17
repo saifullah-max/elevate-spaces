@@ -90,16 +90,16 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-slate-50 to-white">
-            <div className="w-full max-w-md p-8 space-y-8 rounded-2xl bg-white shadow-lg border border-slate-200">
+        <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-cream-50 to-white">
+            <div className="w-full max-w-md p-8 space-y-8 rounded-2xl bg-white shadow-lg border border-cream-200">
                 <div className="text-center">
                     <div className="mb-6 flex justify-center">
-                        <div className="bg-indigo-600 p-3 rounded-xl shadow-sm">
+                        <div className="bg-brand-500 p-3 rounded-xl shadow-sm">
                             <LogIn className="w-8 h-8 text-white" />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-                    <p className="text-slate-600 mt-2">Sign in to your ElevateSpaces account</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-brand-900">Welcome back</h1>
+                    <p className="text-cream-800/70 mt-2">Sign in to your ElevateSpaces account</p>
                 </div>
 
                 <form onSubmit={onSubmit} className="space-y-5">
@@ -114,19 +114,19 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                            <label className="block text-sm font-medium text-cream-800/80 mb-1">Email</label>
                             <Input
                                 name="email"
                                 type="email"
                                 placeholder="you@example.com"
                                 value={form.email}
                                 onChange={handleChange}
-                                className="h-11 border-slate-300 focus:border-indigo-600 focus:ring-indigo-600"
+                                className="h-11 border-cream-200 focus:border-brand-500 focus:ring-brand-500"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                            <label className="block text-sm font-medium text-cream-800/80 mb-1">Password</label>
                             <div className="relative">
                                 <Input
                                     name="password"
@@ -134,12 +134,12 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
                                     placeholder="Enter your password"
                                     value={form.password}
                                     onChange={handleChange}
-                                    className="h-11 pr-10 border-slate-300 focus:border-indigo-600 focus:ring-indigo-600"
+                                    className="h-11 pr-10 border-cream-200 focus:border-brand-500 focus:ring-brand-500"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cream-800/50 hover:text-cream-800/80 transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -148,19 +148,19 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
                     </div>
 
                     <div className="flex items-center justify-between text-sm">
-                        <label className="flex items-center gap-2 text-slate-600">
+                        <label className="flex items-center gap-2 text-cream-800/70">
                             <input
                                 type="checkbox"
                                 name="rememberMe"
                                 checked={form.rememberMe}
                                 onChange={handleChange}
-                                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                                className="rounded border-cream-200 text-brand-500 focus:ring-brand-500"
                             />
                             Remember me
                         </label>
                         <Link
                             href="/forgot-password"
-                            className="text-indigo-600 hover:text-indigo-700 hover:underline font-medium"
+                            className="text-brand-500 hover:text-brand-600 hover:underline font-medium"
                         >
                             Forgot password?
                         </Link>
@@ -168,7 +168,7 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
 
                     <Button
                         type="submit"
-                        className="w-full h-11 font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                        className="w-full h-11 font-semibold bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
                         disabled={loading}
                     >
                         {loading ? (
@@ -185,17 +185,17 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
                 <div className="mt-6">
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-slate-200" />
+                            <div className="w-full border-t border-cream-200" />
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="bg-white px-4 text-slate-500">Or continue with</span>
+                            <span className="bg-white px-4 text-cream-800/50">Or continue with</span>
                         </div>
                     </div>
 
                     <div className="mt-6 grid grid-cols-1 gap-3">
                         <Button
                             variant="outline"
-                            className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400"
+                            className="h-11 border-cream-200 hover:bg-cream-50 text-cream-800/80 hover:border-cream-200"
                             aria-label="Sign in with Google"
                             onClick={handleGoogleLogin}
                         >
@@ -221,7 +221,7 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
 {/* 
                         <Button
                             variant="outline"
-                            className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400"
+                            className="h-11 border-cream-200 hover:bg-cream-50 text-cream-800/80 hover:border-cream-200"
                             aria-label="Sign in with Apple"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 16 16" fill="#000000">
@@ -231,7 +231,7 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
 
                         <Button
                             variant="outline"
-                            className="h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:border-slate-400"
+                            className="h-11 border-cream-200 hover:bg-cream-50 text-cream-800/80 hover:border-cream-200"
                             aria-label="Sign in with Facebook"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 16 16" fill="#1877F2">
@@ -242,16 +242,16 @@ export default function SignInClient({ initialOauthError, initialOauthProvider }
                 </div>
 
                 <div className="text-center pt-4">
-                    <p className="text-slate-600 text-sm">
+                    <p className="text-cream-800/70 text-sm">
                         Don't have an account?{" "}
                         <Link
                             href="/sign-up"
-                            className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+                            className="font-semibold text-brand-500 hover:text-brand-600 hover:underline transition-colors"
                         >
                             Sign up
                         </Link>
                     </p>
-                    <p className="text-xs text-slate-500 mt-3">By signing in, you agree to our Terms and Privacy Policy</p>
+                    <p className="text-xs text-cream-800/50 mt-3">By signing in, you agree to our Terms and Privacy Policy</p>
                 </div>
             </div>
         </div>

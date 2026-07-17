@@ -336,16 +336,16 @@ export function ProjectSelectorModal({
             }
           </DialogDescription>
           {currentTeam && (
-            <div className="mt-2 text-sm text-slate-600">
-              Selected team: <span className="font-semibold text-slate-900">{currentTeam.name}</span>
+            <div className="mt-2 text-sm text-cream-800/70">
+              Selected team: <span className="font-semibold text-brand-900">{currentTeam.name}</span>
             </div>
           )}
           {isEligible ? (
-            <div className="mt-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-              <p className="text-sm text-indigo-900">
+            <div className="mt-2 p-3 bg-brand-50 border border-brand-100 rounded-lg">
+              <p className="text-sm text-brand-900">
                 💡 <strong>Recommendation:</strong> If you do not have a project yet, you will be prompted to create one after you click Generate.
               </p>
-              <p className="mt-2 text-xs text-indigo-700">
+              <p className="mt-2 text-xs text-brand-600">
                 Purchase a plan first and you can use your 10 demo credits without watermarks. Each demo credit can generate up to 3 images.
               </p>
             </div>
@@ -393,10 +393,10 @@ export function ProjectSelectorModal({
               <div className="space-y-4">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader className="w-6 h-6 animate-spin text-indigo-600" />
+                <Loader className="w-6 h-6 animate-spin text-brand-500" />
               </div>
             ) : projects.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
+              <div className="text-center py-8 text-cream-800/50">
                 <p>No projects found yet. Click Generate to be prompted to create one, or switch to New Project now.</p>
               </div>
             ) : (
@@ -418,22 +418,22 @@ export function ProjectSelectorModal({
                   </SelectContent>
                 </Select>
                 {selectedProjectId && (
-                  <div className="p-3 border border-slate-200 rounded-lg bg-slate-50">
-                    <p className="text-sm font-semibold text-slate-900">
+                  <div className="p-3 border border-cream-200 rounded-lg bg-cream-50">
+                    <p className="text-sm font-semibold text-brand-900">
                       {selectedProject?.name}
                     </p>
                     {selectedProject?.team?.name && (
-                      <p className="text-xs text-indigo-600 mt-1">
+                      <p className="text-xs text-brand-500 mt-1">
                         Team: {selectedProject.team.name}
                       </p>
                     )}
                     {selectedProject?.address && (
-                      <p className="text-xs text-slate-600 mt-1">
+                      <p className="text-xs text-cream-800/70 mt-1">
                         {selectedProject.address}
                       </p>
                     )}
                     {selectedProject?.description && (
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-cream-800/50 mt-1">
                         {selectedProject.description}
                       </p>
                     )}
@@ -465,7 +465,7 @@ export function ProjectSelectorModal({
                     placeholder="photographer@email.com"
                     className="mt-1"
                   />
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-cream-800/50">
                     If the email is not already in the team, an invitation will be sent and the project will stay restricted until they accept it.
                   </p>
                 </div>
@@ -473,15 +473,15 @@ export function ProjectSelectorModal({
             )}
 
             <div className="space-y-3 pt-4">
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-cream-50 rounded-lg">
                 <input
                   type="checkbox"
                   id="set-as-default"
                   checked={setAsDefault}
                   onChange={(e) => setSetAsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                  className="w-4 h-4 rounded border-cream-200 cursor-pointer"
                 />
-                <label htmlFor="set-as-default" className="text-sm text-slate-700 cursor-pointer flex-1">
+                <label htmlFor="set-as-default" className="text-sm text-cream-800/80 cursor-pointer flex-1">
                   Set as default project (skip this modal next time)
                 </label>
               </div>
@@ -493,7 +493,7 @@ export function ProjectSelectorModal({
                 <Button
                   onClick={handleSelectExisting}
                   disabled={!selectedProjectId || selectLoading}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                  className="flex-1 bg-brand-500 hover:bg-brand-600"
                 >
                   {selectLoading ? (
                     <>
@@ -533,7 +533,7 @@ export function ProjectSelectorModal({
 
             <div>
               <Label htmlFor="project-address">
-                Address <span className="text-slate-400 text-sm">(optional)</span>
+                Address <span className="text-cream-800/40 text-sm">(optional)</span>
               </Label>
               <Input
                 id="project-address"
@@ -571,21 +571,21 @@ export function ProjectSelectorModal({
                 placeholder="photographer@email.com"
                 className="mt-1"
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-cream-800/50">
                 If the email is not already on the team, a team invite and restricted project invite will be created.
               </p>
             </div> */}
 
             <div>
               <Label htmlFor="project-description">
-                Description <span className="text-slate-400 text-sm">(optional)</span>
+                Description <span className="text-cream-800/40 text-sm">(optional)</span>
               </Label>
               <textarea
                 id="project-description"
                 placeholder="Brief description of the project"
                 value={newProjectDescription}
                 onChange={(e) => setNewProjectDescription(e.target.value)}
-                className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
+                className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all resize-none"
                 rows={3}
               />
             </div>
@@ -597,15 +597,15 @@ export function ProjectSelectorModal({
             )}
 
             <div className="space-y-3 pt-4">
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-cream-50 rounded-lg">
                 <input
                   type="checkbox"
                   id="set-as-default-create"
                   checked={setAsDefault}
                   onChange={(e) => setSetAsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+                  className="w-4 h-4 rounded border-cream-200 cursor-pointer"
                 />
-                <label htmlFor="set-as-default-create" className="text-sm text-slate-700 cursor-pointer flex-1">
+                <label htmlFor="set-as-default-create" className="text-sm text-cream-800/80 cursor-pointer flex-1">
                   Set as default project (skip this modal next time)
                 </label>
               </div>
@@ -617,7 +617,7 @@ export function ProjectSelectorModal({
                 <Button
                   onClick={handleCreateProject}
                   disabled={createLoading || !newProjectName.trim()}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                  className="flex-1 bg-brand-500 hover:bg-brand-600"
                 >
                   {createLoading ? (
                     <>
@@ -637,7 +637,7 @@ export function ProjectSelectorModal({
           // Ineligible state - show only close button
           <div className="space-y-4 py-8">
             <div className="text-center">
-              <p className="text-slate-600 mb-6">
+              <p className="text-cream-800/70 mb-6">
                 To link and organize your staged images with projects, please upgrade your plan to Pro or Pro+.
               </p>
               <Button onClick={() => onOpenChange(false)} variant="outline" className="w-full">

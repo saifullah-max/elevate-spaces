@@ -157,11 +157,11 @@ export default function HirePhotographerPage() {
   if (!checked) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+    <div className="min-h-screen bg-cream-50 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-3xl font-black text-slate-900">Find your perfect photographer</h1>
-          <p className="mt-2 text-slate-600">Search by location, availability, and specialty keywords, then request booking from profile.</p>
+        <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+          <h1 className="text-3xl font-black text-brand-900">Find your perfect photographer</h1>
+          <p className="mt-2 text-cream-800/70">Search by location, availability, and specialty keywords, then request booking from profile.</p>
         </div>
 
         <div className="flex gap-2 overflow-x-auto">
@@ -170,7 +170,7 @@ export default function HirePhotographerPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`rounded-xl border px-4 py-2 text-sm font-bold ${
-                activeTab === tab ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"
+                activeTab === tab ? "border-brand-900 bg-brand-900 text-white" : "border-cream-200 bg-white text-cream-800/80"
               }`}
             >
               {tab === "directory" ? "Marketplace" : "My Requests"}
@@ -180,42 +180,42 @@ export default function HirePhotographerPage() {
 
         {activeTab === "directory" && (
           <section className="grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <aside className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-cream-800/80">
                 <SlidersHorizontal className="h-4 w-4" /> Filters
               </div>
 
               <div className="space-y-3">
-                <label className="grid gap-1 text-sm text-slate-700">
+                <label className="grid gap-1 text-sm text-cream-800/80">
                   <span className="font-medium">City / zip / area</span>
                   <div className="relative">
-                    <MapPin className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                    <input value={locationQuery} onChange={(event) => setLocationQuery(event.target.value)} className="w-full rounded-xl border border-slate-300 py-2 pl-9 pr-3" placeholder="e.g. NYC or 10001" />
+                    <MapPin className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-cream-800/40" />
+                    <input value={locationQuery} onChange={(event) => setLocationQuery(event.target.value)} className="w-full rounded-xl border border-cream-200 py-2 pl-9 pr-3" placeholder="e.g. NYC or 10001" />
                   </div>
                 </label>
 
-                <label className="grid gap-1 text-sm text-slate-700">
+                <label className="grid gap-1 text-sm text-cream-800/80">
                   <span className="font-medium">Availability</span>
                   <div className="relative">
-                    <CalendarDays className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                    <input value={availabilityQuery} onChange={(event) => setAvailabilityQuery(event.target.value)} className="w-full rounded-xl border border-slate-300 py-2 pl-9 pr-3" placeholder="weekends, tomorrow" />
+                    <CalendarDays className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-cream-800/40" />
+                    <input value={availabilityQuery} onChange={(event) => setAvailabilityQuery(event.target.value)} className="w-full rounded-xl border border-cream-200 py-2 pl-9 pr-3" placeholder="weekends, tomorrow" />
                   </div>
                 </label>
 
-                <label className="grid gap-1 text-sm text-slate-700">
+                <label className="grid gap-1 text-sm text-cream-800/80">
                   <span className="font-medium">Keyword match</span>
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                    <input value={keywordQuery} onChange={(event) => setKeywordQuery(event.target.value)} className="w-full rounded-xl border border-slate-300 py-2 pl-9 pr-3" placeholder="drone, wedding, branding" />
+                    <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-cream-800/40" />
+                    <input value={keywordQuery} onChange={(event) => setKeywordQuery(event.target.value)} className="w-full rounded-xl border border-cream-200 py-2 pl-9 pr-3" placeholder="drone, wedding, branding" />
                   </div>
                 </label>
 
-                <div className="space-y-2 rounded-xl border border-slate-200 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Service type</p>
+                <div className="space-y-2 rounded-xl border border-cream-200 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Service type</p>
                   {FILTER_OPTIONS.map((option) => {
                     const checked = selectedFilters.includes(option);
                     return (
-                      <label key={option} className="flex items-center gap-2 text-sm text-slate-700">
+                      <label key={option} className="flex items-center gap-2 text-sm text-cream-800/80">
                         <input
                           type="checkbox"
                           checked={checked}
@@ -232,9 +232,9 @@ export default function HirePhotographerPage() {
                   })}
                 </div>
 
-                <label className="grid gap-1 text-sm text-slate-700">
+                <label className="grid gap-1 text-sm text-cream-800/80">
                   <span className="font-medium">Sort by</span>
-                  <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortKey)} className="rounded-xl border border-slate-300 px-3 py-2">
+                  <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortKey)} className="rounded-xl border border-cream-200 px-3 py-2">
                     <option value="best-match">Best match</option>
                     <option value="price-low">Price: low to high</option>
                     <option value="price-high">Price: high to low</option>
@@ -244,9 +244,9 @@ export default function HirePhotographerPage() {
             </aside>
 
             <div className="space-y-4">
-              {loading && <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">Loading photographers...</div>}
+              {loading && <div className="rounded-2xl border border-cream-200 bg-white p-8 text-center text-cream-800/50">Loading photographers...</div>}
               {!loading && filteredPhotographers.length === 0 && (
-                <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">No photographers match your current filters.</div>
+                <div className="rounded-2xl border border-cream-200 bg-white p-8 text-center text-cream-800/50">No photographers match your current filters.</div>
               )}
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -254,29 +254,29 @@ export default function HirePhotographerPage() {
                   const serviceAreas = normalizeServiceAreas(photographer);
                   const keywords = normalizeKeywords(photographer);
                   return (
-                    <article key={photographer.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <article key={photographer.id} className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
                       <div className="space-y-2">
-                        <h2 className="text-xl font-bold text-slate-900">{photographer.user.name || "Photographer"}</h2>
-                        <p className="text-sm text-slate-500">{photographer.user.email}</p>
-                        <p className="text-sm text-slate-700"><span className="font-semibold">Type:</span> {photographer.photographer_type || "-"}</p>
-                        <p className="text-sm text-slate-700"><span className="font-semibold">Areas:</span> {serviceAreas.length ? serviceAreas.join(", ") : "-"}</p>
-                        <p className="text-sm text-slate-700"><span className="font-semibold">Availability:</span> {photographer.availability || "-"}</p>
-                        <p className="text-sm text-slate-700"><span className="font-semibold">Price:</span> {photographer.price_min || photographer.price_max ? `$${photographer.price_min || "-"} - $${photographer.price_max || "-"}` : "Contact for quote"}</p>
-                        <p className="text-sm text-slate-700 line-clamp-3">{photographer.short_pitch || photographer.bio || "No description yet."}</p>
+                        <h2 className="text-xl font-bold text-brand-900">{photographer.user.name || "Photographer"}</h2>
+                        <p className="text-sm text-cream-800/50">{photographer.user.email}</p>
+                        <p className="text-sm text-cream-800/80"><span className="font-semibold">Type:</span> {photographer.photographer_type || "-"}</p>
+                        <p className="text-sm text-cream-800/80"><span className="font-semibold">Areas:</span> {serviceAreas.length ? serviceAreas.join(", ") : "-"}</p>
+                        <p className="text-sm text-cream-800/80"><span className="font-semibold">Availability:</span> {photographer.availability || "-"}</p>
+                        <p className="text-sm text-cream-800/80"><span className="font-semibold">Price:</span> {photographer.price_min || photographer.price_max ? `$${photographer.price_min || "-"} - $${photographer.price_max || "-"}` : "Contact for quote"}</p>
+                        <p className="text-sm text-cream-800/80 line-clamp-3">{photographer.short_pitch || photographer.bio || "No description yet."}</p>
                         {keywords.length > 0 ? (
                           <div className="flex flex-wrap gap-1 pt-1">
                             {keywords.slice(0, 5).map((keyword) => (
-                              <span key={keyword} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{keyword}</span>
+                              <span key={keyword} className="rounded-full bg-cream-100 px-2 py-0.5 text-xs font-medium text-cream-800/80">{keyword}</span>
                             ))}
                           </div>
                         ) : null}
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Link href={`/hire-photographer/${photographer.id}`} className="inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                        <Link href={`/hire-photographer/${photographer.id}`} className="inline-flex rounded-md bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600">
                           View details
                         </Link>
-                        <Link href={`/messages?peerId=${photographer.user.id}`} className="inline-flex rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                        <Link href={`/messages?peerId=${photographer.user.id}`} className="inline-flex rounded-md border border-cream-200 px-4 py-2 text-sm font-semibold text-cream-800/80 hover:bg-cream-100">
                           Chat
                         </Link>
                       </div>
@@ -291,7 +291,7 @@ export default function HirePhotographerPage() {
         {activeTab === "requests" && (
           <section className="space-y-4">
             {myRequests.length === 0 && !loading && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">You have not made any booking requests yet.</div>
+              <div className="rounded-2xl border border-cream-200 bg-white p-8 text-center text-cream-800/50">You have not made any booking requests yet.</div>
             )}
 
             {myRequests.map((request) => {
@@ -299,34 +299,34 @@ export default function HirePhotographerPage() {
               const isCancelled = request.status === "CANCELLED";
               const declinedAt = request.status_updated_at ? new Date(request.status_updated_at) : null;
               return (
-                <article key={request.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <article key={request.id} className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-2">
-                      <h2 className="text-xl font-bold text-slate-900">{request.photographer?.user?.name || "Photographer"}</h2>
-                      <p className="text-sm text-slate-500">{request.photographer?.user?.email || "No email available"}</p>
-                      <p className="text-sm text-slate-700"><span className="font-semibold">Requested at:</span> {new Date(request.date).toLocaleString()}</p>
-                      <p className="text-sm text-slate-700"><span className="font-semibold">Status:</span> {request.status.toLowerCase()}</p>
+                      <h2 className="text-xl font-bold text-brand-900">{request.photographer?.user?.name || "Photographer"}</h2>
+                      <p className="text-sm text-cream-800/50">{request.photographer?.user?.email || "No email available"}</p>
+                      <p className="text-sm text-cream-800/80"><span className="font-semibold">Requested at:</span> {new Date(request.date).toLocaleString()}</p>
+                      <p className="text-sm text-cream-800/80"><span className="font-semibold">Status:</span> {request.status.toLowerCase()}</p>
 
                       {isCancelled ? (
                         <>
-                          <p className="text-sm text-slate-700"><span className="font-semibold">Declined by:</span> {request.cancelled_by ? request.cancelled_by.toLowerCase() : "unknown"}</p>
-                          <p className="text-sm text-slate-700"><span className="font-semibold">Declined date:</span> {declinedAt ? declinedAt.toLocaleDateString() : "-"}</p>
-                          <p className="text-sm text-slate-700"><span className="font-semibold">Declined day:</span> {declinedAt ? declinedAt.toLocaleDateString(undefined, { weekday: "long" }) : "-"}</p>
-                          <p className="text-sm text-slate-700"><span className="font-semibold">Declined time:</span> {declinedAt ? declinedAt.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "-"}</p>
+                          <p className="text-sm text-cream-800/80"><span className="font-semibold">Declined by:</span> {request.cancelled_by ? request.cancelled_by.toLowerCase() : "unknown"}</p>
+                          <p className="text-sm text-cream-800/80"><span className="font-semibold">Declined date:</span> {declinedAt ? declinedAt.toLocaleDateString() : "-"}</p>
+                          <p className="text-sm text-cream-800/80"><span className="font-semibold">Declined day:</span> {declinedAt ? declinedAt.toLocaleDateString(undefined, { weekday: "long" }) : "-"}</p>
+                          <p className="text-sm text-cream-800/80"><span className="font-semibold">Declined time:</span> {declinedAt ? declinedAt.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "-"}</p>
                         </>
                       ) : null}
 
                       {request.client_note_html ? (
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Your note</p>
-                          <div className="mt-2 text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: request.client_note_html }} />
+                        <div className="rounded-lg border border-cream-200 bg-cream-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Your note</p>
+                          <div className="mt-2 text-sm text-brand-900" dangerouslySetInnerHTML={{ __html: request.client_note_html }} />
                         </div>
                       ) : null}
 
                       {request.photographer_note_html ? (
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Photographer feedback</p>
-                          <div className="mt-2 text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: request.photographer_note_html }} />
+                        <div className="rounded-lg border border-cream-200 bg-cream-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Photographer feedback</p>
+                          <div className="mt-2 text-sm text-brand-900" dangerouslySetInnerHTML={{ __html: request.photographer_note_html }} />
                         </div>
                       ) : null}
                     </div>

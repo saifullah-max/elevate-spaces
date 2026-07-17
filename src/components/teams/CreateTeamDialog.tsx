@@ -33,7 +33,7 @@ export function CreateTeamDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button className="bg-brand-500 hover:bg-brand-600 text-white">
                     <Plus className="w-4 h-4 mr-2" />
                     Add New Team
                 </Button>
@@ -62,14 +62,14 @@ export function CreateTeamDialog({
 
                     <div>
                         <Label htmlFor="description">
-                            Description <span className="text-slate-400 text-sm">(optional)</span>
+                            Description <span className="text-cream-800/40 text-sm">(optional)</span>
                         </Label>
                         <textarea
                             id="description"
                             placeholder="Describe your team's purpose"
                             value={description}
                             onChange={(e) => onDescriptionChange(e.target.value)}
-                            className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
+                            className="mt-1 w-full px-3 py-2 border border-cream-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all resize-none"
                             rows={3}
                         />
                     </div>
@@ -89,7 +89,7 @@ export function CreateTeamDialog({
                     <Button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700"
+                        className="w-full bg-brand-500 hover:bg-brand-600"
                     >
                         {loading ? (
                             <>

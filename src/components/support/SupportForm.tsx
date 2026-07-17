@@ -89,47 +89,47 @@ export default function SupportForm() {
     <form onSubmit={handleSubmit} className="space-y-4 mt-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Full name (optional)</label>
+          <label className="block text-sm font-medium text-cream-800/80 mb-1">Full name (optional)</label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Company name (optional)</label>
+          <label className="block text-sm font-medium text-cream-800/80 mb-1">Company name (optional)</label>
           <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Email address</label>
+        <label className="block text-sm font-medium text-cream-800/80 mb-1">Email address</label>
         <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Order number (optional)</label>
+        <label className="block text-sm font-medium text-cream-800/80 mb-1">Order number (optional)</label>
         <Input value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Brief description</label>
+        <label className="block text-sm font-medium text-cream-800/80 mb-1">Brief description</label>
         <textarea
           value={briefDescription}
           onChange={(e) => setBriefDescription(e.target.value)}
           rows={5}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Additional context (optional)</label>
+        <label className="block text-sm font-medium text-cream-800/80 mb-1">Additional context (optional)</label>
         <textarea
           value={additionalContext}
           onChange={(e) => setAdditionalContext(e.target.value)}
           rows={3}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="w-full rounded-md border border-cream-200 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Screenshots or files (optional, up to 5)</label>
+        <label className="block text-sm font-medium text-cream-800/80 mb-1">Screenshots or files (optional, up to 5)</label>
         <input type="file" multiple onChange={handleFilesChange} className="text-sm" accept="image/*" />
       </div>
 
@@ -137,7 +137,7 @@ export default function SupportForm() {
       {caseNumber && <div className="text-sm text-green-700">Submitted — case number: {caseNumber}</div>}
 
       <div>
-        <button type="submit" className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700" disabled={submitting}>
+        <button type="submit" className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600" disabled={submitting}>
           {submitting ? 'Sending...' : 'Submit Support Request'}
         </button>
       </div>

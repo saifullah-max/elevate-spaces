@@ -45,7 +45,7 @@ export default function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug })
       description={document?.description || fallback.description}
     >
       {loading ? (
-        <div className="flex items-center gap-2 text-slate-500">
+        <div className="flex items-center gap-2 text-cream-800/50">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading legal content...
         </div>
       ) : (

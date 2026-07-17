@@ -732,7 +732,7 @@ export default function Teams() {
                                         </button>
                                         <button
                                             type="submit"
-                                            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                            className="px-4 py-2 bg-brand-500 text-white rounded hover:bg-brand-600"
                                             disabled={transferToTeamLoading}
                                         >
                                             {transferToTeamLoading ? "Transferring..." : "Transfer"}
@@ -745,12 +745,12 @@ export default function Teams() {
                 </>
 
                 <div className="mb-10">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-cream-200 p-6">
                         <div className="flex items-start justify-between mb-4">
-                            <h2 className="text-2xl font-semibold text-slate-900">My Teams</h2>
+                            <h2 className="text-2xl font-semibold text-brand-900">My Teams</h2>
                             <div className="flex items-center gap-2">
                                 {teams?.teams?.some(t => t.owner_id === currentUserId) && (
-                                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setTransferToTeamDialogOpen(true)}>
+                                    <Button className="bg-brand-500 hover:bg-brand-600 text-white" onClick={() => setTransferToTeamDialogOpen(true)}>
                                         Transfer Credits to Team Wallet
                                     </Button>
                                 )}
@@ -804,8 +804,8 @@ export default function Teams() {
                 )}
 
                 <div className="mb-10">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-2xl font-semibold text-slate-900 mb-4">Teams I'm Part Of</h2>
+                    <div className="bg-white rounded-xl shadow-sm border border-cream-200 p-6">
+                        <h2 className="text-2xl font-semibold text-brand-900 mb-4">Teams I'm Part Of</h2>
                         <MemberTeamsTable
                             teams={memberTeams}
                             currentUserId={currentUserId}
@@ -929,7 +929,7 @@ export default function Teams() {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            <div className="space-y-2 text-sm text-slate-700">
+                            <div className="space-y-2 text-sm text-cream-800/80">
                                 <p>
                                     Included additional users: {seatLimitDetails?.freeIncludedUsers ?? 0}
                                 </p>
@@ -940,7 +940,7 @@ export default function Teams() {
                                     Purchased extra seats: {seatLimitDetails?.purchasedExtraSeats ?? 0} | Total allowed members: {seatLimitDetails?.allowedMembers ?? 0}
                                 </p>
                                 {seatLimitDetails?.allowPurchaseExtraSeats && seatLimitDetails?.extraSeatPriceUsdMonthly ? (
-                                    <p className="font-medium text-slate-900">
+                                    <p className="font-medium text-brand-900">
                                         Extra users cost ${seatLimitDetails.extraSeatPriceUsdMonthly}/month each.
                                     </p>
                                 ) : (
@@ -988,11 +988,11 @@ export default function Teams() {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            <div className="space-y-3 text-sm text-slate-700">
+                            <div className="space-y-3 text-sm text-cream-800/80">
                                 <p>
                                     By proceeding, each extra user seat is billed at ${seatLimitDetails?.extraSeatPriceUsdMonthly ?? 0}/month.
                                 </p>
-                                <label className="flex items-center gap-2 text-sm text-slate-700">
+                                <label className="flex items-center gap-2 text-sm text-cream-800/80">
                                     <input
                                         type="checkbox"
                                         checked={seatAutoRenew}
@@ -1003,7 +1003,7 @@ export default function Teams() {
                                 <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
                                     If auto-renewal is disabled, the paid seat stays active for 30 days from last paid date. After that, the member is automatically removed from the team and related team access data is lost.
                                 </p>
-                                <label className="flex items-start gap-2 text-sm text-slate-700">
+                                <label className="flex items-start gap-2 text-sm text-cream-800/80">
                                     <input
                                         type="checkbox"
                                         className="mt-1"

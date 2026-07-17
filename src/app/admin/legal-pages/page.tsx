@@ -31,7 +31,7 @@ export default function AdminLegalPagesPage() {
     editorProps: {
       attributes: {
         class:
-          "min-h-[360px] rounded-b-xl border border-slate-200 border-t-0 px-4 py-4 focus:outline-none [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-slate-900 [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-slate-900 [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1",
+          "min-h-[360px] rounded-b-xl border border-cream-200 border-t-0 px-4 py-4 focus:outline-none [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-brand-900 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-brand-900 [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-brand-900 [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1",
       },
     },
   });
@@ -94,7 +94,7 @@ export default function AdminLegalPagesPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center text-slate-500">
+      <div className="flex min-h-[50vh] items-center justify-center text-cream-800/50">
         <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading legal page manager...
       </div>
     );
@@ -102,9 +102,9 @@ export default function AdminLegalPagesPage() {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h1 className="text-lg font-bold text-slate-900">Legal Pages</h1>
-        <p className="mt-1 text-sm text-slate-600">Edit every footer legal page from one place.</p>
+      <aside className="rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
+        <h1 className="text-lg font-bold text-brand-900">Legal Pages</h1>
+        <p className="mt-1 text-sm text-cream-800/70">Edit every footer legal page from one place.</p>
         <div className="mt-4 space-y-2">
           {documents.map((document) => (
             <button
@@ -113,28 +113,28 @@ export default function AdminLegalPagesPage() {
               onClick={() => setSelectedSlug(document.slug)}
               className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
                 selectedSlug === document.slug
-                  ? "border-indigo-600 bg-indigo-50 text-indigo-900"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-brand-500 bg-brand-50 text-brand-900"
+                  : "border-cream-200 bg-white text-cream-800/80 hover:bg-cream-50"
               }`}
             >
               <div className="font-semibold">{document.title}</div>
-              <div className="mt-1 text-xs text-slate-500">Updated {new Date(document.updatedAt).toLocaleString()}</div>
+              <div className="mt-1 text-xs text-cream-800/50">Updated {new Date(document.updatedAt).toLocaleString()}</div>
             </button>
           ))}
         </div>
       </aside>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-center md:justify-between">
+      <section className="rounded-2xl border border-cream-200 bg-white p-5 shadow-sm">
+        <div className="mb-5 flex flex-col gap-3 border-b border-cream-200 pb-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">{LEGAL_DOCUMENT_CONFIG[selectedSlug].title}</h2>
-            <p className="text-sm text-slate-600">Rich-text editor for public legal content.</p>
+            <h2 className="text-2xl font-bold text-brand-900">{LEGAL_DOCUMENT_CONFIG[selectedSlug].title}</h2>
+            <p className="text-sm text-cream-800/70">Rich-text editor for public legal content.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={LEGAL_DOCUMENT_CONFIG[selectedSlug].href}
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-cream-200 px-4 py-2 text-sm font-medium text-cream-800/80 hover:bg-cream-50"
             >
               <ExternalLink className="h-4 w-4" /> View page
             </Link>
@@ -142,7 +142,7 @@ export default function AdminLegalPagesPage() {
               type="button"
               onClick={handleSave}
               disabled={saving || !editor}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save changes
             </button>
@@ -151,25 +151,25 @@ export default function AdminLegalPagesPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Title</label>
+            <label className="mb-1 block text-sm font-medium text-cream-800/80">Title</label>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-600"
+              className="w-full rounded-lg border border-cream-200 px-3 py-2 text-sm text-brand-900 outline-none focus:border-brand-500"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+            <label className="mb-1 block text-sm font-medium text-cream-800/80">Description</label>
             <input
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-600"
+              className="w-full rounded-lg border border-cream-200 px-3 py-2 text-sm text-brand-900 outline-none focus:border-brand-500"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Content</label>
-            <div className="flex flex-wrap gap-2 rounded-t-xl border border-slate-200 bg-slate-50 p-2">
+            <label className="mb-2 block text-sm font-medium text-cream-800/80">Content</label>
+            <div className="flex flex-wrap gap-2 rounded-t-xl border border-cream-200 bg-cream-50 p-2">
               <ToolbarButton label="H2" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} active={!!editor?.isActive("heading", { level: 2 })} icon={<Heading2 className="h-4 w-4" />} />
               <ToolbarButton label="H3" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} active={!!editor?.isActive("heading", { level: 3 })} icon={<Heading3 className="h-4 w-4" />} />
               <ToolbarButton label="Bold" onClick={() => editor?.chain().focus().toggleBold().run()} active={!!editor?.isActive("bold")} icon={<Bold className="h-4 w-4" />} />
@@ -206,7 +206,7 @@ function ToolbarButton({
       type="button"
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-        active ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+        active ? "bg-brand-500 text-white" : "bg-white text-cream-800/80 hover:bg-cream-100"
       }`}
     >
       {icon}
@@ -254,21 +254,21 @@ function ColorPickerButton({ editor }: { editor: import("@tiptap/react").Editor 
         onClick={() => setOpen((prev) => !prev)}
         title="Text color"
         className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-          open ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+          open ? "bg-brand-500 text-white" : "bg-white text-cream-800/80 hover:bg-cream-100"
         }`}
       >
         <ALargeSmall className="h-4 w-4" />
         <span
-          className="h-3 w-3 rounded-sm border border-slate-300"
+          className="h-3 w-3 rounded-sm border border-cream-200"
           style={{ background: currentColor ?? hex }}
         />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
+        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-cream-200 bg-white p-4 shadow-xl">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Text Color</span>
-            <button type="button" onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600">
+            <span className="text-xs font-semibold uppercase tracking-wide text-cream-800/50">Text Color</span>
+            <button type="button" onClick={() => setOpen(false)} className="text-cream-800/40 hover:text-cream-800/70">
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -279,7 +279,7 @@ function ColorPickerButton({ editor }: { editor: import("@tiptap/react").Editor 
               type="color"
               value={hex}
               onChange={(e) => applyColor(e.target.value)}
-              className="h-9 w-10 cursor-pointer rounded-md border border-slate-200 bg-white p-0.5"
+              className="h-9 w-10 cursor-pointer rounded-md border border-cream-200 bg-white p-0.5"
               title="Pick a color"
             />
             <input
@@ -292,13 +292,13 @@ function ColorPickerButton({ editor }: { editor: import("@tiptap/react").Editor 
                 if (/^#[0-9a-fA-F]{6}$/.test(v)) applyColor(v);
               }}
               placeholder="#000000"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 font-mono text-sm text-slate-900 outline-none focus:border-indigo-600"
+              className="flex-1 rounded-lg border border-cream-200 px-3 py-1.5 font-mono text-sm text-brand-900 outline-none focus:border-brand-500"
             />
             <button
               type="button"
               onClick={removeColor}
               title="Remove color"
-              className="rounded-md border border-slate-200 px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-50"
+              className="rounded-md border border-cream-200 px-2 py-1.5 text-xs text-cream-800/50 hover:bg-cream-50"
             >
               Clear
             </button>
@@ -313,7 +313,7 @@ function ColorPickerButton({ editor }: { editor: import("@tiptap/react").Editor 
                 onClick={() => applyColor(color)}
                 title={color}
                 className={`h-8 w-full rounded-md border-2 transition-transform hover:scale-110 ${
-                  currentColor === color ? "border-indigo-600 ring-2 ring-indigo-300" : "border-transparent"
+                  currentColor === color ? "border-brand-500 ring-2 ring-brand-100" : "border-transparent"
                 }`}
                 style={{ background: color }}
               />

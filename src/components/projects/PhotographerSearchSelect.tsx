@@ -92,7 +92,7 @@ export function PhotographerSearchSelect({
 
   return (
     <div className="space-y-1" ref={containerRef}>
-      {label && <label className="text-sm font-medium text-slate-700">{label}</label>}
+      {label && <label className="text-sm font-medium text-cream-800/80">{label}</label>}
 
       <div className="relative">
         <div className="relative">
@@ -107,10 +107,10 @@ export function PhotographerSearchSelect({
             onFocus={() => setOpen(true)}
             placeholder={placeholder}
             disabled={disabled}
-            className={cn("pr-20", disabled && "bg-slate-100")}
+            className={cn("pr-20", disabled && "bg-cream-100")}
           />
 
-          <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-3 text-slate-400">
+          <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-3 text-cream-800/40">
             {value && !disabled ? (
               <button
                 type="button"
@@ -119,7 +119,7 @@ export function PhotographerSearchSelect({
                   setQuery("");
                   setOpen(true);
                 }}
-                className="rounded p-1 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded p-1 hover:bg-cream-100 hover:text-cream-800/70"
                 aria-label="Clear photographer"
               >
                 <X className="h-4 w-4" />
@@ -130,8 +130,8 @@ export function PhotographerSearchSelect({
               disabled={disabled}
               onClick={() => setOpen((current) => !current)}
               className={cn(
-                "rounded p-1 transition hover:bg-slate-100 hover:text-slate-600",
-                disabled && "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-slate-400"
+                "rounded p-1 transition hover:bg-cream-100 hover:text-cream-800/70",
+                disabled && "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-cream-800/40"
               )}
               aria-label={open ? "Close photographer dropdown" : "Open photographer dropdown"}
             >
@@ -141,13 +141,13 @@ export function PhotographerSearchSelect({
         </div>
 
         {open && !disabled && (
-          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
-            <div className="border-b border-slate-100 p-2">
+          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-lg border border-cream-200 bg-white shadow-lg">
+            <div className="border-b border-cream-100 p-2">
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={searchPlaceholder}
-                className="h-9 border-slate-200"
+                className="h-9 border-cream-200"
                 autoFocus
               />
             </div>
@@ -161,26 +161,26 @@ export function PhotographerSearchSelect({
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => handleSelect(option)}
                     className={cn(
-                      "flex w-full flex-col items-start rounded-md px-3 py-2 text-left text-sm transition hover:bg-slate-50",
-                      value === option.id && "bg-indigo-50 text-indigo-700"
+                      "flex w-full flex-col items-start rounded-md px-3 py-2 text-left text-sm transition hover:bg-cream-50",
+                      value === option.id && "bg-brand-50 text-brand-600"
                     )}
                   >
-                    <span className="font-medium text-slate-900">{option.label}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="font-medium text-brand-900">{option.label}</span>
+                    <span className="text-xs text-cream-800/50">
                       {option.email}
                       {option.secondaryLabel ? ` · ${option.secondaryLabel}` : ""}
                     </span>
                   </button>
                 ))
               ) : (
-                <div className="px-3 py-6 text-center text-sm text-slate-500">{emptyText}</div>
+                <div className="px-3 py-6 text-center text-sm text-cream-800/50">{emptyText}</div>
               )}
             </div>
           </div>
         )}
       </div>
 
-      {helperText && <p className="text-xs text-slate-500">{helperText}</p>}
+      {helperText && <p className="text-xs text-cream-800/50">{helperText}</p>}
     </div>
   );
 }

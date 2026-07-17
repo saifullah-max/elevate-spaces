@@ -130,7 +130,7 @@ export default function LogExportDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="border-slate-300 gap-2">
+        <Button variant="outline" className="border-cream-200 gap-2">
           <Download className="h-4 w-4" />
           Export CSV
         </Button>
@@ -240,7 +240,7 @@ export default function LogExportDialog({
           <Button
             onClick={handleExport}
             disabled={busy}
-            className="bg-[#003580] text-white hover:bg-[#002a66]"
+            className="bg-brand-500 text-white hover:bg-[#002a66]"
           >
             {busy ? 'Exporting…' : 'Export CSV'}
           </Button>

@@ -10,7 +10,7 @@ export function getStatusBadgeColor(status: string): string {
         case "FAILED":
             return "bg-red-100 text-red-800";
         default:
-            return "bg-slate-100 text-slate-800";
+            return "bg-cream-100 text-brand-900";
     }
 }
 

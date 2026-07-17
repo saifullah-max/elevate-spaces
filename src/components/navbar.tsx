@@ -1,15 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { AUTH_CHANGED_EVENT, getAuthFromStorage, clearAuthFromStorage, saveAuthToStorage } from "@/lib/auth.storage";
+import {
+  AUTH_CHANGED_EVENT,
+  getAuthFromStorage,
+  clearAuthFromStorage,
+  saveAuthToStorage,
+} from "@/lib/auth.storage";
 import { hasRole } from "@/lib/role.helpers";
 import type { User as UserType } from "@/store/slices/authSlice";
 import { deleteProfileImage, getCurrentUserProfile } from "@/services/auth.service";
 import { showError, showSuccess } from "@/components/toastUtils";
-import { BookOpen, FolderOpen, Loader, LogOut, Menu, Settings, User, Users, UserX, X } from "lucide-react";
-import Image from "next/image";
+import { ChevronDown, HouseIcon, LogOut, Settings, UserX } from "lucide-react";
+import AuthGateModal from "@/components/AuthGateModal";
+import {
+  AUTH_MODAL_OPEN_EVENT,
+  AuthModalOpenDetail,
+  consumePendingAuthModal,
+} from "@/lib/authModal";
 
 interface UserData {
   id: string | null;
@@ -20,19 +30,38 @@ interface UserData {
   manualAvatarUrl?: string | null;
 }
 
+type TabKey = "home" | "studio" | "pricing" | "resources";
+
+const TABS: { key: TabKey; label: string; href: string }[] = [
+  { key: "home", label: "Home", href: "/" },
+  { key: "studio", label: "Studio", href: "/studio" },
+  { key: "pricing", label: "Pricing", href: "/pricing" },
+  { key: "resources", label: "Resources", href: "/resources" },
+];
+
+function tabFromPath(pathname: string | null): TabKey {
+  if (!pathname) return "home";
+  if (pathname === "/" || pathname.startsWith("/home")) return "home";
+  if (pathname.startsWith("/studio")) return "studio";
+  if (pathname.startsWith("/pricing")) return "pricing";
+  if (pathname.startsWith("/resources")) return "resources";
+  return "home";
+}
+
 export default function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isRemovingProfileImage, setIsRemovingProfileImage] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  // Tracks whether the current avatarUrl failed to load (CORS, 403 from a
-  // hotlink-protected CDN, broken upload, etc.) so we can fall back to the
-  // initials bubble instead of rendering a broken image.
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalView, setAuthModalView] = useState<"login" | "signup">("login");
+  const [authModalError, setAuthModalError] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const isAdminPage = pathname?.startsWith('/admin');
+  const isAdminPage = pathname?.startsWith("/admin");
+  const activeTab = tabFromPath(pathname);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const userHasRole = (roleName: string): boolean => hasRole(user?.role ?? null, roleName);
 
@@ -45,7 +74,6 @@ export default function Navbar() {
         setUser(null);
         return;
       }
-
       try {
         const apiUser = await getCurrentUserProfile();
         setUser({
@@ -53,8 +81,6 @@ export default function Navbar() {
           email: apiUser.email,
           name: apiUser.name,
           role: apiUser.role,
-          // Prefer the user's manually-uploaded avatar; fall back to the
-          // OAuth/provider avatar when no manual one has been set.
           avatarUrl: apiUser.manualAvatarUrl || apiUser.avatarUrl || null,
           manualAvatarUrl: apiUser.manualAvatarUrl || null,
         });
@@ -70,23 +96,15 @@ export default function Navbar() {
       }
     };
 
-    // Load user on mount
     loadUserFromApi();
 
-    // Listen for storage changes (e.g., from other tabs or after login)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "elevate_spaces_auth" || e.key === null) {
-        loadUserFromApi();
-      }
+      if (e.key === "elevate_spaces_auth" || e.key === null) loadUserFromApi();
     };
-
-    const handleAuthChanged = () => {
-      loadUserFromApi();
-    };
+    const handleAuthChanged = () => loadUserFromApi();
 
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
-
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
@@ -98,36 +116,61 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<AuthModalOpenDetail>).detail;
+      if (!detail) return;
+      setAuthModalView(detail.view);
+      setAuthModalError(detail.error ?? null);
+      setAuthModalOpen(true);
+    };
+    window.addEventListener(AUTH_MODAL_OPEN_EVENT, handler);
+    // Drain any request that was persisted before this Navbar mounted
+    // (typical when /sign-in or /sign-up trampolines redirect to /).
+    const pending = consumePendingAuthModal();
+    if (pending) {
+      setAuthModalView(pending.view);
+      setAuthModalError(pending.error ?? null);
+      setAuthModalOpen(true);
+    }
+    return () => window.removeEventListener(AUTH_MODAL_OPEN_EVENT, handler);
+  }, []);
+
+  useEffect(() => {
     setAvatarLoadFailed(false);
   }, [user?.avatarUrl]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (!dropdownRef.current) return;
+      if (!dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [dropdownOpen]);
 
   const handleLogout = () => {
     clearAuthFromStorage();
     setUser(null);
     setDropdownOpen(false);
-    setMobileMenuOpen(false);
-
     window.location.href = "/";
   };
 
   const handleOpenSettings = () => {
     setDropdownOpen(false);
-    setMobileMenuOpen(false);
-    router.push('/settings');
+    router.push("/settings");
   };
 
   const handleRemoveProfileImage = async () => {
     if (!user?.avatarUrl || isRemovingProfileImage) return;
-
     try {
       setIsRemovingProfileImage(true);
       const result = await deleteProfileImage();
       const currentAuth = getAuthFromStorage();
       if (currentAuth?.token) {
         saveAuthToStorage(result.user, currentAuth.token);
-        window.dispatchEvent(new StorageEvent('storage', { key: 'elevate_spaces_auth' }));
+        window.dispatchEvent(new StorageEvent("storage", { key: "elevate_spaces_auth" }));
       }
-
       setUser({
         id: result.user.id,
         email: result.user.email,
@@ -136,332 +179,191 @@ export default function Navbar() {
         avatarUrl: result.user.avatarUrl || null,
       });
       setDropdownOpen(false);
-      setMobileMenuOpen(false);
-      showSuccess(result.message || 'Profile image removed successfully');
+      showSuccess(result.message || "Profile image removed successfully");
     } catch (error: any) {
-      showError(error?.message || 'Failed to remove profile image');
+      showError(error?.message || "Failed to remove profile image");
     } finally {
       setIsRemovingProfileImage(false);
     }
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-    setMobileMenuOpen(false);
-  };
-
-  const scrollToTop = () => {
-    if (window.location.pathname === "/") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      setMobileMenuOpen(false);
-    } else {
-      router.push("/");
-    }
-  };
-
-  // Navigation items for desktop & mobile reuse
-  const navItems = [
-    {
-      label: "Projects",
-      icon: <FolderOpen className="w-4 h-4" />,
-      section: null,
-      id: "nav-projects",
-      href: "/projects",
-    },
-    { label: "Team", icon: <Users className="w-4 h-4" />, section: null, href: "/teams" },
-    { label: "Resources", icon: <BookOpen className="w-4 h-4" />, section: null, href: "/resources" },
-    // { label: "Pricing", section: "pricing", href: null },
-  ];
-
-  // Helper to compute initials
   const getInitials = (name?: string | null) => {
-    if (!name) return '';
-    const parts = name.trim().split(' ').filter(Boolean);
-    if (parts.length === 1) {
-      // Only first name: use first two letters
-      return parts[0].slice(0, 2).toUpperCase();
-    } else if (parts.length >= 2) {
-      // Two or more names: first letter of first and last
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return '';
+    if (!name) return "";
+    const parts = name.trim().split(" ").filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  if (isAdminPage || !isMounted) {
-    return null;
-  }
+  if (isAdminPage || !isMounted) return null;
+
+  const firstName = user?.name?.split(" ")[0] || "User";
 
   return (
     <nav
-      className="fixed w-full z-50 transition-all duration-300 py-6 bg-[#FAF7F2]/90 backdrop-blur-md shadow-sm"
+      className="sticky top-0 z-30 bg-cream-50/90 backdrop-blur-md border-b border-cream-200"
       style={{ top: "var(--top-banner-height, 0px)" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <div
-            onClick={scrollToTop}
-            className="flex items-center gap-2 cursor-pointer select-none"
-          >
-            <div className="p-1 rounded-lg">
-              {/* <Home className="w-6 h-6 text-white" /> */}
-              <Image
-                src='/logo-navbar-upd.png'
-                width={70}
-                height={70}
-                className="w-10 h-10 rounded-sm"
-                alt="Icon"
-              />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">
-              Elevate<span className="text-indigo-600">Spaces</span><span suppressHydrationWarning>AI</span>
-            </span>
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0 select-none">
+          <div className="w-8 h-8 rounded-md bg-brand-500 flex items-center justify-center">
+            <HouseIcon className="text-white w-4 h-4" />
           </div>
+          <span className="font-display font-bold text-lg text-brand-900">
+            Elevate<span className="text-brand-500">Spaces</span>AI
+          </span>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navItems.map((item) => (
-              item.href ? (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  prefetch
-                  className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
-                >
-                  {item.icon}
-                  {item.label}
-                </Link>
-              ) : (
-                <button
-                  key={item.label}
-                  type="button"
-                  id={item.id || undefined}
-                  onClick={() => item.section && scrollToSection(item.section)}
-                  className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              )
-            ))}
-
-            {userHasRole("ADMIN") && (
+        {/* Desktop tabs */}
+        <div className="hidden md:flex items-center gap-2 bg-white border border-cream-200 rounded-xl p-1">
+          {TABS.map((t) => {
+            const active = activeTab === t.key;
+            return (
               <Link
-                href="/admin/dashboard"
-                className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
+                key={t.key}
+                href={t.href}
+                className={
+                  "px-2 py-2 rounded-lg text-xs font-semibold transition-all " +
+                  (active
+                    ? "bg-brand-500 text-white"
+                    : "text-cream-800/60 hover:text-brand-900")
+                }
               >
-                Dashboard
+                {t.label}
               </Link>
-            )}
+            );
+          })}
+          {userHasRole("ADMIN") && (
+            <Link
+              href="/admin/dashboard"
+              className="px-2 py-2 rounded-lg text-xs font-semibold text-cream-800/60 hover:text-brand-900 transition-all"
+            >
+              Dashboard
+            </Link>
+          )}
+        </div>
 
-            {/* {user && (
+        {/* Right side: log-in or account menu + primary CTA */}
+        <div className="flex items-center gap-2">
+          {user ? (
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={handleOpenSettings}
-                className="text-slate-600 hover:text-indigo-600 font-medium transition-colors flex items-center gap-1.5"
+                onClick={() => setDropdownOpen((v) => !v)}
+                className="flex items-center gap-2 hover:bg-white rounded-lg px-2 py-1.5 transition-colors"
               >
-                <Settings className="w-4 h-4" />
-                Settings
-              </button>
-            )} */}
-
-            {/* Tool Links */}
-            {/* <div className="flex items-center gap-4 border-l border-slate-200 pl-8">
-              {toolLinks.map((tool) => (
-                <button
-                  key={tool.label}
-                  className={`font-bold text-sm flex items-center gap-1 hover:underline transition ${tool.color} ${tool.hover}`}
-                >
-                  {tool.icon}
-                  {tool.label}
-                </button>
-              ))}
-            </div> */}
-
-            {/* Login Button / User Menu */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-slate-100 transition-colors"
-                >
-                  {user.avatarUrl && !avatarLoadFailed ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.name || "User"}
-                      className="w-8 h-8 rounded-full object-cover border-2 border-indigo-600"
-                      referrerPolicy="no-referrer"
-                      onError={() => setAvatarLoadFailed(true)}
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
-                      {getInitials(user.name) || <User className="w-4 h-4" />}
-                    </div>
-                  )}
-                  <span className="font-medium text-slate-700 max-w-30 truncate">
-                    {user.name?.split(" ")[0] || "User"}
-                  </span>
-                </button>
-
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
-                    <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="font-semibold text-slate-900 truncate">{user.name}</p>
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                    </div>
-                    <button
-                      onClick={handleOpenSettings}
-                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Settings
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
+                {user.avatarUrl && !avatarLoadFailed ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name || "User"}
+                    className="w-7 h-7 rounded-full object-cover border-2 border-brand-500"
+                    referrerPolicy="no-referrer"
+                    onError={() => setAvatarLoadFailed(true)}
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-semibold border-2 border-brand-500">
+                    {getInitials(user.name) || firstName[0]}
                   </div>
                 )}
-              </div>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="font-semibold text-indigo-600 px-6 py-2.5 rounded-full shadow-lg text-sm hover:bg-indigo-600 hover:text-black transition-all border border-indigo-600"
-              >
-                Log In
-              </Link>
-            )}
-          </div>
+                <span className="hidden md:inline text-sm font-semibold text-brand-900 max-w-24 truncate">
+                  {firstName}
+                </span>
+                <ChevronDown className="w-3 h-3 text-cream-800/50" />
+              </button>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-slate-800 p-2"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-7 h-7" />
-            ) : (
-              <Menu className="w-7 h-7" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-white shadow-xl border-t border-slate-100 animate-in slide-in-from-top duration-300">
-          <div className="px-6 py-6 space-y-1">
-            {navItems.map((item) => (
-              item.href ? (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  prefetch
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-left py-3.5 px-4 rounded-lg text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center gap-3"
-                >
-                  {item.icon}
-                  {item.label}
-                </Link>
-              ) : (
-                <button
-                  key={item.label}
-                  type="button"
-                  id={item.id ? `mobile-${item.id}` : undefined}
-                  onClick={() => item.section && scrollToSection(item.section)}
-                  className="w-full text-left py-3.5 px-4 rounded-lg text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center gap-3"
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              )
-            ))}
-
-            {userHasRole("ADMIN") && (
-              <Link
-                href="/admin/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-left py-3.5 px-4 rounded-lg text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center gap-3"
-              >
-                Dashboard
-              </Link>
-            )}
-
-            {/* <div className="pt-4 space-y-1">
-              {toolLinks.map((tool) => (
-                <button
-                  key={tool.label}
-                  className={`w-full text-left py-3.5 px-4 rounded-lg text-base font-semibold flex items-center gap-3 hover:bg-gray-50 transition ${tool.color} ${tool.hover}`}
-                >
-                  {tool.icon}
-                  {tool.label}
-                </button>
-              ))}
-            </div> */}
-
-            <div className="pt-6">
-              {user ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-200 rounded-xl">
-                    {user.avatarUrl && typeof user.avatarUrl === 'string' && !avatarLoadFailed ? (
-                      <img
-                        src={user.avatarUrl}
-                        alt={user.name || "User"}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-indigo-600"
-                        referrerPolicy="no-referrer"
-                        onError={() => setAvatarLoadFailed(true)}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-                        {getInitials(user?.name) || <User className="w-5 h-5" />}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-slate-900 truncate">{user?.name || ''}</p>
-                      <p className="text-xs text-slate-500 truncate">{user?.email || ''}</p>
-                    </div>
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-62 bg-white border border-cream-200 rounded-2xl shadow-xl overflow-hidden z-40">
+                  <div className="p-4 border-b border-cream-200">
+                    <p className="font-display font-bold text-brand-900 truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-cream-800/50 truncate">{user.email}</p>
                   </div>
                   <button
                     onClick={handleOpenSettings}
-                    className="w-full py-3 px-6 font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-2 py-2 text-xs font-medium text-cream-800/80 hover:bg-cream-50 transition-colors"
                   >
-                    <Settings className="w-4 h-4" />
-                    Settings
+                    <Settings className="w-4 h-4 text-cream-800/50" /> Settings
                   </button>
-                  <button
-                    onClick={handleRemoveProfileImage}
-                    disabled={isRemovingProfileImage || !user.avatarUrl}
-                    className="w-full py-3 px-6 font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-60 rounded-xl flex items-center justify-center gap-2 transition-colors"
-                  >
-                    {isRemovingProfileImage ? <Loader className="w-4 h-4 animate-spin" /> : <UserX className="w-4 h-4" />}
-                    Remove profile image
-                  </button>
+                  {/* {user.avatarUrl && (
+                    <button
+                      onClick={handleRemoveProfileImage}
+                      disabled={isRemovingProfileImage}
+                      className="w-full flex items-center gap-2.5 px-2 py-2 text-xs font-medium text-cream-800/80 hover:bg-cream-50 transition-colors disabled:opacity-60"
+                    >
+                      <UserX className="w-4 h-4 text-cream-800/50" /> Remove profile image
+                    </button>
+                  )} */}
                   <button
                     onClick={handleLogout}
-                    className="w-full py-3 px-6 font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-2 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors"
                   >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
+                    <LogOut className="w-4 h-4" /> Sign Out
                   </button>
                 </div>
-              ) : (
-                <Link
-                  href="/sign-in"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full text-center py-4 px-6 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg transition-transform active:scale-95"
-                >
-                  Log In
-                </Link>
               )}
             </div>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setAuthModalView("login");
+                setAuthModalError(null);
+                setAuthModalOpen(true);
+              }}
+              className="text-xs sm:text-sm font-medium text-cream-800/70 hover:text-brand-900 whitespace-nowrap"
+            >
+              Log in
+            </button>
+          )}
+
+          {!user && (
+            <button
+              type="button"
+              onClick={() => {
+                setAuthModalView("signup");
+                setAuthModalError(null);
+                setAuthModalOpen(true);
+              }}
+              className="bg-accent-500 hover:bg-accent-600 transition-colors text-white text-xs md:text-sm font-medium px-4 py-2 rounded-lg shadow-sm whitespace-nowrap"
+            >
+              Start free · 10 credits
+            </button>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Mobile tab switcher */}
+      <div className="md:hidden flex border-t border-cream-200">
+        {TABS.map((t) => {
+          const active = activeTab === t.key;
+          return (
+            <Link
+              key={t.key}
+              href={t.href}
+              className={
+                "flex-1 py-2.5 text-xs font-semibold text-center transition-all " +
+                (active ? "bg-brand-500 text-white" : "text-cream-800/60")
+              }
+            >
+              {t.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      <AuthGateModal
+        open={authModalOpen}
+        onClose={() => {
+          setAuthModalOpen(false);
+          setAuthModalError(null);
+        }}
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          setAuthModalError(null);
+        }}
+        initialView={authModalView}
+        initialError={authModalError}
+      />
     </nav>
   );
 }
