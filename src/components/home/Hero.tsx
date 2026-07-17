@@ -10,11 +10,8 @@ interface HeroProps {
   heroCreditCount: number | null;
 }
 
-const BEFORE_IMG =
-  "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1400&q=80";
-const AFTER_IMG =
-  "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1400&q=80";
-
+const BEFORE_IMG = "/demo/interior/empty-living-room-mid-century.png";
+const AFTER_IMG = "/demo/interior/living-room-mid-century.png";
 export default function Hero({ hasFreeDemoCredits, heroCreditCount }: HeroProps) {
   const [pos, setPos] = useState(50);
   const [dragging, setDragging] = useState(false);
