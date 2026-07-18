@@ -22,11 +22,7 @@ export default function Hero({ hasFreeDemoCredits, heroCreditCount }: HeroProps)
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const arr = Array.from(files).slice(0, 15);
-    // DEBUG: confirm Hero picked up the files before stashing them
-    console.log("[Hero] handleFiles called with", arr.length, "files:", arr.map((f) => f.name));
     setPendingUploadFiles(arr);
-    // DEBUG: confirm navigation is actually triggered right after
-    console.log("[Hero] navigating to /studio now");
     router.push("/studio");
   };
 
