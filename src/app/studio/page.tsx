@@ -44,23 +44,11 @@ export default function StudioPage() {
   const [initialFiles, setInitialFiles] = useState<File[] | undefined>(undefined);
 
   useEffect(() => {
-    // DEBUG: confirm this effect runs, and what it gets back
-    console.log("[StudioPage] mount effect running, consuming pending files...");
     const files = consumePendingUploadFiles();
-    console.log("[StudioPage] consumePendingUploadFiles() returned:", files.length, files.map((f) => f.name));
-    if (files.length > 0) {
-      setInitialFiles(files);
-      console.log("[StudioPage] setInitialFiles called with", files.length, "files");
-    }
+    if (files.length > 0) setInitialFiles(files);
   }, []);
 
-  // DEBUG: confirm what initialFiles looks like on every render
-  console.log("[StudioPage] render, initialFiles =", initialFiles?.length ?? "undefined");
-
   const studio = useStudio(initialFiles);
-
-  // DEBUG: confirm what the hook actually ended up with
-  console.log("[StudioPage] studio.files.length =", studio.files.length);
 
   const activeItem = SIDEBAR_ITEMS.find((i) => i.key === active) ?? SIDEBAR_ITEMS[0];
   const ActiveIcon = activeItem.icon;
