@@ -6,15 +6,11 @@ let pending: File[] = [];
 
 export function setPendingUploadFiles(files: File[]) {
   pending = files.slice(0, 15);
-  // DEBUG: confirm files actually landed in the module singleton
-  console.log("[pendingUpload] setPendingUploadFiles stored:", pending.length, pending.map((f) => f.name));
 }
 
 export function consumePendingUploadFiles(): File[] {
   const out = pending;
   pending = [];
-  // DEBUG: confirm what Studio actually pulls back out (and when)
-  console.log("[pendingUpload] consumePendingUploadFiles returning:", out.length, out.map((f) => f.name));
   return out;
 }
 
