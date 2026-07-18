@@ -102,8 +102,14 @@ export function PWAInstall() {
 
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/sw.js', { scope: '/' })
+        // updateViaCache: 'none' forces the browser to bypass its own HTTP
+        // cache whenever it checks sw.js for updates, so a stale cached
+        // copy of the service worker script can never get stuck being served.
+        .register('/sw.js', { scope: '/', updateViaCache: 'none' })
         .then((registration) => {
+          // Proactively check for a newer service worker on every load,
+          // instead of waiting for the browser's own update heuristic.
+          registration.update();
         })
         .catch((error) => {
         });
