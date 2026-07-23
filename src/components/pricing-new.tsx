@@ -9,6 +9,14 @@ import { trackStartTrial } from "@/lib/analytics";
 import { showInfo } from "./toastUtils";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { useRouter } from "next/navigation";
+import ContactSalesForm from "@/components/support/ContactSalesForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Audience = "individual" | "team";
 type Billing = "monthly" | "annual";
@@ -108,6 +116,7 @@ export default function Pricing() {
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [extraCreditQty, setExtraCreditQty] = useState<number>(25);
   const [payPerImageQty, setPayPerImageQty] = useState<number>(1);
+  const [contactSalesOpen, setContactSalesOpen] = useState(false);
   const router = useRouter();
 
   const isAnnual = billing === "annual";
@@ -395,9 +404,7 @@ export default function Pricing() {
                 </p>
                 <button
                   onClick={() =>
-                    p.contactSales
-                      ? (window.location.href = "mailto:hello@elevatespacesai.com?subject=Enterprise%20plan")
-                      : startCheckout(p)
+                    p.contactSales ? setContactSalesOpen(true) : startCheckout(p)
                   }
                   disabled={isBusy}
                   className={btnCls + " disabled:opacity-60 disabled:cursor-not-allowed"}
@@ -499,7 +506,7 @@ export default function Pricing() {
         </div>
         <p className="text-center text-[11px] text-cream-800/40 mt-4">
           Prices are in USD. Standard taxes apply. Need help?{" "}
-          <a
+          
             href="mailto:hello@elevatespacesai.com"
             className="underline hover:text-brand-500"
           >
@@ -508,6 +515,18 @@ export default function Pricing() {
           — typical response time within 24 hours.
         </p>
       </div>
+
+      <Dialog open={contactSalesOpen} onOpenChange={setContactSalesOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Contact Sales</DialogTitle>
+            <DialogDescription>
+              Tell us about your team and we'll follow up by email.
+            </DialogDescription>
+          </DialogHeader>
+          <ContactSalesForm onClose={() => setContactSalesOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
