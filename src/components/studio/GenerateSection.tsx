@@ -1,19 +1,15 @@
 "use client";
-
 import { Loader2, WandSparkles } from "lucide-react";
 import type { StudioController } from "./useStudio";
-
 interface Props {
   studio: StudioController;
 }
-
 export default function GenerateSection({ studio }: Props) {
   const needsMoreCredits =
     studio.isLoggedIn &&
     studio.creditSource === "personal" &&
     studio.personalBalance < studio.creditsNeeded &&
     studio.files.length > 0;
-
   return (
     <div className="space-y-5">
       {needsMoreCredits && (
@@ -30,13 +26,11 @@ export default function GenerateSection({ studio }: Props) {
           </a>
         </div>
       )}
-
       {studio.error && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-xs text-red-700">
           {studio.error}
         </div>
       )}
-
       <button
         type="button"
         onClick={studio.generate}
@@ -45,7 +39,7 @@ export default function GenerateSection({ studio }: Props) {
       >
         {studio.processing ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" /> Processing…
+            <Loader2 className="w-4 h-4 animate-spin" /> Processing...
           </>
         ) : (
           <>
@@ -54,7 +48,6 @@ export default function GenerateSection({ studio }: Props) {
           </>
         )}
       </button>
-
       {studio.processing && (
         <div className="bg-brand-50 border border-brand-100 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-2">
@@ -70,7 +63,9 @@ export default function GenerateSection({ studio }: Props) {
             />
           </div>
           <p className="text-xs text-brand-900/70">
-            Elapsed {studio.elapsedSec}s
+            {studio.estimatedSeconds > 0
+              ? `Estimated time remaining: ${studio.remainingSec}s (elapsed ${studio.elapsedSec}s)`
+              : `Elapsed ${studio.elapsedSec}s`}
           </p>
           <p className="text-[11px] text-brand-900/50 mt-2">
             Please keep this page open while staging runs.
