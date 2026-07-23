@@ -67,7 +67,7 @@ const PLANS: PlanConfig[] = [
     productKey: { monthly: "plan_pro", annual: "plan_pro_annual" },
     bullets: [
       "Add 1 extra user for $20/month",
-      "Stage & customize multiple images in one batch",
+      "Stage and customize multiple images in one batch",
       "Cost per credit: $0.43",
     ],
     highlighted: true,
@@ -84,7 +84,7 @@ const PLANS: PlanConfig[] = [
     productKey: { monthly: "plan_team", annual: "plan_team_annual" },
     bullets: [
       "Add 1 extra user for $15/month",
-      "Stage & customize multiple images in one batch",
+      "Stage and customize multiple images in one batch",
       "Team access, shared usage, photo storage up to 1 month",
       "Cost per credit: $0.39",
     ],
@@ -103,7 +103,7 @@ const PLANS: PlanConfig[] = [
     bullets: [
       "Best rates with annual commitment",
       "Built for teams of 6 or more",
-      "Priority support & custom onboarding",
+      "Priority support and custom onboarding",
       "Volume discounts for larger annual commitments",
     ],
     ctaLabel: "Contact Sales",
@@ -162,11 +162,11 @@ export default function Pricing() {
   const requireTeamId = (): string | null => {
     if (audience !== "team") return null;
     if (teamsLoading) {
-      showInfo("Loading your teams…");
+      showInfo("Loading your teams...");
       return null;
     }
     if (ownedTeams.length === 0) {
-      showInfo("You don't own any teams. Create a team first to buy for a team.");
+      showInfo("You do not own any teams. Create a team first to buy for a team.");
       return null;
     }
     if (!selectedTeamId) {
@@ -268,7 +268,7 @@ export default function Pricing() {
             Simple, transparent pricing
           </h2>
           <p className="text-cream-800/60 text-sm md:text-base mt-2">
-            Start free. Upgrade when you're ready.
+            Start free. Upgrade when you are ready.
           </p>
         </div>
 
@@ -293,7 +293,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Team selector — only when buying for a team */}
+        {/* Team selector - only when buying for a team */}
         {audience === "team" && isLoggedIn && (
           <div className="flex justify-center mb-3">
             <div className="inline-flex flex-col items-center gap-1">
@@ -301,10 +301,10 @@ export default function Pricing() {
                 Select team
               </label>
               {teamsLoading ? (
-                <span className="text-xs text-cream-800/60 px-3 py-2">Loading your teams…</span>
+                <span className="text-xs text-cream-800/60 px-3 py-2">Loading your teams...</span>
               ) : ownedTeams.length === 0 ? (
                 <span className="text-xs text-red-600 px-3 py-2">
-                  You don't own any teams. Create one first.
+                  You do not own any teams. Create one first.
                 </span>
               ) : (
                 <select
@@ -374,7 +374,7 @@ export default function Pricing() {
               <div key={p.id} className={cardCls}>
                 {isHighlighted && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent-500 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                    ⭐ Most Popular
+                    Most Popular
                   </span>
                 )}
                 <h3 className="font-bold text-sm mb-1">{p.name}</h3>
@@ -399,8 +399,8 @@ export default function Pricing() {
                 </div>
                 <p className={"text-xs mb-5 " + (isDark ? "text-white/60" : "text-cream-800/60")}>
                   {typeof p.monthlyCredits === "number"
-                    ? `${p.monthlyCredits} photos per month · ${p.seats} seat${p.seats === 1 ? "" : "s"}`
-                    : "Custom volume & seats"}
+                    ? `${p.monthlyCredits} photos per month - ${p.seats} seat${p.seats === 1 ? "" : "s"}`
+                    : "Custom volume and seats"}
                 </p>
                 <button
                   onClick={() =>
@@ -409,7 +409,7 @@ export default function Pricing() {
                   disabled={isBusy}
                   className={btnCls + " disabled:opacity-60 disabled:cursor-not-allowed"}
                 >
-                  {isBusy ? "Loading…" : p.ctaLabel}
+                  {isBusy ? "Loading..." : p.ctaLabel}
                 </button>
                 <ul className={"text-xs space-y-2 mt-auto " + bulletTextCls}>
                   {p.bullets.map((b) => (
@@ -448,7 +448,7 @@ export default function Pricing() {
                   disabled={loadingKey === "extra"}
                   className="bg-brand-100 hover:bg-brand-500 hover:text-white text-brand-500 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
                 >
-                  {loadingKey === "extra" ? "Loading…" : "Buy Extra Credits"}
+                  {loadingKey === "extra" ? "Loading..." : "Buy Extra Credits"}
                 </button>
               </div>
             </div>
@@ -482,7 +482,7 @@ export default function Pricing() {
                   disabled={loadingKey === "ppi"}
                   className="bg-brand-100 hover:bg-brand-500 hover:text-white text-brand-500 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
                 >
-                  {loadingKey === "ppi" ? "Loading…" : "Pay Per Image"}
+                  {loadingKey === "ppi" ? "Loading..." : "Pay Per Image"}
                 </button>
               </div>
             </div>
@@ -506,7 +506,7 @@ export default function Pricing() {
         </div>
         <p className="text-center text-[11px] text-cream-800/40 mt-4">
           Prices are in USD. Standard taxes apply. Need help?{" "}
-          
+          <a
             href="mailto:hello@elevatespacesai.com"
             className="underline hover:text-brand-500"
           >
@@ -521,7 +521,7 @@ export default function Pricing() {
           <DialogHeader>
             <DialogTitle>Contact Sales</DialogTitle>
             <DialogDescription>
-              Tell us about your team and we'll follow up by email.
+              Tell us about your team and we will follow up by email.
             </DialogDescription>
           </DialogHeader>
           <ContactSalesForm onClose={() => setContactSalesOpen(false)} />
