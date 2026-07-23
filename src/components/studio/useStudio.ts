@@ -235,11 +235,30 @@ export function useStudio(initialFiles?: File[]) {
 
   const creditsNeeded = files.length;
 
+  // Determine WHY generation might be blocked, so the UI can show a specific,
+  // friendly message instead of just disabling the button silently or
+  // letting the request fail on the server with a generic error.
+  const insufficientCreditsReason = useMemo((): "personal" | "team" | "guest" | null => {
+    if (files.length === 0) return null;
+    if (!isLoggedIn) {
+      if (guestCreditsLoaded && guestDemoCreditsRemaining <= 0) return "guest";
+      return null;
+    }
+    if (creditSource === "team") {
+      if (!teamId) return null; // handled separately as "select a team" elsewhere
+      if (teamCredits < creditsNeeded) return "team";
+      return null;
+    }
+    if (personalBalance < creditsNeeded) return "personal";
+    return null;
+  }, [files.length, isLoggedIn, guestCreditsLoaded, guestDemoCreditsRemaining, creditSource, teamId, teamCredits, personalBalance, creditsNeeded]);
+
   const canGenerate = useMemo(() => {
     if (processing) return false;
     if (files.length === 0) return false;
+    if (insufficientCreditsReason) return false;
     return true;
-  }, [processing, files.length]);
+  }, [processing, files.length, insufficientCreditsReason]);
 
   useEffect(() => {
     if (!processing) {
@@ -290,9 +309,13 @@ export function useStudio(initialFiles?: File[]) {
       // clean (non-watermarked) uploads AFTER this photo. Values 1-5 mean
       // this photo was free/clean; 6+ means it was watermarked. Only
       // applies to guests/non-subscribers.
+      // freeCleanUploadsUsed is the count BEFORE this photo (0-indexed) -
+      // matches the backend's own watermark decision exactly:
+      // watermarked once that count reaches 5 or more (i.e. this is the
+      // 6th+ clean-eligible photo).
       const isPhotoWatermarked =
         !isLoggedIn && typeof data?.freeCleanUploadsUsed === "number"
-          ? data.freeCleanUploadsUsed > 5
+          ? data.freeCleanUploadsUsed >= 5
           : false;
 
       setResults((prev) => {
@@ -387,11 +410,14 @@ export function useStudio(initialFiles?: File[]) {
             if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
               setGuestDemoCreditsRemaining(data.remainingDemoCredits);
             }
+            const total = typeof data?.expectedTotalVariants === "number" ? data.expectedTotalVariants : totalVariantsTarget;
+            setProgressMessage(`Processing ${files.length} images (0/${total} variants)`);
           },
           onImage: (data) => {
             const photoIdx = typeof data?.originalIndex === "number" ? data.originalIndex : 0;
             setSelectedPhotoIdx(photoIdx);
             applyImageUpdate(photoIdx, data);
+            setProgressMessage(`Processing ${files.length} images (${variantsReceived}/${totalVariantsTarget} variants)`);
           },
           onError: (err) => {
             setError(err?.message || "Staging failed");
@@ -521,6 +547,7 @@ export function useStudio(initialFiles?: File[]) {
     estimatedSeconds,
     creditsNeeded,
     canGenerate,
+    insufficientCreditsReason,
     generate,
     results,
     selectedPhotoIdx,
