@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download, Loader2, RefreshCw } from "lucide-react";
 import type { StudioController } from "./useStudio";
 import InfoTip from "./InfoTip";
 
@@ -68,52 +68,97 @@ export default function ResultsCard({ studio }: Props) {
       )}
 
       {current && current.variants.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          {current.variants.map((v, i) => {
-            const active = i === current.selectedVariantIdx;
-            return (
-              <div key={i} className="relative group">
-                <button
-                  onClick={() => studio.selectVariant(studio.selectedPhotoIdx, i)}
-                  className={
-                    "block w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-colors " +
-                    (active ? "border-brand-500" : "border-cream-200 hover:border-brand-500/50")
-                  }
-                >
-                  <img src={v.url} alt={`Variant ${i + 1}`} className="w-full h-full object-cover" />
-                  {isCurrentWatermarked && (
-                    <div
-                      className="absolute inset-0 flex flex-wrap content-around justify-around overflow-hidden opacity-30 select-none pointer-events-none"
-                      style={{ transform: "rotate(-30deg) scale(1.4)" }}
-                      aria-hidden="true"
-                    >
-                      {Array.from({ length: 4 }).map((_, wIdx) => (
-                        <span
-                          key={wIdx}
-                          className="text-white font-black text-xs px-3 py-2 whitespace-nowrap"
-                          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
-                        >
-                          PREVIEW ONLY
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </button>
-                {!isCurrentWatermarked && (
-                  <a
-                    href={v.url}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="absolute bottom-2 right-2 bg-white/90 text-brand-500 text-[10px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1"
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            {current.variants.map((v, i) => {
+              const active = i === current.selectedVariantIdx;
+              return (
+                <div key={i} className="relative group">
+                  <button
+                    onClick={() => studio.selectVariant(studio.selectedPhotoIdx, i)}
+                    className={
+                      "block w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-colors " +
+                      (active ? "border-brand-500" : "border-cream-200 hover:border-brand-500/50")
+                    }
                   >
-                    <Download className="w-3 h-3" /> HD
-                  </a>
+                    <img src={v.url} alt={`Variant ${i + 1}`} className="w-full h-full object-cover" />
+                    {isCurrentWatermarked && (
+                      <div
+                        className="absolute inset-0 flex flex-wrap content-around justify-around overflow-hidden opacity-30 select-none pointer-events-none"
+                        style={{ transform: "rotate(-30deg) scale(1.4)" }}
+                        aria-hidden="true"
+                      >
+                        {Array.from({ length: 4 }).map((_, wIdx) => (
+                          <span
+                            key={wIdx}
+                            className="text-white font-black text-xs px-3 py-2 whitespace-nowrap"
+                            style={{ textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
+                          >
+                            PREVIEW ONLY
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </button>
+                  {!isCurrentWatermarked && (
+                    <a
+                      href={v.url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-2 right-2 bg-white/90 text-brand-500 text-[10px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3" /> HD
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Restage - free, unlimited re-edit of the currently selected variant */}
+          <div className="mt-4 border-t border-cream-200 pt-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <RefreshCw className="w-3.5 h-3.5 text-brand-500" />
+              <p className="text-xs font-bold text-cream-800/80">Restage this image</p>
+              <InfoTip iconClassName="text-cream-800/30" size="xs">
+                Free and unlimited - describe a change and we'll re-generate just the selected variant.
+              </InfoTip>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={studio.restagePrompt}
+                onChange={(e) => studio.setRestagePrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !studio.restaging) {
+                    void studio.restageSelected();
+                  }
+                }}
+                placeholder="e.g. make the walls lighter, add a rug"
+                maxLength={100}
+                disabled={studio.restaging}
+                className="flex-1 border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 disabled:opacity-60"
+              />
+              <button
+                type="button"
+                onClick={() => void studio.restageSelected()}
+                disabled={studio.restaging || !studio.restagePrompt.trim()}
+                className="shrink-0 bg-brand-100 hover:bg-brand-500 hover:text-white text-brand-500 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+              >
+                {studio.restaging ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" /> Restaging...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3 h-3" /> Restage
+                  </>
                 )}
-              </div>
-            );
-          })}
-        </div>
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
