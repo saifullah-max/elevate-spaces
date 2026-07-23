@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RoomType, StagingStyle } from "@/lib/errors";
-import { stageImageSSE, stageMultipleImagesSSE, normalizeImageUrl } from "@/services/image.service";
+import { stageImageSSE, stageMultipleImagesSSE, restageImage, normalizeImageUrl } from "@/services/image.service";
 import { getUserCredits, getPaymentSummary, type PaymentSummary } from "@/services/payment.service";
 import { getMyProjects } from "@/services/projects.service";
 import { getTeams, getTeamEligibility } from "@/services/teams.service";
@@ -22,6 +22,7 @@ export interface StudioProject {
 export interface StudioVariant {
   url: string;
   variantIdx: number;
+  stagedId?: string;
 }
 
 export interface StudioResult {
@@ -100,6 +101,11 @@ export function useStudio(initialFiles?: File[]) {
   const [useCustomStyling, setUseCustomStyling] = useState(false);
   const [customizeModalOpen, setCustomizeModalOpen] = useState(false);
   const [perImageSettings, setPerImageSettings] = useState<PerImageSetting[]>([]);
+
+  // Restage: free, unlimited re-editing of an already-staged image with a
+  // new prompt (matches the demo page's Restage feature).
+  const [restaging, setRestaging] = useState(false);
+  const [restagePrompt, setRestagePrompt] = useState("");
 
   useEffect(() => {
     if (initialFiles && initialFiles.length > 0) {
@@ -294,7 +300,7 @@ export function useStudio(initialFiles?: File[]) {
         const entry = next[photoIdx];
         if (!entry) return prev;
         const nextVariants = entry.variants.slice();
-        nextVariants.push({ url, variantIdx: nextVariants.length });
+        nextVariants.push({ url, variantIdx: nextVariants.length, stagedId: data?.stagedId });
         next[photoIdx] = { ...entry, variants: nextVariants, isWatermarked: isPhotoWatermarked };
         return next;
       });
@@ -408,6 +414,68 @@ export function useStudio(initialFiles?: File[]) {
     ? Math.max(0, estimatedSeconds - elapsedSec + (files.length > 1 ? 30 : 0))
     : 0;
 
+  const restageSelected = useCallback(async (): Promise<boolean> => {
+    const currentResult = results[selectedPhotoIdx];
+    const currentVariant = currentResult?.variants[currentResult.selectedVariantIdx];
+    const stagedId = currentVariant?.stagedId;
+
+    if (!stagedId) {
+      setError("This image can't be restaged yet - please wait for staging to finish.");
+      return false;
+    }
+    if (!restagePrompt.trim()) {
+      setError("Enter a prompt describing what to change before restaging.");
+      return false;
+    }
+
+    setRestaging(true);
+    setError(null);
+    try {
+      const restaged = await restageImage({
+        stagedId,
+        prompt: restagePrompt,
+        roomType: currentResult.roomType,
+        stagingStyle: currentResult.stagingStyle,
+        areaType: currentResult.areaType,
+        deviceId: deviceId || undefined,
+      });
+
+      const url = normalizeImageUrl(restaged.stagedImageUrl);
+      setResults((prev) => {
+        const next = prev.slice();
+        const entry = next[selectedPhotoIdx];
+        if (!entry) return prev;
+        const nextVariants = entry.variants.slice();
+        const variantIdx = entry.selectedVariantIdx;
+        nextVariants[variantIdx] = {
+          ...nextVariants[variantIdx],
+          url,
+          stagedId: restaged.stagedId || stagedId,
+        };
+        next[selectedPhotoIdx] = { ...entry, variants: nextVariants };
+        return next;
+      });
+
+      if (typeof restaged.watermarked === "boolean") {
+        setResults((prev) => {
+          const next = prev.slice();
+          const entry = next[selectedPhotoIdx];
+          if (!entry) return prev;
+          next[selectedPhotoIdx] = { ...entry, isWatermarked: restaged.watermarked as boolean };
+          return next;
+        });
+      }
+
+      setRestagePrompt("");
+      return true;
+    } catch (err: any) {
+      setError(err?.message || "Failed to restage image");
+      return false;
+    } finally {
+      setRestaging(false);
+    }
+  }, [results, selectedPhotoIdx, restagePrompt, deviceId]);
+
   const selectVariant = useCallback((photoIdx: number, variantIdx: number) => {
     setResults((prev) => {
       const next = prev.slice();
@@ -458,6 +526,10 @@ export function useStudio(initialFiles?: File[]) {
     selectedPhotoIdx,
     setSelectedPhotoIdx,
     selectVariant,
+    restaging,
+    restagePrompt,
+    setRestagePrompt,
+    restageSelected,
     error,
     setError,
     // Per-image customization
