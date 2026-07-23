@@ -100,17 +100,15 @@ export default function ResultsCard({ studio }: Props) {
                       </div>
                     )}
                   </button>
-                  {!isCurrentWatermarked && (
-                    <a
-                      href={v.url}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute bottom-2 right-2 bg-white/90 text-brand-500 text-[10px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1"
-                    >
-                      <Download className="w-3 h-3" /> HD
-                    </a>
-                  )}
+                  <a
+                    href={v.url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-2 right-2 bg-white/90 text-brand-500 text-[10px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1"
+                  >
+                    <Download className="w-3 h-3" /> {isCurrentWatermarked ? "Download" : "HD"}
+                  </a>
                 </div>
               );
             })}
