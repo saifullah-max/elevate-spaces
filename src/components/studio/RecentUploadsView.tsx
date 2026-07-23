@@ -20,6 +20,8 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeUpload, setActiveUpload] = useState<PairedUpload | null>(null);
+  const [expandedVariantUrl, setExpandedVariantUrl] = useState<string | null>(null);
+  const [sliderPos, setSliderPos] = useState(50);
 
   // Cross-origin files (Supabase storage) often ignore the plain `download`
   // attribute on an <a> tag - browsers just open them in a new tab instead
@@ -236,9 +238,16 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
                 const variantUrl = normalizeImageUrl(variant.url);
                 return (
                   <div key={variant.id || idx} className="relative group">
-                    <div className="aspect-square rounded-xl overflow-hidden border border-cream-200 bg-cream-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpandedVariantUrl(variantUrl);
+                        setSliderPos(50);
+                      }}
+                      className="block w-full aspect-square rounded-xl overflow-hidden border border-cream-200 bg-cream-100"
+                    >
                       <img src={variantUrl} alt={`Variant ${idx + 1}`} className="w-full h-full object-cover" />
-                    </div>
+                    </button>
                     <button
                       type="button"
                       onClick={() => downloadImage(variantUrl, `variant-${idx + 1}.png`)}
@@ -249,6 +258,96 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded before/after slider view for a single variant */}
+      {expandedVariantUrl && activeUpload && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center px-4 py-6 bg-brand-900/70 backdrop-blur-sm"
+          onClick={() => setExpandedVariantUrl(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-2xl w-full shadow-xl overflow-hidden"
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-cream-200">
+              <button
+                type="button"
+                onClick={() => setExpandedVariantUrl(null)}
+                className="text-xs font-semibold text-brand-500 hover:text-brand-700"
+              >
+                &larr; Back to all variants
+              </button>
+              <button
+                onClick={() => setExpandedVariantUrl(null)}
+                className="text-cream-800/40 hover:text-brand-900"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative aspect-[4/3] bg-cream-100 select-none overflow-hidden">
+              <img
+                src={normalizeImageUrl(activeUpload.original?.url || "")}
+                alt="Before"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                draggable={false}
+              />
+              <div className="absolute top-0 left-0 w-1/2 h-16 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
+              <span className="absolute top-3 left-3 bg-brand-900/70 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
+                Before
+              </span>
+
+              <div
+                className="absolute inset-0 overflow-hidden pointer-events-none"
+                style={{ clipPath: `inset(0 0 0 ${sliderPos}%)` }}
+              >
+                <img
+                  src={expandedVariantUrl}
+                  alt="After"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  draggable={false}
+                />
+                <div className="absolute top-0 right-0 w-full h-16 bg-gradient-to-b from-black/40 to-transparent" />
+                <span className="absolute top-3 right-3 bg-brand-500/90 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md">
+                  After Elevated
+                </span>
+              </div>
+
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-white pointer-events-none"
+                style={{ left: `${sliderPos}%` }}
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border-2 border-brand-500 flex items-center justify-center shadow-lg">
+                  <div className="w-1 h-4 bg-brand-500 rounded-full" />
+                </div>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={sliderPos}
+                onChange={(e) => setSliderPos(Number(e.target.value))}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-10"
+                aria-label="Before/After slider"
+              />
+            </div>
+
+            <div className="flex items-center justify-between px-6 py-4 border-t border-cream-200">
+              <p className="text-[11px] text-cream-800/50">Drag the handle to compare</p>
+              <button
+                type="button"
+                onClick={() => downloadImage(expandedVariantUrl, "staged-image.png")}
+                className="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-1.5"
+              >
+                <Download className="w-3 h-3" /> Download this version
+              </button>
             </div>
           </div>
         </div>
