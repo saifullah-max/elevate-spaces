@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bolt, Camera, Check } from "lucide-react";
+import { Bolt, Check } from "lucide-react";
 import { createCheckoutSession } from "@/services/payment.service";
 import { getTeams } from "@/services/teams.service";
 import type { Team } from "@/types/teams.types";
@@ -114,7 +114,6 @@ export default function Pricing() {
   const [audience, setAudience] = useState<Audience>("individual");
   const [billing, setBilling] = useState<Billing>("monthly");
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
-  const [extraCreditQty, setExtraCreditQty] = useState<number>(25);
   const [payPerImageQty, setPayPerImageQty] = useState<number>(1);
   const [contactSalesOpen, setContactSalesOpen] = useState(false);
   const router = useRouter();
@@ -196,33 +195,6 @@ export default function Pricing() {
         productKey,
         uiUnitAmountUsd: Number(priceOf(p)) || undefined,
         purchaseFor: audience,
-        teamId,
-      });
-      if (res?.url) window.location.href = res.url;
-    } catch (err: any) {
-      showInfo(err?.message || "Failed to start checkout");
-    } finally {
-      setLoadingKey(null);
-    }
-  };
-
-  const buyExtra = async () => {
-    if (!isLoggedIn) {
-      router.push("/sign-in?next=/pricing");
-      return;
-    }
-    let teamId: string | undefined;
-    if (audience === "team") {
-      const id = requireTeamId();
-      if (!id) return;
-      teamId = id;
-    }
-    try {
-      setLoadingKey("extra");
-      const res = await createCheckoutSession({
-        productKey: "extra_credits",
-        purchaseFor: audience,
-        quantity: extraCreditQty,
         teamId,
       });
       if (res?.url) window.location.href = res.url;
@@ -424,36 +396,8 @@ export default function Pricing() {
           })}
         </div>
 
-        {/* Buy Extra + Pay Per Image */}
-        <div className="mt-8 grid sm:grid-cols-2 gap-5">
-          <div className="bg-white border border-cream-200 rounded-2xl p-5 flex items-start gap-4">
-            <div className="w-10 h-10 rounded-lg bg-brand-100 text-brand-500 flex items-center justify-center shrink-0">
-              <Camera className="w-4 h-4" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-sm mb-1 text-brand-900">Buy Extra Credits</h3>
-              <p className="text-xs text-cream-800/60 mb-3">
-                If you do not have an active subscription, extra credits are billed at the same $1.50 / image pay-per-image rate.
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  value={extraCreditQty}
-                  onChange={(e) => setExtraCreditQty(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-20 border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50"
-                />
-                <button
-                  onClick={buyExtra}
-                  disabled={loadingKey === "extra"}
-                  className="bg-brand-100 hover:bg-brand-500 hover:text-white text-brand-500 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
-                >
-                  {loadingKey === "extra" ? "Loading..." : "Buy Extra Credits"}
-                </button>
-              </div>
-            </div>
-          </div>
-
+        {/* Pay Per Image */}
+        <div className="mt-8 max-w-xl mx-auto">
           <div className="bg-white border border-cream-200 rounded-2xl p-5 flex items-start gap-4">
             <div className="w-10 h-10 rounded-lg bg-brand-100 text-brand-500 flex items-center justify-center shrink-0">
               <Bolt className="w-4 h-4" />
