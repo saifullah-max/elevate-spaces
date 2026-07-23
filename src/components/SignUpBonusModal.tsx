@@ -1,7 +1,7 @@
-'use client'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight } from "lucide-react";
+"use client";
+
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Sparkles, X } from "lucide-react";
 import Link from "next/link";
 
 interface SignUpBonusModalProps {
@@ -12,58 +12,40 @@ interface SignUpBonusModalProps {
 export function SignUpBonusModal({ open, onOpenChange }: SignUpBonusModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader className="text-center space-y-2">
-          <div className="flex justify-center">
-            <div className="bg-linear-to-br from-amber-100 to-orange-100 p-3 rounded-full">
-              <Sparkles className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-          <DialogTitle className="text-2xl font-bold">You&apos;ve used your 10 free trial credits</DialogTitle>
-          <DialogDescription className="text-base text-cream-800/70">
-            Free trial credits are for new visitors only. Sign up now to claim a one-time bonus and keep staging.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-sm p-6 text-center relative [&>button]:hidden">
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute right-4 top-4 text-cream-800/40 hover:text-brand-900"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-        <div className="space-y-4 py-4">
-          <div className="bg-linear-to-r from-brand-50 to-cream-100 rounded-lg p-4 border border-brand-100">
-            <div className="flex items-start gap-3">
-              <div className="bg-brand-100 rounded-full p-2 shrink-0">
-                <Sparkles className="w-5 h-5 text-brand-500" />
-              </div>
-              <div>
-                <p className="font-semibold text-brand-900">New user bonus</p>
-                <p className="text-sm text-brand-600 mt-1">
-                  Create a brand-new account today and we&apos;ll add <span className="font-bold">5 bonus credits</span> instantly.
-                </p>
-                <p className="text-xs text-brand-500 mt-2 opacity-75">
-                  ⏰ One-time offer for new sign-ups only. Existing accounts are not eligible.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3 pt-2">
-            <Link href="/sign-up?bonus=true" className="block" onClick={() => onOpenChange(false)}>
-              <Button className="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2 h-auto gap-2">
-                Create Account &amp; Claim Bonus
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => onOpenChange(false)}
-            >
-              Continue Without Signing Up
-            </Button>
-          </div>
-
-          <div className="text-center text-xs text-cream-800/50 pt-2 border-t">
-            <p>Already have an account? <Link href="/sign-in" className="text-brand-500 hover:underline font-semibold">Sign in here</Link> — the bonus does not apply to existing accounts.</p>
-          </div>
+        <div className="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center mx-auto mb-4">
+          <Sparkles className="w-6 h-6 text-brand-500" />
         </div>
+
+        <h3 className="font-display text-lg font-bold text-brand-900 mb-2">
+          You've used your 10 free trial credits
+        </h3>
+
+        <p className="text-sm text-cream-800/60 leading-relaxed mb-6">
+          Sign up now and get <span className="font-semibold text-brand-900">5 bonus credits, watermark-free</span>.
+          This one-time offer is for new visitors only - existing accounts are not eligible.
+        </p>
+
+        <Link href="/sign-up?bonus=true" className="block" onClick={() => onOpenChange(false)}>
+          <button className="w-full bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-3 rounded-lg transition-colors">
+            Sign Up &amp; Claim 5 Free Credits
+          </button>
+        </Link>
+
+        <p className="text-xs text-cream-800/40 mt-4">
+          Already have an account?{" "}
+          <Link href="/sign-in" className="text-brand-500 hover:underline font-semibold">
+            Sign in
+          </Link>
+        </p>
       </DialogContent>
     </Dialog>
   );
