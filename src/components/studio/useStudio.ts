@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RoomType, StagingStyle } from "@/lib/errors";
-import { stageImageSSE, normalizeImageUrl } from "@/services/image.service";
+import { stageImageSSE, stageMultipleImagesSSE, normalizeImageUrl } from "@/services/image.service";
 import { getUserCredits, getPaymentSummary, type PaymentSummary } from "@/services/payment.service";
 import { getMyProjects } from "@/services/projects.service";
 import { getTeams, getTeamEligibility } from "@/services/teams.service";
@@ -42,6 +42,11 @@ export interface PerImageSetting {
   prompt: string;
 }
 
+// Approx wall-clock time for a single image (3 variants), matching the
+// demo page's estimate. Used as the initial countdown for a 1-photo batch,
+// before/if the backend gives us a more precise per-batch estimate.
+const SINGLE_STAGE_ESTIMATE_SEC = 35;
+
 export function useStudio(initialFiles?: File[]) {
   const [files, setFiles] = useState<File[]>([]);
   const [roomType, setRoomType] = useState<RoomType>("living-room");
@@ -63,6 +68,11 @@ export function useStudio(initialFiles?: File[]) {
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
+  // Backend-provided estimate (seconds) for how long the current batch will
+  // take, based on photo count and their variants. Set from the backend's
+  // own "accepted" event for multi-photo batches; falls back to a fixed
+  // per-photo estimate for single-photo generations.
+  const [estimatedSeconds, setEstimatedSeconds] = useState(0);
 
   // Guest (not-logged-in) demo credit balance. Logged-in users use
   // personalBalance / team wallets instead; this only applies to guests so
@@ -244,6 +254,7 @@ export function useStudio(initialFiles?: File[]) {
     setProgressMessage("Preparing...");
     setProgressPercent(2);
     setResults([]);
+    setEstimatedSeconds(files.length > 1 ? 0 : SINGLE_STAGE_ESTIMATE_SEC);
 
     const perFileResults: StudioResult[] = files.map((f, i) => {
       const s = useCustomStyling && perImageSettings[i] ? perImageSettings[i] : null;
@@ -260,16 +271,49 @@ export function useStudio(initialFiles?: File[]) {
     });
     setResults(perFileResults);
 
-    let completedFiles = 0;
     const totalVariantsTarget = files.length * 3;
     let variantsReceived = 0;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      setSelectedPhotoIdx(i);
-      setProgressMessage(`Processing image ${i + 1} of ${files.length}...`);
+    const applyImageUpdate = (photoIdx: number, data: any) => {
+      const url = normalizeImageUrl(data?.imageUrl || data?.url || data?.stagedImageUrl || "");
+      if (!url) return;
+      variantsReceived += 1;
+      setProgressPercent(Math.min(98, Math.round((variantsReceived / totalVariantsTarget) * 100)));
 
-      const perImg = useCustomStyling ? perImageSettings[i] : undefined;
+      // The backend reports freeCleanUploadsUsed as the cumulative count of
+      // clean (non-watermarked) uploads AFTER this photo. Values 1-5 mean
+      // this photo was free/clean; 6+ means it was watermarked. Only
+      // applies to guests/non-subscribers.
+      const isPhotoWatermarked =
+        !isLoggedIn && typeof data?.freeCleanUploadsUsed === "number"
+          ? data.freeCleanUploadsUsed > 5
+          : false;
+
+      setResults((prev) => {
+        const next = prev.slice();
+        const entry = next[photoIdx];
+        if (!entry) return prev;
+        const nextVariants = entry.variants.slice();
+        nextVariants.push({ url, variantIdx: nextVariants.length });
+        next[photoIdx] = { ...entry, variants: nextVariants, isWatermarked: isPhotoWatermarked };
+        return next;
+      });
+
+      if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
+        setGuestDemoCreditsRemaining(data.remainingDemoCredits);
+        if (data.remainingDemoCredits <= 0) {
+          setJustHitGuestLimit(true);
+        }
+      }
+    };
+
+    if (files.length <= 1) {
+      // Single photo - stage directly, same as before.
+      const file = files[0];
+      setSelectedPhotoIdx(0);
+      setProgressMessage("Processing your image...");
+
+      const perImg = useCustomStyling ? perImageSettings[0] : undefined;
       const rt = perImg?.roomType ?? roomType;
       const ss = perImg?.stagingStyle ?? stagingStyle;
       const at = perImg?.areaType ?? areaType;
@@ -287,50 +331,66 @@ export function useStudio(initialFiles?: File[]) {
           creditSource,
           removeFurniture: false,
           deviceId: deviceId || undefined,
-          onImage: (data) => {
-            const url = normalizeImageUrl(data?.imageUrl || data?.url || data?.stagedImageUrl || "");
-            if (!url) return;
-            variantsReceived += 1;
-            setProgressPercent(Math.min(98, Math.round((variantsReceived / totalVariantsTarget) * 100)));
-
-            // The backend reports freeCleanUploadsUsed as the cumulative
-            // count of clean (non-watermarked) uploads AFTER this photo.
-            // Values 1-5 mean this photo was free/clean; 6+ means it was
-            // watermarked. Only applies to guests/non-subscribers - the
-            // backend itself only sends a meaningful value in that case.
-            const isPhotoWatermarked =
-              !isLoggedIn && typeof data?.freeCleanUploadsUsed === "number"
-                ? data.freeCleanUploadsUsed > 5
-                : false;
-
-            setResults((prev) => {
-              const next = prev.slice();
-              const entry = next[i];
-              if (!entry) return prev;
-              const nextVariants = entry.variants.slice();
-              nextVariants.push({ url, variantIdx: nextVariants.length });
-              next[i] = { ...entry, variants: nextVariants, isWatermarked: isPhotoWatermarked };
-              return next;
-            });
-
-            // Keep the guest's displayed credit count accurate as staging
-            // consumes their demo credits, same as the demo page does.
-            if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
-              setGuestDemoCreditsRemaining(data.remainingDemoCredits);
-              if (data.remainingDemoCredits <= 0) {
-                setJustHitGuestLimit(true);
-              }
-            }
-          },
+          onImage: (data) => applyImageUpdate(0, data),
           onProgress: (msg) => setProgressMessage(msg),
           onError: (err) => {
-            const msg = err?.message || "Staging failed";
-            setError(msg);
+            setError(err?.message || "Staging failed");
           },
-          onDone: () => {
-            completedFiles += 1;
-            resolve();
+          onDone: () => resolve(),
+        });
+      });
+    } else {
+      // Multiple photos - send the whole batch to the backend at once so it
+      // can process them in parallel, instead of staging one at a time
+      // (which was the cause of the Studio being much slower than the demo
+      // page for multi-photo batches). This also gives us a real,
+      // backend-calculated time estimate for the countdown.
+      const perImageRoomTypes = useCustomStyling
+        ? perImageSettings.map((s) => s.roomType)
+        : undefined;
+      const perImageStagingStyles = useCustomStyling
+        ? perImageSettings.map((s) => s.stagingStyle)
+        : undefined;
+      const perImageAreaTypes = useCustomStyling
+        ? perImageSettings.map((s) => s.areaType)
+        : undefined;
+      const perImagePrompts = useCustomStyling
+        ? perImageSettings.map((s) => s.prompt)
+        : undefined;
+
+      await new Promise<void>((resolve) => {
+        stageMultipleImagesSSE({
+          files,
+          roomType,
+          stagingStyle,
+          areaType,
+          roomTypes: perImageRoomTypes,
+          stagingStyles: perImageStagingStyles,
+          areaTypes: perImageAreaTypes,
+          prompts: perImagePrompts,
+          prompt,
+          removeFurniture: false,
+          deviceId: deviceId || undefined,
+          teamId: creditSource === "team" && teamId ? teamId : undefined,
+          projectId: projectId || undefined,
+          creditSource,
+          onAccepted: (data) => {
+            if (typeof data?.estimatedSeconds === "number") {
+              setEstimatedSeconds(data.estimatedSeconds);
+            }
+            if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
+              setGuestDemoCreditsRemaining(data.remainingDemoCredits);
+            }
           },
+          onImage: (data) => {
+            const photoIdx = typeof data?.originalIndex === "number" ? data.originalIndex : 0;
+            setSelectedPhotoIdx(photoIdx);
+            applyImageUpdate(photoIdx, data);
+          },
+          onError: (err) => {
+            setError(err?.message || "Staging failed");
+          },
+          onDone: () => resolve(),
         });
       });
     }
@@ -339,6 +399,14 @@ export function useStudio(initialFiles?: File[]) {
     setProgressMessage("Done");
     setProcessing(false);
   }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings, isLoggedIn, deviceId]);
+
+  // Countdown, not count-up: how many seconds are LEFT based on the
+  // backend's estimate for this batch, same formula the demo page uses
+  // (adds a small buffer so it doesn't hit 0 before the last variant
+  // actually arrives).
+  const remainingSec = processing
+    ? Math.max(0, estimatedSeconds - elapsedSec + (files.length > 1 ? 30 : 0))
+    : 0;
 
   const selectVariant = useCallback((photoIdx: number, variantIdx: number) => {
     setResults((prev) => {
@@ -381,6 +449,8 @@ export function useStudio(initialFiles?: File[]) {
     progressMessage,
     progressPercent,
     elapsedSec,
+    remainingSec,
+    estimatedSeconds,
     creditsNeeded,
     canGenerate,
     generate,
