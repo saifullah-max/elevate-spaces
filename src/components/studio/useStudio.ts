@@ -9,6 +9,7 @@ import { getTeams, getTeamEligibility } from "@/services/teams.service";
 import type { Team } from "@/types/teams.types";
 import { canUserCustomizeStyling } from "@/helpers/subscription.helpers";
 import { getAuthFromStorage } from "@/lib/auth.storage";
+import { getOrCreateFingerprint, initGuestSession } from "@/services/guest.service";
 
 export type AreaType = "interior" | "exterior";
 export type CreditSource = "personal" | "team";
@@ -62,6 +63,14 @@ export function useStudio(initialFiles?: File[]) {
   const [error, setError] = useState<string | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
 
+  // Guest (not-logged-in) demo credit balance. Logged-in users use
+  // personalBalance / team wallets instead; this only applies to guests so
+  // the Studio's credit display matches what a guest can actually use
+  // (previously this always showed 0 for guests even though the backend
+  // still honored their free demo credits when staging).
+  const [guestDemoCreditsRemaining, setGuestDemoCreditsRemaining] = useState<number>(0);
+  const [guestCreditsLoaded, setGuestCreditsLoaded] = useState(false);
+
   // Per-image customization (Pro/Team subscription required)
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
   const [teamEligibility, setTeamEligibility] = useState<any>(null);
@@ -78,7 +87,28 @@ export function useStudio(initialFiles?: File[]) {
   useEffect(() => {
     const auth = getAuthFromStorage();
     setIsLoggedIn(Boolean(auth?.token));
-    if (!auth?.token) return;
+
+    if (!auth?.token) {
+      // Guest: fetch their real demo credit balance so the UI shows what
+      // they can actually use, instead of defaulting to 0.
+      (async () => {
+        try {
+          const deviceId = await getOrCreateFingerprint();
+          const response: any = await initGuestSession(deviceId);
+          const remaining =
+            typeof response?.data?.remainingDemoCredits === "number"
+              ? response.data.remainingDemoCredits
+              : Math.max(0, (response?.data?.limit ?? 10) - (response?.data?.usageCount ?? 0));
+          setGuestDemoCreditsRemaining(remaining);
+        } catch {
+          // Leave at 0 if this fails - staging itself still works via the
+          // backend's own guest tracking, this only affects the displayed number.
+        } finally {
+          setGuestCreditsLoaded(true);
+        }
+      })();
+      return;
+    }
 
     (async () => {
       try {
@@ -102,7 +132,7 @@ export function useStudio(initialFiles?: File[]) {
     })();
   }, []);
 
-  // Team eligibility for the *currently selected* team — needed to gate the
+  // Team eligibility for the *currently selected* team - needed to gate the
   // per-image customization feature when spending team credits.
   useEffect(() => {
     if (creditSource !== "team" || !teamId) {
@@ -142,7 +172,7 @@ export function useStudio(initialFiles?: File[]) {
     [creditSource, selectedTeam, paymentSummary, teamEligibility]
   );
 
-  // Keep perImageSettings in sync with the file list — grow when adding
+  // Keep perImageSettings in sync with the file list - grow when adding
   // photos, shrink when removing them. Uses the current bulk defaults for
   // any newly added row so the modal starts from a sensible state.
   useEffect(() => {
@@ -190,7 +220,7 @@ export function useStudio(initialFiles?: File[]) {
     if (!canGenerate) return;
     setError(null);
     setProcessing(true);
-    setProgressMessage("Preparing…");
+    setProgressMessage("Preparing...");
     setProgressPercent(2);
     setResults([]);
 
@@ -215,7 +245,7 @@ export function useStudio(initialFiles?: File[]) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       setSelectedPhotoIdx(i);
-      setProgressMessage(`Processing image ${i + 1} of ${files.length}…`);
+      setProgressMessage(`Processing image ${i + 1} of ${files.length}...`);
 
       const perImg = useCustomStyling ? perImageSettings[i] : undefined;
       const rt = perImg?.roomType ?? roomType;
@@ -248,6 +278,12 @@ export function useStudio(initialFiles?: File[]) {
               next[i] = { ...entry, variants: nextVariants };
               return next;
             });
+
+            // Keep the guest's displayed credit count accurate as staging
+            // consumes their demo credits, same as the demo page does.
+            if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
+              setGuestDemoCreditsRemaining(data.remainingDemoCredits);
+            }
           },
           onProgress: (msg) => setProgressMessage(msg),
           onError: (err) => {
@@ -265,7 +301,7 @@ export function useStudio(initialFiles?: File[]) {
     setProgressPercent(100);
     setProgressMessage("Done");
     setProcessing(false);
-  }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings]);
+  }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings, isLoggedIn]);
 
   const selectVariant = useCallback((photoIdx: number, variantIdx: number) => {
     setResults((prev) => {
@@ -298,6 +334,8 @@ export function useStudio(initialFiles?: File[]) {
     setTeamId,
     teamCredits,
     personalBalance,
+    guestDemoCreditsRemaining,
+    guestCreditsLoaded,
     isLoggedIn,
     processing,
     progressMessage,
