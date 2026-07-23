@@ -32,6 +32,7 @@ export interface StudioResult {
   roomType: RoomType;
   stagingStyle: StagingStyle;
   areaType: AreaType;
+  isWatermarked: boolean;
 }
 
 export interface PerImageSetting {
@@ -70,6 +71,10 @@ export function useStudio(initialFiles?: File[]) {
   // still honored their free demo credits when staging).
   const [guestDemoCreditsRemaining, setGuestDemoCreditsRemaining] = useState<number>(0);
   const [guestCreditsLoaded, setGuestCreditsLoaded] = useState(false);
+  // Set true the moment a guest's demo credits hit 0 during generation, so
+  // the Studio page can show the "sign up for 5 bonus credits" modal at
+  // exactly the right time (same behavior as the demo page).
+  const [justHitGuestLimit, setJustHitGuestLimit] = useState(false);
 
   // Stable per-device fingerprint, sent as the x-fingerprint header on every
   // staging call. This is REQUIRED for the backend to reliably identify a
@@ -250,6 +255,7 @@ export function useStudio(initialFiles?: File[]) {
         roomType: s?.roomType ?? roomType,
         stagingStyle: s?.stagingStyle ?? stagingStyle,
         areaType: s?.areaType ?? areaType,
+        isWatermarked: false,
       };
     });
     setResults(perFileResults);
@@ -286,13 +292,24 @@ export function useStudio(initialFiles?: File[]) {
             if (!url) return;
             variantsReceived += 1;
             setProgressPercent(Math.min(98, Math.round((variantsReceived / totalVariantsTarget) * 100)));
+
+            // The backend reports freeCleanUploadsUsed as the cumulative
+            // count of clean (non-watermarked) uploads AFTER this photo.
+            // Values 1-5 mean this photo was free/clean; 6+ means it was
+            // watermarked. Only applies to guests/non-subscribers - the
+            // backend itself only sends a meaningful value in that case.
+            const isPhotoWatermarked =
+              !isLoggedIn && typeof data?.freeCleanUploadsUsed === "number"
+                ? data.freeCleanUploadsUsed > 5
+                : false;
+
             setResults((prev) => {
               const next = prev.slice();
               const entry = next[i];
               if (!entry) return prev;
               const nextVariants = entry.variants.slice();
               nextVariants.push({ url, variantIdx: nextVariants.length });
-              next[i] = { ...entry, variants: nextVariants };
+              next[i] = { ...entry, variants: nextVariants, isWatermarked: isPhotoWatermarked };
               return next;
             });
 
@@ -300,6 +317,9 @@ export function useStudio(initialFiles?: File[]) {
             // consumes their demo credits, same as the demo page does.
             if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
               setGuestDemoCreditsRemaining(data.remainingDemoCredits);
+              if (data.remainingDemoCredits <= 0) {
+                setJustHitGuestLimit(true);
+              }
             }
           },
           onProgress: (msg) => setProgressMessage(msg),
@@ -352,8 +372,10 @@ export function useStudio(initialFiles?: File[]) {
     teamCredits,
     personalBalance,
     guestDemoCreditsRemaining,
-    deviceId,
     guestCreditsLoaded,
+    justHitGuestLimit,
+    setJustHitGuestLimit,
+    deviceId,
     isLoggedIn,
     processing,
     progressMessage,
