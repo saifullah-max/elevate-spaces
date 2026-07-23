@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MoveHorizontal, Trash2, X } from "lucide-react";
+import { Lock, MoveHorizontal, Trash2, X } from "lucide-react";
 import type { StudioController, PerImageSetting } from "./useStudio";
 import type { RoomType, StagingStyle } from "@/lib/errors";
 import { getDemoComparisonImageUrl } from "@/components/data/demoImagePaths";
+import InfoTip from "./InfoTip";
 
 interface Props {
   studio: StudioController;
@@ -39,8 +40,9 @@ const STYLES: { value: StagingStyle; label: string }[] = [
 
 export default function CustomizeModal({ studio }: Props) {
   const open = studio.customizeModalOpen;
+  const isStyleLocked = !studio.canCustomizePerImage;
 
-  // Snapshot the settings into a draft on open — this modal is a form, not
+  // Snapshot the settings into a draft on open - this modal is a form, not
   // live-editing; users cancel or save.
   const initial: PerImageSetting[] = useMemo(
     () =>
@@ -129,7 +131,7 @@ export default function CustomizeModal({ studio }: Props) {
   const close = () => studio.setCustomizeModalOpen(false);
 
   const removeActive = () => {
-    // Remove from studio.files and settings both — keep them aligned.
+    // Remove from studio.files and settings both - keep them aligned.
     studio.removeFile(activeIdx);
     setDraft((prev) => prev.filter((_, i) => i !== activeIdx));
     setActiveIdx((prev) => Math.max(0, Math.min(prev, studio.files.length - 2)));
@@ -190,7 +192,7 @@ export default function CustomizeModal({ studio }: Props) {
             </button>
           </div>
 
-          {/* Bulk style */}
+          {/* Bulk style - available to everyone, applies to all images */}
           <div>
             <p className="text-xs font-semibold text-cream-800/70 mb-1.5">
               Staging Style (for all images)
@@ -267,7 +269,7 @@ export default function CustomizeModal({ studio }: Props) {
                 />
               </div>
               <p className="text-[10px] text-cream-800/30 text-center mb-4">
-                Preview example — drag to compare · updates with the fields below
+                Preview example - drag to compare - updates with the fields below
               </p>
 
               {/* Thumbnail strip */}
@@ -336,7 +338,7 @@ export default function CustomizeModal({ studio }: Props) {
                     </button>
                   </div>
 
-                  {/* Room type */}
+                  {/* Room type - available to everyone */}
                   <p className="text-[11px] font-medium text-cream-800/60 mb-1">
                     Room Type <span className="text-cream-800/40">(Required)</span>
                   </p>
@@ -352,35 +354,73 @@ export default function CustomizeModal({ studio }: Props) {
                     ))}
                   </select>
 
-                  {/* Staging style */}
-                  <p className="text-[11px] font-medium text-cream-800/60 mb-1">Staging Style</p>
-                  <select
-                    value={activeRow.stagingStyle}
-                    onChange={(e) =>
-                      update(activeIdx, { stagingStyle: e.target.value as StagingStyle })
-                    }
-                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 mb-3"
-                  >
-                    {STYLES.map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Staging style - Pro+ only, per-photo override */}
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="text-[11px] font-medium text-cream-800/60">Staging Style</p>
+                    {isStyleLocked && <Lock className="w-3 h-3 text-amber-500" />}
+                    <InfoTip iconClassName="text-cream-800/30" size="xs">
+                      Override the bulk style for just this photo. Available on Pro plans and above.
+                    </InfoTip>
+                  </div>
+                  {isStyleLocked ? (
+                    <div className="relative mb-3">
+                      <select
+                        disabled
+                        className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 text-cream-800/40 cursor-not-allowed opacity-60"
+                      >
+                        <option>Locked on your plan</option>
+                      </select>
+                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-400" />
+                    </div>
+                  ) : (
+                    <select
+                      value={activeRow.stagingStyle}
+                      onChange={(e) =>
+                        update(activeIdx, { stagingStyle: e.target.value as StagingStyle })
+                      }
+                      className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 mb-3"
+                    >
+                      {STYLES.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
 
-                  {/* Custom prompt */}
-                  <p className="text-[11px] font-medium text-cream-800/60 mb-1">Custom Prompt</p>
-                  <input
-                    type="text"
-                    maxLength={100}
-                    value={activeRow.prompt}
-                    onChange={(e) => update(activeIdx, { prompt: e.target.value })}
-                    placeholder="e.g. add a reading nook by the window"
-                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50"
-                  />
-                  <p className="text-[10px] text-cream-800/30 mt-1 text-right">
-                    {activeRow.prompt.length} / 100
-                  </p>
+                  {/* Custom prompt - Pro+ only */}
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="text-[11px] font-medium text-cream-800/60">Custom Prompt</p>
+                    {isStyleLocked && <Lock className="w-3 h-3 text-amber-500" />}
+                    <InfoTip iconClassName="text-cream-800/30" size="xs">
+                      Free-text instruction for the AI model, e.g. "add a reading nook." Available on Pro+ plans.
+                    </InfoTip>
+                  </div>
+                  {isStyleLocked ? (
+                    <div className="relative">
+                      <input
+                        type="text"
+                        disabled
+                        placeholder="Upgrade to Pro+ plan"
+                        className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 text-cream-800/40 cursor-not-allowed opacity-60"
+                      />
+                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-400" />
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        maxLength={100}
+                        value={activeRow.prompt}
+                        onChange={(e) => update(activeIdx, { prompt: e.target.value })}
+                        placeholder="e.g. add a reading nook by the window"
+                        className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50"
+                      />
+                      <p className="text-[10px] text-cream-800/30 mt-1 text-right">
+                        {activeRow.prompt.length} / 100
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
