@@ -23,6 +23,7 @@ import StudioToast from "@/components/studio/StudioToast";
 import MyProjectsView from "@/components/studio/MyProjectsView";
 import RecentUploadsView from "@/components/studio/RecentUploadsView";
 import TeamView from "@/components/studio/TeamView";
+import { SignUpBonusModal } from "@/components/SignUpBonusModal";
 
 type StudioView = "new" | "projects" | "uploads" | "team";
 
@@ -37,11 +38,14 @@ const SIDEBAR_ITEMS: {
   { key: "team", label: "Team", icon: Users },
 ];
 
+const BONUS_OFFER_STORAGE_KEY = "demo_bonus_offer_date";
+
 export default function StudioPage() {
   const [active, setActive] = useState<StudioView>("new");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [teamCreditsOpen, setTeamCreditsOpen] = useState(true);
   const [initialFiles, setInitialFiles] = useState<File[] | undefined>(undefined);
+  const [showBonusModal, setShowBonusModal] = useState(false);
 
   useEffect(() => {
     const files = consumePendingUploadFiles();
@@ -49,6 +53,31 @@ export default function StudioPage() {
   }, []);
 
   const studio = useStudio(initialFiles);
+
+  // Show the sign-up bonus modal the moment a guest hits their 10-credit
+  // demo limit, same behavior as the main demo page - at most once per day
+  // so it doesn't nag on every subsequent visit.
+  useEffect(() => {
+    if (!studio.justHitGuestLimit) return;
+    if (studio.isLoggedIn) {
+      studio.setJustHitGuestLimit(false);
+      return;
+    }
+
+    const today = new Date().toDateString();
+    const lastOfferDate =
+      typeof window !== "undefined" ? localStorage.getItem(BONUS_OFFER_STORAGE_KEY) : null;
+
+    if (lastOfferDate !== today) {
+      setShowBonusModal(true);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(BONUS_OFFER_STORAGE_KEY, today);
+      }
+    }
+
+    studio.setJustHitGuestLimit(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studio.justHitGuestLimit]);
 
   const activeItem = SIDEBAR_ITEMS.find((i) => i.key === active) ?? SIDEBAR_ITEMS[0];
   const ActiveIcon = activeItem.icon;
@@ -144,13 +173,13 @@ export default function StudioPage() {
                   Your credits
                 </p>
 
-                {/* Personal — always visible */}
+                {/* Personal - always visible */}
                 <div className="bg-cream-50 border border-cream-200 rounded-lg px-3 py-2 flex items-center justify-between text-xs">
                   <span className="text-cream-800/70 font-medium">Personal</span>
                   <span className="font-semibold text-brand-900">{studio.personalBalance}</span>
                 </div>
 
-                {/* Team — collapsible list so users can see every team's balance at a glance */}
+                {/* Team - collapsible list so users can see every team's balance at a glance */}
                 <div className="bg-cream-50 border border-cream-200 rounded-lg overflow-hidden">
                   <button
                     type="button"
@@ -262,6 +291,7 @@ export default function StudioPage() {
 
       <CustomizeModal studio={studio} />
       <StudioToast />
+      <SignUpBonusModal open={showBonusModal} onOpenChange={setShowBonusModal} />
     </div>
   );
 }
