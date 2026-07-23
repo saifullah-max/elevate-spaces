@@ -511,8 +511,8 @@ export default function Pricing() {
             className="underline hover:text-brand-500"
           >
             Contact Support
-          </a>{" "}
-          — typical response time within 24 hours.
+          </a>
+          {" "}- typical response time within 24 hours.
         </p>
       </div>
 
