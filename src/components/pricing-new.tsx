@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Bolt, Check } from "lucide-react";
-import { createCheckoutSession } from "@/services/payment.service";
+import { createCheckoutSession, getPaymentSummary, getUserCredits } from "@/services/payment.service";
 import { getTeams } from "@/services/teams.service";
 import type { Team } from "@/types/teams.types";
 import { trackStartTrial } from "@/lib/analytics";
@@ -116,6 +116,8 @@ export default function Pricing() {
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [payPerImageQty, setPayPerImageQty] = useState<number>(1);
   const [contactSalesOpen, setContactSalesOpen] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [subscriptionCheckLoading, setSubscriptionCheckLoading] = useState(true);
   const router = useRouter();
 
   const isAnnual = billing === "annual";
@@ -129,6 +131,42 @@ export default function Pricing() {
   const [ownedTeams, setOwnedTeams] = useState<Team[]>([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+
+  useEffect(() => {
+    let cancelled = false;
+    const checkSubscriptionStatus = async () => {
+      if (!isLoggedIn) {
+        if (!cancelled) {
+          setHasActiveSubscription(false);
+          setSubscriptionCheckLoading(false);
+        }
+        return;
+      }
+      try {
+        await getUserCredits();
+        let isSubscribed = false;
+        try {
+          const summary = await getPaymentSummary();
+          isSubscribed = (summary.activeSubscriptions?.length || 0) > 0;
+        } catch (summaryError) {}
+        if (!cancelled) {
+          setHasActiveSubscription(isSubscribed);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setHasActiveSubscription(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setSubscriptionCheckLoading(false);
+        }
+      }
+    };
+    checkSubscriptionStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (audience !== "team" || !isLoggedIn || !currentUserId) return;
@@ -216,10 +254,11 @@ export default function Pricing() {
       if (!id) return;
       teamId = id;
     }
+    const productKey = hasActiveSubscription ? "subscription_topup" : "pay_per_image";
     try {
       setLoadingKey("ppi");
       const res = await createCheckoutSession({
-        productKey: "pay_per_image",
+        productKey,
         purchaseFor: audience,
         quantity: payPerImageQty,
         teamId,
@@ -396,7 +435,7 @@ export default function Pricing() {
           })}
         </div>
 
-        {/* Pay Per Image */}
+        {/* Pay Per Image / Buy at Plan Rate */}
         <div className="mt-8 max-w-xl mx-auto">
           <div className="bg-white border border-cream-200 rounded-2xl p-5 flex items-start gap-4">
             <div className="w-10 h-10 rounded-lg bg-brand-100 text-brand-500 flex items-center justify-center shrink-0">
@@ -404,14 +443,24 @@ export default function Pricing() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-sm text-brand-900">Pay Per Image</h3>
-                <span className="bg-accent-500/10 text-accent-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                  Save More
-                </span>
+                <h3 className="font-bold text-sm text-brand-900">
+                  {hasActiveSubscription ? "Buy Credits at Your Plan Rate" : "Pay Per Image"}
+                </h3>
+                {!hasActiveSubscription && (
+                  <span className="bg-accent-500/10 text-accent-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                    Save More
+                  </span>
+                )}
               </div>
               <p className="text-xs text-cream-800/60 mb-3">
-                Flexible usage starting from{" "}
-                <span className="text-brand-500 font-semibold">$1.50</span> / image.
+                {hasActiveSubscription ? (
+                  "You have an active subscription - buy any amount of extra credits billed at your current plan's per-credit rate."
+                ) : (
+                  <>
+                    Flexible usage starting from{" "}
+                    <span className="text-brand-500 font-semibold">$1.50</span> / image.
+                  </>
+                )}
               </p>
               <div className="flex gap-2">
                 <input
@@ -423,10 +472,14 @@ export default function Pricing() {
                 />
                 <button
                   onClick={payPerImage}
-                  disabled={loadingKey === "ppi"}
+                  disabled={loadingKey === "ppi" || subscriptionCheckLoading}
                   className="bg-brand-100 hover:bg-brand-500 hover:text-white text-brand-500 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
                 >
-                  {loadingKey === "ppi" ? "Loading..." : "Pay Per Image"}
+                  {loadingKey === "ppi"
+                    ? "Loading..."
+                    : hasActiveSubscription
+                    ? "Buy at Plan Rate"
+                    : "Pay Per Image"}
                 </button>
               </div>
             </div>
