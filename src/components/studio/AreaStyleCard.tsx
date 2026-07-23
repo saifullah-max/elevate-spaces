@@ -112,11 +112,6 @@ export default function AreaStyleCard({ studio }: Props) {
       setShowUploadMoreAlert(true);
       return;
     }
-    if (!studio.canCustomizePerImage) {
-      // Keep the existing subscription-gate messaging for 2+ photos on a
-      // plan that doesn't support per-image customization.
-      return;
-    }
     studio.setCustomizeModalOpen(true);
   };
 
@@ -246,14 +241,12 @@ export default function AreaStyleCard({ studio }: Props) {
         title={
           studio.files.length < 2
             ? "Upload more than one photo to use this"
-            : !studio.canCustomizePerImage
-            ? "Per-image customization requires an active Pro or Team subscription"
             : "Set room, style, area, and prompt per photo"
         }
         className="w-full border border-brand-500 bg-brand-50 text-brand-500 text-xs font-semibold py-2.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center justify-center gap-1.5"
       >
         <Sliders className="w-3 h-3" /> Customize each image individually
-        {studio.useCustomStyling && studio.canCustomizePerImage && isMulti && (
+        {studio.useCustomStyling && isMulti && (
           <span className="ml-2 text-[10px] font-bold uppercase tracking-widest bg-brand-500 text-white px-2 py-0.5 rounded-md">
             On
           </span>
