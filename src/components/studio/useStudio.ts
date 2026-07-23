@@ -71,6 +71,14 @@ export function useStudio(initialFiles?: File[]) {
   const [guestDemoCreditsRemaining, setGuestDemoCreditsRemaining] = useState<number>(0);
   const [guestCreditsLoaded, setGuestCreditsLoaded] = useState(false);
 
+  // Stable per-device fingerprint, sent as the x-fingerprint header on every
+  // staging call. This is REQUIRED for the backend to reliably identify a
+  // returning guest (the device_id cookie lives on the frontend domain and
+  // is never automatically sent to the backend's separate domain). Without
+  // this, the backend falls back to IP-based identification, which is
+  // unstable and was causing demo credit usage to appear to "reset."
+  const [deviceId, setDeviceIdState] = useState<string>("");
+
   // Per-image customization (Pro/Team subscription required)
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
   const [teamEligibility, setTeamEligibility] = useState<any>(null);
@@ -88,25 +96,33 @@ export function useStudio(initialFiles?: File[]) {
     const auth = getAuthFromStorage();
     setIsLoggedIn(Boolean(auth?.token));
 
-    if (!auth?.token) {
-      // Guest: fetch their real demo credit balance so the UI shows what
-      // they can actually use, instead of defaulting to 0.
-      (async () => {
-        try {
-          const deviceId = await getOrCreateFingerprint();
-          const response: any = await initGuestSession(deviceId);
+    // Always resolve the device fingerprint, regardless of login state -
+    // the backend needs it on every staging request to correctly attribute
+    // usage to this device instead of falling back to unstable IP-based
+    // identity, which was causing demo credits to appear to reset.
+    (async () => {
+      try {
+        const fp = await getOrCreateFingerprint();
+        setDeviceIdState(fp);
+
+        if (!auth?.token) {
+          const response: any = await initGuestSession(fp);
           const remaining =
             typeof response?.data?.remainingDemoCredits === "number"
               ? response.data.remainingDemoCredits
               : Math.max(0, (response?.data?.limit ?? 10) - (response?.data?.usageCount ?? 0));
           setGuestDemoCreditsRemaining(remaining);
-        } catch {
-          // Leave at 0 if this fails - staging itself still works via the
-          // backend's own guest tracking, this only affects the displayed number.
-        } finally {
-          setGuestCreditsLoaded(true);
         }
-      })();
+      } catch {
+        // Leave deviceId empty / credits at 0 if this fails - staging can
+        // still proceed (backend falls back to IP-based identity), this
+        // only affects reliability of demo credit attribution and display.
+      } finally {
+        setGuestCreditsLoaded(true);
+      }
+    })();
+
+    if (!auth?.token) {
       return;
     }
 
@@ -264,6 +280,7 @@ export function useStudio(initialFiles?: File[]) {
           teamId: creditSource === "team" && teamId ? teamId : undefined,
           creditSource,
           removeFurniture: false,
+          deviceId: deviceId || undefined,
           onImage: (data) => {
             const url = normalizeImageUrl(data?.imageUrl || data?.url || data?.stagedImageUrl || "");
             if (!url) return;
@@ -301,7 +318,7 @@ export function useStudio(initialFiles?: File[]) {
     setProgressPercent(100);
     setProgressMessage("Done");
     setProcessing(false);
-  }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings, isLoggedIn]);
+  }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings, isLoggedIn, deviceId]);
 
   const selectVariant = useCallback((photoIdx: number, variantIdx: number) => {
     setResults((prev) => {
@@ -335,6 +352,7 @@ export function useStudio(initialFiles?: File[]) {
     teamCredits,
     personalBalance,
     guestDemoCreditsRemaining,
+    deviceId,
     guestCreditsLoaded,
     isLoggedIn,
     processing,
