@@ -25,6 +25,7 @@ export interface createTeamResponse {
 
 export interface inviteTeamData {
     email: string;
+    inviteeName?: string;
     subject?: string;
     text?: string;
     teamId: string;
