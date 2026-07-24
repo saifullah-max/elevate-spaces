@@ -64,7 +64,7 @@ export default function SupportForm() {
     try {
       const screenshots = await readFilesAsBase64(files);
       const resp = await submitSupportRequest({
-        fullName: fullName.trim() || undefined,
+        fullName: fullName.trim(),
         companyName: companyName.trim() || undefined,
         email: email.trim(),
         briefDescription: briefDescription.trim(),
@@ -138,7 +138,7 @@ export default function SupportForm() {
       </div>
 
       {error && <div className="text-sm text-red-700">{error}</div>}
-      {caseNumber && <div className="text-sm text-green-700">Submitted — case number: {caseNumber}</div>}
+      {caseNumber && <div className="text-sm text-green-700">Submitted - case number: {caseNumber}</div>}
 
       <div>
         <button type="submit" className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600" disabled={submitting}>
