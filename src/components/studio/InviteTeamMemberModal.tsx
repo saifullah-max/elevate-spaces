@@ -28,7 +28,8 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
   const [role, setRole] = useState("MEMBER");
   const [submitting, setSubmitting] = useState(false);
 
-  if (open && team) {
+  useEffect(() => {
+    if (open && team) {
       setFullName("");
       setEmail("");
       setSubject(`You're invited to join ${team.name} on Elevate Spaces AI`);
@@ -166,15 +167,15 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
 
         <div className="flex gap-2">
           <button
-            type="submit"
-            disabled={submitting || !email.trim() || !fullName.trim()}
-            className="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            type="button"
+            onClick={onClose}
+            className="flex-1 border border-cream-200 hover:bg-cream-50 text-brand-900 text-sm font-semibold py-2.5 rounded-lg transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
-            disabled={submitting || !email.trim()}
+            disabled={submitting || !email.trim() || !fullName.trim()}
             className="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting ? "Sending…" : "Send invite"}
