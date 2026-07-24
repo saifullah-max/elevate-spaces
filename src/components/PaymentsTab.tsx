@@ -432,17 +432,17 @@ export function PaymentsTab() {
                         </TableCell>
                         <TableCell>{formatDate(transaction.completedAt || transaction.createdAt)}</TableCell>
                         <TableCell className="text-right">
-                          {activeSubscriptionIds.has(transaction.id) && transaction.scope !== "team" && transaction.autoRenewal && !transaction.cancelledAt ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-red-200 text-red-600 hover:bg-red-50"
-                              onClick={() => openCancelDialog(transaction)}
-                            >
-                              <X className="h-4 w-4" />
-                              Cancel
-                            </Button>
-                          ) : null}
+                          {activeSubscriptionIds.has(transaction.id) && transaction.scope !== "team" && !transaction.cancelledAt ? (
+  <Button
+    variant="outline"
+    size="sm"
+    className="border-red-200 text-red-600 hover:bg-red-50"
+    onClick={() => openCancelDialog(transaction)}
+  >
+    <X className="h-4 w-4" />
+    Cancel
+  </Button>
+) : null}
                         </TableCell>
                       </TableRow>
                     ))
