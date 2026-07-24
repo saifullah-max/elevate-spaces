@@ -57,6 +57,7 @@ export default function Teams() {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const [teamId, setTeamId] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteFullName, setInviteFullName] = useState("");
     const [inviteSubject, setInviteSubject] = useState("");
     const [inviteText, setInviteText] = useState("");
     const [inviteRole, setInviteRole] = useState("MEMBER");
@@ -242,12 +243,17 @@ export default function Teams() {
             setInviteError("Invitee email is required");
             return;
         }
+        if (!inviteFullName.trim()) {
+            setInviteError("Invitee full name is required");
+            return;
+        }
 
         try {
             setInviteLoading(true);
 
             const res = await inviteTeamMember({
                 email: inviteEmail.trim(),
+                inviteeName: inviteFullName.trim(),
                 subject: inviteSubject.trim() || undefined,
                 text: inviteText.trim() || undefined,
                 teamId: teamId.trim(),
@@ -256,6 +262,7 @@ export default function Teams() {
 
             setInviteMessage(res.message || "Invitation sent successfully 🎉");
             setInviteEmail("");
+            setInviteFullName("");
             setInviteSubject("");
             setInviteText("");
             setInviteRole("MEMBER");
@@ -890,6 +897,8 @@ export default function Teams() {
                         open={inviteDialogOpen}
                         onOpenChange={setInviteDialogOpen}
                         team={selectedTeam}
+                        fullName={inviteFullName}
+                        onFullNameChange={setInviteFullName}
                         email={inviteEmail}
                         onEmailChange={setInviteEmail}
                         subject={inviteSubject}
