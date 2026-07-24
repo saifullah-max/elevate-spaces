@@ -21,6 +21,7 @@ const ROLES = [
 ];
 
 export default function InviteTeamMemberModal({ open, onClose, team, onInvited }: Props) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
