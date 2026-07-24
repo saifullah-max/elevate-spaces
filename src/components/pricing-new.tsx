@@ -10,6 +10,7 @@ import { showInfo } from "./toastUtils";
 import { getAuthFromStorage } from "@/lib/auth.storage";
 import { useRouter } from "next/navigation";
 import ContactSalesForm from "@/components/support/ContactSalesForm";
+import SupportModalTrigger from "@/components/support/SupportModalTrigger";
 import {
   Dialog,
   DialogContent,
@@ -503,12 +504,9 @@ export default function Pricing() {
         </div>
         <p className="text-center text-[11px] text-cream-800/40 mt-4">
           Prices are in USD. Standard taxes apply. Need help?{" "}
-          <a
-            href="mailto:hello@elevatespacesai.com"
-            className="underline hover:text-brand-500"
-          >
+          <SupportModalTrigger className="underline hover:text-brand-500">
             Contact Support
-          </a>
+          </SupportModalTrigger>
           {" "}- typical response time within 24 hours.
         </p>
       </div>
