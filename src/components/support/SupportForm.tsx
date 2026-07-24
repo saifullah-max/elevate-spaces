@@ -47,6 +47,10 @@ export default function SupportForm() {
     setError(null);
     setCaseNumber(null);
 
+    if (!fullName.trim()) {
+      setError("Full name is required");
+      return;
+    }
     if (!email.trim()) {
       setError("Email is required");
       return;
@@ -89,7 +93,7 @@ export default function SupportForm() {
     <form onSubmit={handleSubmit} className="space-y-4 mt-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-cream-800/80 mb-1">Full name (optional)</label>
+          <label className="block text-sm font-medium text-cream-800/80 mb-1">Full name</label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div>
