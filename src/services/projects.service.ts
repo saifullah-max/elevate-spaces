@@ -116,6 +116,37 @@ export const updateProjectName = async (data: UpdateProjectNameData): Promise<Pr
     }
 };
 
+export const deleteProject = async (projectId: string): Promise<{ success: boolean; message: string }> => {
+    try {
+        if (!API_BASE_URL) {
+            throw new Error("Backend API URL is not configured");
+        }
+
+        const response = await axios.delete<{ success: boolean; message: string }>(
+            `${API_BASE_URL}/projects/${projectId}`,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw {
+                message:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Failed to delete project. Please try again.",
+            };
+        }
+
+        throw {
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred. Please try again.",
+        };
+    }
+};
+
 export const getProjectImages = async (projectId: string): Promise<any> => {
     try {
         if (!API_BASE_URL) {

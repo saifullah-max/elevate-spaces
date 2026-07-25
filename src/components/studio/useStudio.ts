@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RoomType, StagingStyle } from "@/lib/errors";
-import { stageImageSSE, normalizeImageUrl } from "@/services/image.service";
+import { stageImageSSE, stageMultipleImagesSSE, restageImage, normalizeImageUrl } from "@/services/image.service";
 import { getUserCredits, getPaymentSummary, type PaymentSummary } from "@/services/payment.service";
 import { getMyProjects } from "@/services/projects.service";
 import { getTeams, getTeamEligibility } from "@/services/teams.service";
@@ -22,6 +22,7 @@ export interface StudioProject {
 export interface StudioVariant {
   url: string;
   variantIdx: number;
+  stagedId?: string;
 }
 
 export interface StudioResult {
@@ -32,6 +33,7 @@ export interface StudioResult {
   roomType: RoomType;
   stagingStyle: StagingStyle;
   areaType: AreaType;
+  isWatermarked: boolean;
 }
 
 export interface PerImageSetting {
@@ -40,6 +42,11 @@ export interface PerImageSetting {
   areaType: AreaType;
   prompt: string;
 }
+
+// Approx wall-clock time for a single image (3 variants), matching the
+// demo page's estimate. Used as the initial countdown for a 1-photo batch,
+// before/if the backend gives us a more precise per-batch estimate.
+const SINGLE_STAGE_ESTIMATE_SEC = 35;
 
 export function useStudio(initialFiles?: File[]) {
   const [files, setFiles] = useState<File[]>([]);
@@ -64,10 +71,25 @@ export function useStudio(initialFiles?: File[]) {
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
-  const [variantsReceived, setVariantsReceived] = useState(0);
-  const [totalVariantsTarget, setTotalVariantsTarget] = useState(0);
-  const [estimatedEndAt, setEstimatedEndAt] = useState<number | null>(null);
-  const [estimatedRemainingSec, setEstimatedRemainingSec] = useState<number | null>(null);
+
+  // Backend-provided estimate (seconds) for how long the current batch
+  // will take. Set from the backend's "accepted" event for multi-photo
+  // batches; falls back to a fixed per-photo estimate for single photos.
+  const [estimatedSeconds, setEstimatedSeconds] = useState(0);
+
+  // Guest (not-logged-in) demo credit balance. Logged-in users use
+  // personalBalance / team wallets instead.
+  const [guestDemoCreditsRemaining, setGuestDemoCreditsRemaining] = useState<number>(0);
+  const [guestCreditsLoaded, setGuestCreditsLoaded] = useState(false);
+  // Flips true the moment a guest's demo credits hit 0 during generation,
+  // so the Studio page can show the "sign up for 5 bonus credits" modal.
+  const [justHitGuestLimit, setJustHitGuestLimit] = useState(false);
+
+  // Stable per-device fingerprint, sent as the x-fingerprint header on
+  // every staging call. Required so the backend can reliably identify a
+  // returning guest across a cross-domain setup where the device_id
+  // cookie doesn't travel to the backend.
+  const [deviceId, setDeviceIdState] = useState<string>("");
 
   // Per-image customization (Pro/Team subscription required)
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
@@ -75,6 +97,10 @@ export function useStudio(initialFiles?: File[]) {
   const [useCustomStyling, setUseCustomStyling] = useState(false);
   const [customizeModalOpen, setCustomizeModalOpen] = useState(false);
   const [perImageSettings, setPerImageSettings] = useState<PerImageSetting[]>([]);
+
+  // Restage: free re-editing of an already-staged image with a new prompt.
+  const [restaging, setRestaging] = useState(false);
+  const [restagePrompt, setRestagePrompt] = useState("");
 
   useEffect(() => {
     if (initialFiles && initialFiles.length > 0) {
@@ -86,22 +112,34 @@ export function useStudio(initialFiles?: File[]) {
     const auth = getAuthFromStorage();
     setIsLoggedIn(Boolean(auth?.token));
 
-    if (!auth?.token) {
-      // Guest: fetch demo credit balance so the sidebar can show it.
-      (async () => {
-        try {
-          const deviceId = await getOrCreateFingerprint();
-          const res = await initGuestSession(deviceId);
-          const usage = res?.data?.usageCount ?? 0;
-          const limit = res?.data?.limit ?? 10;
+    // Always resolve the device fingerprint regardless of login state -
+    // staging requests need it for stable identity attribution.
+    (async () => {
+      try {
+        const fp = await getOrCreateFingerprint();
+        setDeviceIdState(fp);
+
+        if (!auth?.token) {
+          const response: any = await initGuestSession(fp);
+          const usage = response?.data?.usageCount ?? 0;
+          const limit = response?.data?.limit ?? 10;
           const remaining =
-            typeof res?.data?.remainingDemoCredits === "number"
-              ? res.data.remainingDemoCredits
+            typeof response?.data?.remainingDemoCredits === "number"
+              ? response.data.remainingDemoCredits
               : Math.max(0, limit - usage);
           setDemoCreditsLimit(limit);
           setDemoCreditsRemaining(remaining);
-        } catch {}
-      })();
+          setGuestDemoCreditsRemaining(remaining);
+        }
+      } catch {
+        // Leave deviceId empty / credits at 0 if this fails - staging can
+        // still proceed via the backend's IP-based fallback.
+      } finally {
+        setGuestCreditsLoaded(true);
+      }
+    })();
+
+    if (!auth?.token) {
       return;
     }
 
@@ -127,8 +165,8 @@ export function useStudio(initialFiles?: File[]) {
     })();
   }, []);
 
-  // Team eligibility for the *currently selected* team — needed to gate the
-  // per-image customization feature when spending team credits.
+  // Team eligibility for the *currently selected* team - needed to gate
+  // per-image customization when spending team credits.
   useEffect(() => {
     if (creditSource !== "team" || !teamId) {
       setTeamEligibility(null);
@@ -172,7 +210,7 @@ export function useStudio(initialFiles?: File[]) {
     if (select) setProjectId(project.id);
   }, []);
 
-  // Keep perImageSettings in sync with the file list — grow when adding
+  // Keep perImageSettings in sync with the file list - grow when adding
   // photos, shrink when removing them. Uses the current bulk defaults for
   // any newly added row so the modal starts from a sensible state.
   useEffect(() => {
@@ -198,42 +236,50 @@ export function useStudio(initialFiles?: File[]) {
 
   const creditsNeeded = files.length;
 
+  // Determine WHY generation might be blocked, so the UI can show a
+  // specific, friendly message instead of just disabling the button.
+  const insufficientCreditsReason = useMemo((): "personal" | "team" | "guest" | null => {
+    if (files.length === 0) return null;
+    if (!isLoggedIn) {
+      if (guestCreditsLoaded && guestDemoCreditsRemaining <= 0) return "guest";
+      return null;
+    }
+    if (creditSource === "team") {
+      if (!teamId) return null; // handled separately as "select a team"
+      if (teamCredits < creditsNeeded) return "team";
+      return null;
+    }
+    if (personalBalance < creditsNeeded) return "personal";
+    return null;
+  }, [files.length, isLoggedIn, guestCreditsLoaded, guestDemoCreditsRemaining, creditSource, teamId, teamCredits, personalBalance, creditsNeeded]);
+
   const canGenerate = useMemo(() => {
     if (processing) return false;
     if (files.length === 0) return false;
+    if (insufficientCreditsReason) return false;
     return true;
-  }, [processing, files.length]);
+  }, [processing, files.length, insufficientCreditsReason]);
 
   useEffect(() => {
     if (!processing) {
       setElapsedSec(0);
-      setEstimatedRemainingSec(null);
       return;
     }
     const start = Date.now();
     const t = window.setInterval(() => {
-      const now = Date.now();
-      setElapsedSec(Math.floor((now - start) / 1000));
-      setEstimatedRemainingSec((prev) => {
-        if (estimatedEndAt == null) return prev;
-        return Math.max(0, Math.round((estimatedEndAt - now) / 1000));
-      });
+      setElapsedSec(Math.floor((Date.now() - start) / 1000));
     }, 1000);
     return () => window.clearInterval(t);
-  }, [processing, estimatedEndAt]);
+  }, [processing]);
 
   const generate = useCallback(async () => {
     if (!canGenerate) return;
     setError(null);
     setProcessing(true);
-    setProgressMessage("Preparing…");
+    setProgressMessage("Preparing...");
     setProgressPercent(2);
     setResults([]);
-    setVariantsReceived(0);
-    setTotalVariantsTarget(files.length * 3);
-    setEstimatedEndAt(null);
-    setEstimatedRemainingSec(null);
-    const generationStart = Date.now();
+    setEstimatedSeconds(files.length > 1 ? 0 : SINGLE_STAGE_ESTIMATE_SEC);
 
     const perFileResults: StudioResult[] = files.map((f, i) => {
       const s = useCustomStyling && perImageSettings[i] ? perImageSettings[i] : null;
@@ -245,20 +291,54 @@ export function useStudio(initialFiles?: File[]) {
         roomType: s?.roomType ?? roomType,
         stagingStyle: s?.stagingStyle ?? stagingStyle,
         areaType: s?.areaType ?? areaType,
+        isWatermarked: false,
       };
     });
     setResults(perFileResults);
 
-    let completedFiles = 0;
-    const totalTarget = files.length * 3;
-    let received = 0;
+    const totalVariantsTarget = files.length * 3;
+    let variantsReceived = 0;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      setSelectedPhotoIdx(i);
-      setProgressMessage(`Processing image ${i + 1} of ${files.length}…`);
+    const applyImageUpdate = (photoIdx: number, data: any) => {
+      const url = normalizeImageUrl(data?.imageUrl || data?.url || data?.stagedImageUrl || "");
+      if (!url) return;
+      variantsReceived += 1;
+      setProgressPercent(Math.min(98, Math.round((variantsReceived / totalVariantsTarget) * 100)));
 
-      const perImg = useCustomStyling ? perImageSettings[i] : undefined;
+      // freeCleanUploadsUsed is the count BEFORE this photo - matches the
+      // backend's own watermark decision: watermarked once that count
+      // reaches 5 (i.e. this is the 6th+ clean-eligible photo).
+      const isPhotoWatermarked =
+        !isLoggedIn && typeof data?.freeCleanUploadsUsed === "number"
+          ? data.freeCleanUploadsUsed >= 5
+          : false;
+
+      setResults((prev) => {
+        const next = prev.slice();
+        const entry = next[photoIdx];
+        if (!entry) return prev;
+        const nextVariants = entry.variants.slice();
+        nextVariants.push({ url, variantIdx: nextVariants.length, stagedId: data?.stagedId });
+        next[photoIdx] = { ...entry, variants: nextVariants, isWatermarked: isPhotoWatermarked };
+        return next;
+      });
+
+      if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
+        setGuestDemoCreditsRemaining(data.remainingDemoCredits);
+        setDemoCreditsRemaining(data.remainingDemoCredits);
+        if (data.remainingDemoCredits <= 0) {
+          setJustHitGuestLimit(true);
+        }
+      }
+    };
+
+    if (files.length <= 1) {
+      // Single photo - stage directly.
+      const file = files[0];
+      setSelectedPhotoIdx(0);
+      setProgressMessage("Processing your image...");
+
+      const perImg = useCustomStyling ? perImageSettings[0] : undefined;
       const rt = perImg?.roomType ?? roomType;
       const ss = perImg?.stagingStyle ?? stagingStyle;
       const at = perImg?.areaType ?? areaType;
@@ -275,39 +355,68 @@ export function useStudio(initialFiles?: File[]) {
           teamId: creditSource === "team" && teamId ? teamId : undefined,
           creditSource,
           removeFurniture: false,
-          onImage: (data) => {
-            const url = normalizeImageUrl(data?.imageUrl || data?.url || data?.stagedImageUrl || "");
-            if (!url) return;
-            received += 1;
-            setVariantsReceived(received);
-            setProgressPercent(Math.min(98, Math.round((received / totalTarget) * 100)));
-            const now = Date.now();
-            const avgMs = (now - generationStart) / received;
-            const remainingMs = avgMs * (totalTarget - received);
-            const newEnd = now + remainingMs;
-            setEstimatedEndAt((prev) =>
-              prev == null ? newEnd : Math.min(prev, newEnd)
-            );
-            setEstimatedRemainingSec(Math.max(0, Math.round(remainingMs / 1000)));
-            setResults((prev) => {
-              const next = prev.slice();
-              const entry = next[i];
-              if (!entry) return prev;
-              const nextVariants = entry.variants.slice();
-              nextVariants.push({ url, variantIdx: nextVariants.length });
-              next[i] = { ...entry, variants: nextVariants };
-              return next;
-            });
-          },
+          deviceId: deviceId || undefined,
+          onImage: (data) => applyImageUpdate(0, data),
           onProgress: (msg) => setProgressMessage(msg),
           onError: (err) => {
-            const msg = err?.message || "Staging failed";
-            setError(msg);
+            setError(err?.message || "Staging failed");
           },
-          onDone: () => {
-            completedFiles += 1;
-            resolve();
+          onDone: () => resolve(),
+        });
+      });
+    } else {
+      // Multi-photo batch - send everything to the backend at once so it
+      // can process in parallel, and pick up its time estimate.
+      const perImageRoomTypes = useCustomStyling
+        ? perImageSettings.map((s) => s.roomType)
+        : undefined;
+      const perImageStagingStyles = useCustomStyling
+        ? perImageSettings.map((s) => s.stagingStyle)
+        : undefined;
+      const perImageAreaTypes = useCustomStyling
+        ? perImageSettings.map((s) => s.areaType)
+        : undefined;
+      const perImagePrompts = useCustomStyling
+        ? perImageSettings.map((s) => s.prompt)
+        : undefined;
+
+      await new Promise<void>((resolve) => {
+        stageMultipleImagesSSE({
+          files,
+          roomType,
+          stagingStyle,
+          areaType,
+          roomTypes: perImageRoomTypes,
+          stagingStyles: perImageStagingStyles,
+          areaTypes: perImageAreaTypes,
+          prompts: perImagePrompts,
+          prompt,
+          removeFurniture: false,
+          deviceId: deviceId || undefined,
+          teamId: creditSource === "team" && teamId ? teamId : undefined,
+          projectId: projectId || undefined,
+          creditSource,
+          onAccepted: (data) => {
+            if (typeof data?.estimatedSeconds === "number") {
+              setEstimatedSeconds(data.estimatedSeconds);
+            }
+            if (!isLoggedIn && typeof data?.remainingDemoCredits === "number") {
+              setGuestDemoCreditsRemaining(data.remainingDemoCredits);
+              setDemoCreditsRemaining(data.remainingDemoCredits);
+            }
+            const total = typeof data?.expectedTotalVariants === "number" ? data.expectedTotalVariants : totalVariantsTarget;
+            setProgressMessage(`Processing ${files.length} images (0/${total} variants)`);
           },
+          onImage: (data) => {
+            const photoIdx = typeof data?.originalIndex === "number" ? data.originalIndex : 0;
+            setSelectedPhotoIdx(photoIdx);
+            applyImageUpdate(photoIdx, data);
+            setProgressMessage(`Processing ${files.length} images (${variantsReceived}/${totalVariantsTarget} variants)`);
+          },
+          onError: (err) => {
+            setError(err?.message || "Staging failed");
+          },
+          onDone: () => resolve(),
         });
       });
     }
@@ -315,7 +424,68 @@ export function useStudio(initialFiles?: File[]) {
     setProgressPercent(100);
     setProgressMessage("Done");
     setProcessing(false);
-  }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings]);
+  }, [canGenerate, files, prompt, roomType, stagingStyle, areaType, projectId, creditSource, teamId, useCustomStyling, perImageSettings, isLoggedIn, deviceId]);
+
+  // Countdown based on the backend's estimate for this batch, with a
+  // small buffer for multi-photo batches so it doesn't hit 0 before the
+  // last variant actually arrives.
+  const remainingSec = processing
+    ? Math.max(0, estimatedSeconds - elapsedSec + (files.length > 1 ? 30 : 0))
+    : 0;
+
+  const restageSelected = useCallback(async (): Promise<boolean> => {
+    const currentResult = results[selectedPhotoIdx];
+    const currentVariant = currentResult?.variants[currentResult.selectedVariantIdx];
+    const stagedId = currentVariant?.stagedId;
+
+    if (!stagedId) {
+      setError("This image can't be restaged yet - please wait for staging to finish.");
+      return false;
+    }
+    if (!restagePrompt.trim()) {
+      setError("Enter a prompt describing what to change before restaging.");
+      return false;
+    }
+
+    setRestaging(true);
+    setError(null);
+    try {
+      const restaged = await restageImage({
+        stagedId,
+        prompt: restagePrompt,
+        roomType: currentResult.roomType,
+        stagingStyle: currentResult.stagingStyle,
+        areaType: currentResult.areaType,
+        deviceId: deviceId || undefined,
+      });
+
+      const url = normalizeImageUrl(restaged.stagedImageUrl);
+      setResults((prev) => {
+        const next = prev.slice();
+        const entry = next[selectedPhotoIdx];
+        if (!entry) return prev;
+        const nextVariants = entry.variants.slice();
+        const variantIdx = entry.selectedVariantIdx;
+        nextVariants[variantIdx] = {
+          ...nextVariants[variantIdx],
+          url,
+          stagedId: restaged.stagedId || stagedId,
+        };
+        const isWatermarked =
+          typeof restaged.watermarked === "boolean" ? restaged.watermarked : entry.isWatermarked;
+        next[selectedPhotoIdx] = { ...entry, variants: nextVariants, isWatermarked };
+        return next;
+      });
+
+      setRestagePrompt("");
+      return true;
+    } catch (err: any) {
+      setError(err?.message || "Failed to restage image");
+      return false;
+    } finally {
+      setRestaging(false);
+    }
+  }, [results, selectedPhotoIdx, restagePrompt, deviceId]);
 
   const selectVariant = useCallback((photoIdx: number, variantIdx: number) => {
     setResults((prev) => {
@@ -350,6 +520,11 @@ export function useStudio(initialFiles?: File[]) {
     setTeamId,
     teamCredits,
     personalBalance,
+    guestDemoCreditsRemaining,
+    guestCreditsLoaded,
+    justHitGuestLimit,
+    setJustHitGuestLimit,
+    deviceId,
     isLoggedIn,
     demoCreditsRemaining,
     demoCreditsLimit,
@@ -357,16 +532,20 @@ export function useStudio(initialFiles?: File[]) {
     progressMessage,
     progressPercent,
     elapsedSec,
-    variantsReceived,
-    totalVariantsTarget,
-    estimatedRemainingSec,
+    remainingSec,
+    estimatedSeconds,
     creditsNeeded,
     canGenerate,
+    insufficientCreditsReason,
     generate,
     results,
     selectedPhotoIdx,
     setSelectedPhotoIdx,
     selectVariant,
+    restaging,
+    restagePrompt,
+    setRestagePrompt,
+    restageSelected,
     error,
     setError,
     // Per-image customization

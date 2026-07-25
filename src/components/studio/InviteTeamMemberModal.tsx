@@ -21,6 +21,7 @@ const ROLES = [
 ];
 
 export default function InviteTeamMemberModal({ open, onClose, team, onInvited }: Props) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -29,6 +30,7 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
 
   useEffect(() => {
     if (open && team) {
+      setFullName("");
       setEmail("");
       setSubject(`You're invited to join ${team.name} on Elevate Spaces AI`);
       setMessage("");
@@ -58,6 +60,7 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
       setSubmitting(true);
       await inviteTeamMember({
         email: email.trim(),
+        inviteeName: fullName.trim(),
         subject: subject.trim() || undefined,
         text: message.trim() || undefined,
         teamId: team.id,
@@ -104,6 +107,18 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
         </p>
 
         <label className="block text-[10px] font-semibold text-cream-800/50 uppercase tracking-wider mb-1.5">
+          Full Name
+        </label>
+        <input
+          type="text"
+          required
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder="Jane Doe"
+          className="w-full border border-cream-200 rounded-lg px-3 py-2 text-sm bg-cream-50 mb-3"
+        />
+
+        <label className="block text-[10px] font-semibold text-cream-800/50 uppercase tracking-wider mb-1.5">
           Email
         </label>
         <input
@@ -114,7 +129,6 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
           placeholder="teammate@email.com"
           className="w-full border border-cream-200 rounded-lg px-3 py-2 text-sm bg-cream-50 mb-3"
         />
-
         <label className="block text-[10px] font-semibold text-cream-800/50 uppercase tracking-wider mb-1.5">
           Subject <span className="normal-case font-normal text-cream-800/40">(email subject line)</span>
         </label>
@@ -161,7 +175,7 @@ export default function InviteTeamMemberModal({ open, onClose, team, onInvited }
           </button>
           <button
             type="submit"
-            disabled={submitting || !email.trim()}
+            disabled={submitting || !email.trim() || !fullName.trim()}
             className="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting ? "Sending…" : "Send invite"}

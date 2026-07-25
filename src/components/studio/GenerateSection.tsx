@@ -1,5 +1,4 @@
 "use client";
-
 import { Loader2, WandSparkles } from "lucide-react";
 import type { StudioController } from "./useStudio";
 
@@ -13,6 +12,12 @@ export default function GenerateSection({ studio }: Props) {
     studio.creditSource === "personal" &&
     studio.personalBalance < studio.creditsNeeded &&
     studio.files.length > 0;
+
+  const totalVariants = studio.files.length * 3;
+  const variantsReceived = studio.results.reduce(
+    (sum, r) => sum + r.variants.length,
+    0
+  );
 
   return (
     <div className="space-y-5">
@@ -30,13 +35,11 @@ export default function GenerateSection({ studio }: Props) {
           </a>
         </div>
       )}
-
       {studio.error && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-xs text-red-700">
           {studio.error}
         </div>
       )}
-
       <button
         type="button"
         onClick={studio.generate}
@@ -45,7 +48,7 @@ export default function GenerateSection({ studio }: Props) {
       >
         {studio.processing ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" /> Processing…
+            <Loader2 className="w-4 h-4 animate-spin" /> Processing...
           </>
         ) : (
           <>
@@ -54,15 +57,14 @@ export default function GenerateSection({ studio }: Props) {
           </>
         )}
       </button>
-
       {studio.processing && (
         <div className="bg-brand-50 border border-brand-100 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-2">
             <Loader2 className="w-4 h-4 text-brand-500 animate-spin" />
             <p className="text-sm font-semibold text-brand-900">
               Processing {studio.files.length} image
-              {studio.files.length === 1 ? "" : "s"} ({studio.variantsReceived}/
-              {studio.totalVariantsTarget || studio.files.length * 3} variants)
+              {studio.files.length === 1 ? "" : "s"} ({variantsReceived}/
+              {totalVariants} variants)
             </p>
           </div>
           <div className="w-full h-1.5 bg-brand-100 rounded-full overflow-hidden mb-2">
@@ -72,10 +74,8 @@ export default function GenerateSection({ studio }: Props) {
             />
           </div>
           <p className="text-xs text-brand-900/70">
-            {studio.estimatedRemainingSec != null &&
-            studio.variantsReceived > 0 &&
-            studio.variantsReceived < (studio.totalVariantsTarget || studio.files.length * 3)
-              ? `Estimated remaining time: ${studio.estimatedRemainingSec}s (elapsed ${studio.elapsedSec}s)`
+            {studio.estimatedSeconds > 0
+              ? `Estimated time remaining: ${studio.remainingSec}s (elapsed ${studio.elapsedSec}s)`
               : `Elapsed ${studio.elapsedSec}s`}
           </p>
           <p className="text-[11px] text-brand-900/50 mt-2">

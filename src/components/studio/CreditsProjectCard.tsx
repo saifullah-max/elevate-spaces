@@ -73,6 +73,9 @@ export default function CreditsProjectCard({ studio }: Props) {
       setSaving(false);
     }
   };
+  const displayedPersonalCredits = studio.isLoggedIn
+    ? studio.personalBalance
+    : studio.guestDemoCreditsRemaining;
 
   return (
     <div className="bg-white border border-cream-200 rounded-2xl p-5">
@@ -83,8 +86,8 @@ export default function CreditsProjectCard({ studio }: Props) {
         Credits &amp; Project
         <InfoTip>
           {studio.isLoggedIn
-            ? `Personal: ${studio.personalBalance} credits · ${studio.teams.length} team wallet${studio.teams.length === 1 ? "" : "s"}. Pick where to spend and which project to save to.`
-            : "Team credits come from your shared wallet. Personal credits are yours alone. Projects keep a listing's photos together."}
+            ? `Personal: ${studio.personalBalance} credits - ${studio.teams.length} team wallet${studio.teams.length === 1 ? "" : "s"}. Pick where to spend and which project to save to.`
+            : "These are your free demo credits for this device. Team credits come from your shared wallet once you sign up. Projects keep a listing's photos together."}
         </InfoTip>
       </p>
 
@@ -102,7 +105,7 @@ export default function CreditsProjectCard({ studio }: Props) {
                   : "text-cream-800/50 font-medium")
               }
             >
-              Personal ({studio.personalBalance})
+              {studio.isLoggedIn ? "Personal" : "Demo credits"} ({studio.guestCreditsLoaded || studio.isLoggedIn ? displayedPersonalCredits : "..."})
             </button>
             <button
               type="button"
@@ -124,7 +127,7 @@ export default function CreditsProjectCard({ studio }: Props) {
               onChange={(e) => studio.setTeamId(e.target.value || null)}
               className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs text-cream-800/80 bg-cream-50 mt-2"
             >
-              <option value="">Select a team…</option>
+              <option value="">Select a team...</option>
               {studio.teams.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.wallet ?? 0} credits)
@@ -139,8 +142,8 @@ export default function CreditsProjectCard({ studio }: Props) {
             Project
             <InfoTip>
               {studio.isLoggedIn
-                ? `${studio.projects.length} saved project${studio.projects.length === 1 ? "" : "s"}. Add this batch to one — projects never expire.`
-                : "Projects keep a listing's photos, styling, and results together — and unlike Recent Uploads, they don't expire after 30 days."}
+                ? `${studio.projects.length} saved project${studio.projects.length === 1 ? "" : "s"}. Add this batch to one - projects never expire.`
+                : "Projects keep a listing's photos, styling, and results together - and unlike Recent Uploads, they don't expire after 30 days."}
             </InfoTip>
           </p>
 
@@ -168,7 +171,7 @@ export default function CreditsProjectCard({ studio }: Props) {
             </div>
           ) : (
             <>
-              <p className="text-xs text-cream-800/50 mb-2">This session only — not saved.</p>
+              <p className="text-xs text-cream-800/50 mb-2">This session only - not saved.</p>
               <button
                 type="button"
                 onClick={handleSaveClick}

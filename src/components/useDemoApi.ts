@@ -191,7 +191,7 @@ export function useDemoApi(props?: { selectedImageIdx: number; setSelectedImageI
         setStagedIds((previous) => [...previous, data.stagedId]);
         const isPhotoFreeClean =
           typeof data.freeCleanUploadsUsed === "number"
-            ? data.freeCleanUploadsUsed < FREE_CLEAN_UPLOADS_LIMIT
+            ? data.freeCleanUploadsUsed <= FREE_CLEAN_UPLOADS_LIMIT
             : true;
         setStagedFreeClean((previous) => [...previous, isPhotoFreeClean]);
         setSelectedImageIdx(0);

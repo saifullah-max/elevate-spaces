@@ -47,6 +47,10 @@ export default function SupportForm() {
     setError(null);
     setCaseNumber(null);
 
+    if (!fullName.trim()) {
+      setError("Full name is required");
+      return;
+    }
     if (!email.trim()) {
       setError("Email is required");
       return;
@@ -60,7 +64,7 @@ export default function SupportForm() {
     try {
       const screenshots = await readFilesAsBase64(files);
       const resp = await submitSupportRequest({
-        fullName: fullName.trim() || undefined,
+        fullName: fullName.trim(),
         companyName: companyName.trim() || undefined,
         email: email.trim(),
         briefDescription: briefDescription.trim(),
@@ -89,7 +93,7 @@ export default function SupportForm() {
     <form onSubmit={handleSubmit} className="space-y-4 mt-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-cream-800/80 mb-1">Full name (optional)</label>
+          <label className="block text-sm font-medium text-cream-800/80 mb-1">Full name</label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div>
@@ -134,7 +138,7 @@ export default function SupportForm() {
       </div>
 
       {error && <div className="text-sm text-red-700">{error}</div>}
-      {caseNumber && <div className="text-sm text-green-700">Submitted — case number: {caseNumber}</div>}
+      {caseNumber && <div className="text-sm text-green-700">Submitted - case number: {caseNumber}</div>}
 
       <div>
         <button type="submit" className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600" disabled={submitting}>

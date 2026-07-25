@@ -31,6 +31,10 @@ export default function ContactSalesForm({ onClose }: { onClose?: () => void }) 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError(null);
+    if (!fullName.trim()) {
+      setError("Full name is required");
+      return;
+    }
     if (!email.trim()) {
       setError("Email is required");
       return;
@@ -64,7 +68,7 @@ export default function ContactSalesForm({ onClose }: { onClose?: () => void }) 
     <form onSubmit={handleSubmit} className="space-y-4 mt-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-cream-800/80">Full name (optional)</label>
+          <label className="mb-1 block text-sm font-medium text-cream-800/80">Full name</label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div>
