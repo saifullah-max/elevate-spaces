@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, FolderOpen, Images, Info, MoreHorizontal, Pencil, Plus } from "lucide-react";
+import { Camera, FolderOpen, Images, Info, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import {
+  deleteProject,
   getMyProjects,
   getProjectImages,
   getProjectPhotographers,
@@ -45,7 +46,7 @@ function photographerDisplayName(member: ProjectMember | null): string | null {
 
 /**
  * Normalize whatever GET /projects/:id/photographers returns into a ProjectMember-shaped
- * object we can render. Backend shape varies — the response may be a bare array, wrapped
+ * object we can render. Backend shape varies - the response may be a bare array, wrapped
  * as { photographers: [...] }, { data: {...} }, or { members: [...] }.
  */
 function extractPhotographer(payload: unknown): ProjectMember | null {
@@ -87,6 +88,8 @@ export default function MyProjectsView() {
   const [photographers, setPhotographers] = useState<Record<string, ProjectMember | null>>({});
   const [openProject, setOpenProject] = useState<{ id: string; name: string } | null>(null);
   const [renameTarget, setRenameTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [photographerTarget, setPhotographerTarget] = useState<{
     id: string;
     current: ProjectMember | null;
@@ -116,7 +119,21 @@ export default function MyProjectsView() {
     } catch {}
   };
 
-  // Refetch when the tab regains focus / becomes visible again — so a photographer
+  const handleDeleteProject = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteProject(deleteTarget.id);
+      setProjects((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err: any) {
+      setError(err?.message || "Failed to delete project");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Refetch when the tab regains focus / becomes visible again - so a photographer
   // who was removed sees the project disappear without needing a hard reload.
   useEffect(() => {
     if (!loggedIn) return;
@@ -181,7 +198,7 @@ export default function MyProjectsView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects, loggedIn]);
 
-  // Lazy-load the assigned photographer per project — the /projects response
+  // Lazy-load the assigned photographer per project - the /projects response
   // returns members: [] regardless, so we hit /projects/:id/photographers directly.
   useEffect(() => {
     if (!loggedIn || projects.length === 0) return;
@@ -346,7 +363,7 @@ export default function MyProjectsView() {
                     {personal ? "Personal" : p.team?.name || "Team"}
                   </span>
 
-                  {/* Actions ellipsis — visible on hover / when menu open */}
+                  {/* Actions ellipsis - visible on hover / when menu open */}
                   <div
                     ref={menuOpen ? menuRef : undefined}
                     className={
@@ -397,6 +414,16 @@ export default function MyProjectsView() {
                             });
                           }}
                         />
+                        <div className="border-t border-cream-200" />
+                        <MenuItem
+                          icon={<Trash2 className="w-3.5 h-3.5 text-red-500" />}
+                          label="Delete project"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            setDeleteTarget({ id: p.id, name: p.name });
+                          }}
+                          danger
+                        />
                       </div>
                     )}
                   </div>
@@ -404,7 +431,7 @@ export default function MyProjectsView() {
                 <div className="p-4 flex-1 flex flex-col">
                   <p className="font-semibold text-sm text-brand-900 truncate">{p.name}</p>
                   <p className="text-xs text-cream-800/50 mt-0.5 truncate">
-                    {p.address || "No address yet"} · Created {new Date(p.created_at).toLocaleDateString()}
+                    {p.address || "No address yet"} - Created {new Date(p.created_at).toLocaleDateString()}
                   </p>
                   <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-cream-100 gap-2">
                     {photographerName ? (
@@ -470,6 +497,43 @@ export default function MyProjectsView() {
           if (photographerTarget) void refetchPhotographer(photographerTarget.id);
         }}
       />
+
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-brand-900/50 backdrop-blur-sm"
+          onClick={() => !deleting && setDeleteTarget(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl"
+          >
+            <h3 className="font-display text-lg font-bold text-brand-900 mb-2">Delete project?</h3>
+            <p className="text-sm text-cream-800/70 mb-6">
+              This will permanently delete{" "}
+              <span className="font-semibold text-brand-900">"{deleteTarget.name}"</span> and all its
+              photos. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex-1 border border-cream-200 hover:bg-cream-50 text-brand-900 text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                disabled={deleting}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -478,16 +542,21 @@ function MenuItem({
   icon,
   label,
   onClick,
+  danger,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  danger?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-cream-800/80 hover:bg-cream-50 text-left"
+      className={
+        "w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-left " +
+        (danger ? "text-red-600 hover:bg-red-50" : "text-cream-800/80 hover:bg-cream-50")
+      }
     >
       {icon} {label}
     </button>

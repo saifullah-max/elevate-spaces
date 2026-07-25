@@ -21,6 +21,35 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedUpload, setSelectedUpload] = useState<PairedUpload | null>(null);
+  const [activeUpload, setActiveUpload] = useState<PairedUpload | null>(null);
+  const [expandedVariantUrl, setExpandedVariantUrl] = useState<string | null>(null);
+  const [sliderPos, setSliderPos] = useState(50);
+
+  // Cross-origin files (Supabase storage) often ignore the plain `download`
+  // attribute on an <a> tag - browsers just open them in a new tab instead
+  // of saving. Fetching as a blob and triggering the download manually
+  // works reliably regardless of origin, same approach the demo page uses.
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (!response.ok) throw new Error("Failed to fetch image");
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = filename;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+    } catch {
+      // Fall back to opening the image directly if the fetch/blob approach
+      // fails (e.g. CORS not configured for this particular file) - at
+      // least the person can right-click and save it manually.
+      window.open(url, "_blank");
+    }
+  };
 
   useEffect(() => {
     const auth = getAuthFromStorage();
@@ -53,7 +82,7 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
           This is your inbox, not a home for your photos. Anything not saved to a project is
           automatically deleted after{" "}
           <span className="font-semibold text-brand-900">30 days</span>. Save to a project to keep
-          it —{" "}
+          it -{" "}
           <button
             type="button"
             onClick={onGoToProjects}
@@ -107,6 +136,7 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
             const expiresIn = Math.max(0, 30 - ageDays);
             const isProcessing = (u.statusSummary?.processing ?? 0) > 0;
             const failed = (u.statusSummary?.failed ?? 0) > 0 && !stagedUrl;
+            const variantCount = u.stagedVariants?.length ?? 0;
 
             return (
               <div
@@ -117,7 +147,11 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSelectedUpload(u)}
                 className="bg-white border border-cream-200 rounded-xl overflow-hidden cursor-pointer hover:border-brand-500/40 hover:shadow-sm transition"
               >
-                <div className="relative aspect-[4/3] bg-cream-100">
+                <button
+                  type="button"
+                  onClick={() => variantCount > 1 && setActiveUpload(u)}
+                  className="relative aspect-[4/3] bg-cream-100 block w-full text-left"
+                >
                   {displayUrl ? (
                     <img
                       src={displayUrl}
@@ -142,12 +176,12 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
                       Expires in {expiresIn} day{expiresIn === 1 ? "" : "s"}
                     </span>
                   )}
-                  {u.stagedVariants && u.stagedVariants.length > 1 && (
-                    <span className="absolute bottom-2 right-2 bg-white/90 text-brand-500 text-[9px] font-bold px-2 py-1 rounded-md">
-                      {u.stagedVariants.length} variants
+                  {variantCount > 1 && (
+                    <span className="absolute bottom-2 right-2 bg-white/90 text-brand-500 text-[9px] font-bold px-2 py-1 rounded-md hover:bg-white">
+                      View all {variantCount} variants
                     </span>
                   )}
-                </div>
+                </button>
                 <div className="p-3 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-brand-900 truncate">{label}</p>
@@ -164,16 +198,14 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
                       Save
                     </button>
                     {displayUrl && (
-                      <a
-                        href={displayUrl}
-                        download={label}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => downloadImage(displayUrl, label)}
                         className="text-cream-800/40 hover:text-brand-500"
                         aria-label="Download"
                       >
                         <Download className="w-3.5 h-3.5" />
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

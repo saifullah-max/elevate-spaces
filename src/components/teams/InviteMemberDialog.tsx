@@ -11,6 +11,8 @@ interface InviteMemberDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     team: Team | null;
+    fullName: string;
+    onFullNameChange: (value: string) => void;
     email: string;
     onEmailChange: (value: string) => void;
     subject: string;
@@ -38,6 +40,8 @@ export function InviteMemberDialog({
     open,
     onOpenChange,
     team,
+    fullName,
+    onFullNameChange,
     email,
     onEmailChange,
     subject,
@@ -94,6 +98,20 @@ export function InviteMemberDialog({
 
                     <TabsContent value="invite" className="space-y-4 mt-4">
                         <form onSubmit={onSubmit} className="space-y-4">
+                            <div>
+                                <Label htmlFor="invite-full-name">
+                                    Full Name <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="invite-full-name"
+                                    type="text"
+                                    placeholder="Jane Doe"
+                                    value={fullName}
+                                    onChange={(e) => onFullNameChange(e.target.value)}
+                                    className="mt-1"
+                                />
+                            </div>
+
                             <div>
                                 <Label htmlFor="invite-email">
                                     Email Address <span className="text-red-500">*</span>

@@ -5,6 +5,7 @@ import { Lock, MoveHorizontal, Trash2, X } from "lucide-react";
 import type { StudioController, PerImageSetting } from "./useStudio";
 import type { RoomType, StagingStyle } from "@/lib/errors";
 import { getDemoComparisonImageUrl } from "@/components/data/demoImagePaths";
+import InfoTip from "./InfoTip";
 
 interface Props {
   studio: StudioController;
@@ -44,7 +45,7 @@ export default function CustomizeModal({ studio }: Props) {
     ? "Upgrade to Pro or Team to change staging style and prompt per photo."
     : "Sign in and upgrade to Pro or Team to change staging style and prompt per photo.";
 
-  // Snapshot the settings into a draft on open — this modal is a form, not
+  // Snapshot the settings into a draft on open - this modal is a form, not
   // live-editing; users cancel or save.
   const initial: PerImageSetting[] = useMemo(
     () =>
@@ -132,7 +133,7 @@ export default function CustomizeModal({ studio }: Props) {
   const close = () => studio.setCustomizeModalOpen(false);
 
   const removeActive = () => {
-    // Remove from studio.files and settings both — keep them aligned.
+    // Remove from studio.files and settings both - keep them aligned.
     studio.removeFile(activeIdx);
     setDraft((prev) => prev.filter((_, i) => i !== activeIdx));
     setActiveIdx((prev) => Math.max(0, Math.min(prev, studio.files.length - 2)));
@@ -207,7 +208,21 @@ export default function CustomizeModal({ studio }: Props) {
             </div>
           )}
 
-          {/* Bulk style */}
+          {stylingLocked && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2.5">
+              <Lock className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="text-[11px] text-amber-800">
+                <p className="font-semibold mb-0.5">Staging style &amp; prompt are locked</p>
+                <p>
+                  {studio.isLoggedIn
+                    ? "Upgrade to a Pro or Team plan to change staging style and add a custom prompt per photo. Room type and interior/exterior stay editable."
+                    : "Sign in and upgrade to a Pro or Team plan to change staging style and add a custom prompt per photo. Room type and interior/exterior stay editable."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk style - available to everyone, applies to all images */}
           <div>
             <p className="text-xs font-semibold text-cream-800/70 mb-1.5 flex items-center gap-1.5">
               Staging Style (for all images)
@@ -287,7 +302,7 @@ export default function CustomizeModal({ studio }: Props) {
                 />
               </div>
               <p className="text-[10px] text-cream-800/30 text-center mb-4">
-                Preview example — drag to compare · updates with the fields below
+                Preview example - drag to compare - updates with the fields below
               </p>
 
               {/* Thumbnail strip */}
@@ -356,7 +371,7 @@ export default function CustomizeModal({ studio }: Props) {
                     </button>
                   </div>
 
-                  {/* Room type */}
+                  {/* Room type - available to everyone */}
                   <p className="text-[11px] font-medium text-cream-800/60 mb-1">
                     Room Type <span className="text-cream-800/40">(Required)</span>
                   </p>
@@ -394,23 +409,14 @@ export default function CustomizeModal({ studio }: Props) {
                   </select>
 
                   {/* Custom prompt */}
-                  <p className="text-[11px] font-medium text-cream-800/60 mb-1 flex items-center gap-1.5">
-                    Custom Prompt
-                    {stylingLocked && <Lock className="w-3 h-3 text-cream-800/40" />}
-                  </p>
+                  <p className="text-[11px] font-medium text-cream-800/60 mb-1">Custom Prompt</p>
                   <input
                     type="text"
                     maxLength={100}
                     value={activeRow.prompt}
                     onChange={(e) => update(activeIdx, { prompt: e.target.value })}
-                    disabled={stylingLocked}
-                    title={stylingLocked ? lockedTitle : undefined}
-                    placeholder={
-                      stylingLocked
-                        ? "Available on Pro or Team plans"
-                        : "e.g. add a reading nook by the window"
-                    }
-                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    placeholder="e.g. add a reading nook by the window"
+                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50"
                   />
                   <p className="text-[10px] text-cream-800/30 mt-1 text-right">
                     {activeRow.prompt.length} / 100
