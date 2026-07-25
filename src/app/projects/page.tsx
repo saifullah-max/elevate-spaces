@@ -11,7 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LoginPrompt } from "@/components/teams/LoginPrompt";
-import { Plus, Info } from "lucide-react";
+import { Plus, Info, Sparkles, X } from "lucide-react";
+import { getPaymentSummary, type PaymentSummary } from "@/services/payment.service";
+import { userHasActivePersonalSubscription } from "@/helpers/subscription.helpers";
+import { useRouter } from "next/navigation";
 import { ProjectImagesViewer } from "@/components/projects/ProjectImagesViewer";
 import { PhotographerSearchSelect, type PhotographerOption } from "@/components/projects/PhotographerSearchSelect";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -44,7 +47,31 @@ export default function ProjectsPage() {
     const [message, setMessage] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [projectMode, setProjectMode] = useState<'personal' | 'team'>('team');
+    const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
+    const [upgradeOpen, setUpgradeOpen] = useState(false);
     const currentUserId = useMemo(() => getAuthFromStorage()?.user?.id || null, []);
+    const router = useRouter();
+
+    const userProjectsCount = useMemo(
+        () => (projects?.projects || []).filter((p) => p.created_by_user_id === currentUserId).length,
+        [projects, currentUserId]
+    );
+    const hasActiveSubscription = useMemo(
+        () => userHasActivePersonalSubscription(paymentSummary),
+        [paymentSummary]
+    );
+    const canCreateMoreProjects = hasActiveSubscription || userProjectsCount < 1;
+
+    const tryOpenCreate = (mode: 'personal' | 'team') => {
+        if (!canCreateMoreProjects) {
+            setUpgradeOpen(true);
+            return;
+        }
+        setProjectMode(mode);
+        setShowModal(true);
+        setError(null);
+        setMessage(null);
+    };
 
     const teamOptions = useMemo(() => teams, [teams]);
     const selectedTeam = useMemo(() => teams.find((team) => team.id === teamId) || null, [teams, teamId]);
@@ -187,6 +214,12 @@ export default function ProjectsPage() {
     useEffect(() => {
         if (isAuthenticated) {
             void Promise.all([loadProjects(), loadTeams()]);
+            (async () => {
+                try {
+                    const s = await getPaymentSummary();
+                    setPaymentSummary(s);
+                } catch {}
+            })();
         }
     }, [isAuthenticated, loadProjects, loadTeams]);
 
@@ -263,7 +296,12 @@ export default function ProjectsPage() {
     }
 
     if (!isAuthenticated) {
-        return <LoginPrompt />;
+        return (
+            <LoginPrompt
+                title="Sign in to see your projects"
+                subtitle="Sign in or create an account to view and manage saved projects."
+            />
+        );
     }
 
     return (
@@ -293,13 +331,13 @@ export default function ProjectsPage() {
                     <Button
                         className="py-6"
                         variant="outline"
-                        onClick={() => { setProjectMode('personal'); setShowModal(true); setError(null); setMessage(null); }}
+                        onClick={() => tryOpenCreate('personal')}
                     >
                         <Plus /> Add Personal Project
                     </Button>
                     <Button
                         className="py-6"
-                        onClick={() => { setProjectMode('team'); setShowModal(true); setError(null); setMessage(null); }}
+                        onClick={() => tryOpenCreate('team')}
                     >
                         <Plus /> Add Project to the Team
                     </Button>
@@ -664,6 +702,53 @@ export default function ProjectsPage() {
                         className="absolute inset-0 -z-10"
                         onClick={() => setShowModal(false)}
                     />
+                </div>
+            )}
+
+            {upgradeOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto bg-brand-900/50 backdrop-blur-sm"
+                    onClick={() => setUpgradeOpen(false)}
+                    role="dialog"
+                    aria-modal="true"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white rounded-2xl p-8 max-w-sm w-full relative shadow-xl text-center"
+                    >
+                        <button
+                            onClick={() => setUpgradeOpen(false)}
+                            className="absolute top-4 right-4 text-cream-800/40 hover:text-brand-900"
+                            aria-label="Close"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                        <div className="w-14 h-14 rounded-full bg-brand-100 mx-auto flex items-center justify-center mb-4">
+                            <Sparkles className="w-6 h-6 text-brand-500" />
+                        </div>
+                        <h3 className="font-display text-lg font-bold text-brand-900 mb-2">
+                            Upgrade to save more projects
+                        </h3>
+                        <p className="text-sm text-cream-800/60 mb-6">
+                            You've used your free saved project. Subscribe to Pro, Team, or Enterprise to
+                            save unlimited projects and unlock advanced features.
+                        </p>
+                        <div className="flex flex-col gap-2">
+                            <Button
+                                className="bg-brand-500 hover:bg-brand-600 w-full"
+                                onClick={() => router.push('/pricing')}
+                            >
+                                See plans
+                            </Button>
+                            <button
+                                type="button"
+                                onClick={() => setUpgradeOpen(false)}
+                                className="text-xs text-cream-800/60 hover:text-brand-900"
+                            >
+                                Maybe later
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

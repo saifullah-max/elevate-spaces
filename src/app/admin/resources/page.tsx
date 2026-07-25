@@ -6,9 +6,9 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
-import { Loader2, Save, ExternalLink, Upload, FileDown, Youtube } from "lucide-react";
+import { Loader2, Save, ExternalLink, Upload, FileDown, Youtube, Lightbulb, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { showError, showSuccess } from "@/components/toastUtils";
-import { getResources, saveResource, type ResourceItem, getResourceAssetUrl } from "@/services/resources.service";
+import { getResources, saveResource, type ResourceItem, type ResourceTip, getResourceAssetUrl } from "@/services/resources.service";
 import { Button } from "@/components/ui/button";
 
 export default function AdminResourcesPage() {
@@ -21,6 +21,7 @@ export default function AdminResourcesPage() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [removePdf, setRemovePdf] = useState(false);
+  const [tips, setTips] = useState<ResourceTip[]>([]);
 
   const selectedResource = useMemo(
     () => resources.find((resource) => resource.slug === selectedSlug) || null,
@@ -38,6 +39,19 @@ export default function AdminResourcesPage() {
       },
     },
   });
+
+  const addTip = () => setTips((prev) => [...prev, { heading: "", body: "" }]);
+  const updateTip = (idx: number, patch: Partial<ResourceTip>) =>
+    setTips((prev) => prev.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
+  const removeTip = (idx: number) => setTips((prev) => prev.filter((_, i) => i !== idx));
+  const moveTip = (idx: number, dir: -1 | 1) =>
+    setTips((prev) => {
+      const target = idx + dir;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = prev.slice();
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
 
   useEffect(() => {
     let mounted = true;
@@ -76,6 +90,14 @@ export default function AdminResourcesPage() {
     setPdfFile(null);
     setRemovePdf(false);
     setUploadProgress(null);
+    setTips(
+      (selectedResource.tips || []).map((t) => ({
+        id: t.id,
+        heading: t.heading || "",
+        body: t.body || "",
+        position: t.position,
+      }))
+    );
     if (editor && editor.getHTML() !== (selectedResource.content_html || "<p></p>")) {
       editor.commands.setContent(selectedResource.content_html || "<p></p>");
     }
@@ -99,6 +121,7 @@ export default function AdminResourcesPage() {
         {
           title: title || "Resources",
           contentHtml: editor.getHTML(),
+          tips: tips.map((t) => ({ heading: t.heading, body: t.body })),
           youtubeUrl,
           pdf: pdfFile,
           removePdf,
@@ -118,6 +141,14 @@ export default function AdminResourcesPage() {
 
       setSelectedSlug(updated.slug);
       setYoutubeUrl(updated.youtube_url || "");
+      setTips(
+        (updated.tips || []).map((t) => ({
+          id: t.id,
+          heading: t.heading || "",
+          body: t.body || "",
+          position: t.position,
+        }))
+      );
       setPdfFile(null);
       setRemovePdf(false);
       setUploadProgress(null);
@@ -269,6 +300,97 @@ export default function AdminResourcesPage() {
               <button type="button" onClick={() => editor?.chain().focus().toggleOrderedList().run()} className="rounded-md bg-white px-3 py-2 text-sm font-medium text-cream-800/80 hover:bg-cream-100">Numbered</button>
             </div>
             <EditorContent editor={editor} />
+          </div>
+
+          <div className="border-t border-cream-200 pt-5">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-brand-500" />
+                <h3 className="text-sm font-semibold text-brand-900">Staging tips</h3>
+                <span className="rounded-full bg-cream-100 px-2 py-0.5 text-[10px] font-semibold text-cream-800/60">
+                  {tips.length}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={addTip}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-500/40 px-3 py-1.5 text-xs font-semibold text-brand-500 hover:bg-brand-50"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add tip
+              </button>
+            </div>
+            <p className="mb-4 text-xs text-cream-800/60">
+              Each tip is rendered as a card on the public resources page. Leave the list empty to
+              hide the section entirely.
+            </p>
+
+            {tips.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-cream-200 bg-cream-50 py-8 text-center text-xs text-cream-800/50">
+                No tips yet — click <span className="font-semibold">Add tip</span> to create one.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {tips.map((tip, idx) => (
+                  <div
+                    key={tip.id ?? `new-${idx}`}
+                    className="rounded-xl border border-cream-200 bg-white p-4"
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-cream-800/50">
+                        Tip {idx + 1}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveTip(idx, -1)}
+                          disabled={idx === 0}
+                          aria-label="Move up"
+                          className="rounded-md p-1.5 text-cream-800/50 hover:bg-cream-50 disabled:opacity-30"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveTip(idx, 1)}
+                          disabled={idx === tips.length - 1}
+                          aria-label="Move down"
+                          className="rounded-md p-1.5 text-cream-800/50 hover:bg-cream-50 disabled:opacity-30"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeTip(idx)}
+                          aria-label="Remove"
+                          className="rounded-md p-1.5 text-cream-800/50 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <label className="mb-1 block text-xs font-medium text-cream-800/70">
+                      Heading
+                    </label>
+                    <input
+                      value={tip.heading}
+                      onChange={(e) => updateTip(idx, { heading: e.target.value })}
+                      className="mb-3 w-full rounded-lg border border-cream-200 px-3 py-2 text-sm text-brand-900 outline-none focus:border-brand-500"
+                      placeholder="e.g. Shoot with the widest lens you have"
+                    />
+                    <label className="mb-1 block text-xs font-medium text-cream-800/70">
+                      Text
+                    </label>
+                    <textarea
+                      value={tip.body}
+                      onChange={(e) => updateTip(idx, { body: e.target.value })}
+                      rows={3}
+                      className="w-full resize-y rounded-lg border border-cream-200 px-3 py-2 text-sm text-brand-900 outline-none focus:border-brand-500"
+                      placeholder="Short paragraph explaining the tip."
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

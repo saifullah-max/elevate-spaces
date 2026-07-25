@@ -1,6 +1,7 @@
 "use client";
 
-import { Info, Sliders } from "lucide-react";
+import { useState } from "react";
+import { Images, Info, Sliders, X } from "lucide-react";
 import type { StudioController } from "./useStudio";
 import type { RoomType, StagingStyle } from "@/lib/errors";
 import InfoTip from "./InfoTip";
@@ -40,6 +41,15 @@ export default function AreaStyleCard({ studio }: Props) {
   const isMulti = studio.files.length > 1;
   const hasFiles = studio.files.length > 0;
   const promptLen = studio.prompt.length;
+  const [needMorePhotosOpen, setNeedMorePhotosOpen] = useState(false);
+
+  const handleCustomizeClick = () => {
+    if (studio.files.length === 1) {
+      setNeedMorePhotosOpen(true);
+      return;
+    }
+    studio.setCustomizeModalOpen(true);
+  };
 
   return (
     <div className="bg-white border border-cream-200 rounded-2xl p-5">
@@ -150,24 +160,62 @@ export default function AreaStyleCard({ studio }: Props) {
 
       <button
         type="button"
-        disabled={!studio.canCustomizePerImage || studio.files.length === 0}
-        onClick={() => studio.setCustomizeModalOpen(true)}
+        disabled={studio.files.length === 0}
+        onClick={handleCustomizeClick}
         title={
           studio.files.length === 0
             ? "Upload at least one photo first"
-            : !studio.canCustomizePerImage
-            ? "Per-image customization requires an active Pro or Team subscription"
             : "Set room, style, area, and prompt per photo"
         }
         className="w-full border border-dashed border-brand-500/40 text-brand-500 text-xs font-semibold py-2.5 rounded-lg hover:bg-brand-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <Sliders className="w-3 h-3" /> Customize each image individually
-        {studio.useCustomStyling && studio.canCustomizePerImage && (
+        {studio.useCustomStyling && (
           <span className="ml-2 text-[10px] font-bold uppercase tracking-widest bg-brand-500 text-white px-2 py-0.5 rounded-md">
             On
           </span>
         )}
       </button>
+
+      {needMorePhotosOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto bg-brand-900/50 backdrop-blur-sm"
+          onClick={() => setNeedMorePhotosOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl p-8 max-w-sm w-full relative shadow-xl text-center"
+          >
+            <button
+              onClick={() => setNeedMorePhotosOpen(false)}
+              className="absolute top-4 right-4 text-cream-800/40 hover:text-brand-900"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="w-14 h-14 rounded-full bg-brand-100 mx-auto flex items-center justify-center mb-4">
+              <Images className="w-6 h-6 text-brand-500" />
+            </div>
+            <h3 className="font-display text-lg font-bold text-brand-900 mb-2">
+              Upload more photos to use this
+            </h3>
+            <p className="text-sm text-cream-800/60 mb-6">
+              Customize Each Image is for setting a different room, style, and prompt per photo
+              across a batch. With just one photo, use the Room type and Staging style fields above
+              instead — upload more than one photo to unlock this.
+            </p>
+            <button
+              type="button"
+              onClick={() => setNeedMorePhotosOpen(false)}
+              className="w-full bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,7 +13,10 @@ function SignUpRedirect() {
     const errKey = params.get("error");
     const message = errKey ? OAUTH_ERROR_MAP[errKey] || "Sign up failed. Please try again." : null;
     openAuthModal("signup", message);
-    router.replace("/");
+    const rawNext = params.get("next");
+    const safeNext =
+      rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
+    router.replace(safeNext);
   }, [router, params]);
 
   return (

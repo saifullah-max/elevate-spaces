@@ -669,7 +669,12 @@ export default function Teams() {
 
     // Show login prompt if not authenticated
     if (!isAuthenticated) {
-        return <LoginPrompt />;
+        return (
+            <LoginPrompt
+                title="Sign in to see your teams"
+                subtitle="Sign in or create an account to view and manage your teams."
+            />
+        );
     }
 
     return (

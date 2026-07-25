@@ -9,6 +9,7 @@ import { getTeams, getTeamEligibility } from "@/services/teams.service";
 import type { Team } from "@/types/teams.types";
 import { canUserCustomizeStyling } from "@/helpers/subscription.helpers";
 import { getAuthFromStorage } from "@/lib/auth.storage";
+import { initGuestSession, getOrCreateFingerprint } from "@/services/guest.service";
 
 export type AreaType = "interior" | "exterior";
 export type CreditSource = "personal" | "team";
@@ -54,6 +55,8 @@ export function useStudio(initialFiles?: File[]) {
   const [teamId, setTeamId] = useState<string | null>(null);
   const [teamCredits, setTeamCredits] = useState<number>(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [demoCreditsRemaining, setDemoCreditsRemaining] = useState<number>(0);
+  const [demoCreditsLimit, setDemoCreditsLimit] = useState<number>(10);
   const [processing, setProcessing] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string>("");
   const [progressPercent, setProgressPercent] = useState<number>(0);
@@ -61,6 +64,10 @@ export function useStudio(initialFiles?: File[]) {
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const [variantsReceived, setVariantsReceived] = useState(0);
+  const [totalVariantsTarget, setTotalVariantsTarget] = useState(0);
+  const [estimatedEndAt, setEstimatedEndAt] = useState<number | null>(null);
+  const [estimatedRemainingSec, setEstimatedRemainingSec] = useState<number | null>(null);
 
   // Per-image customization (Pro/Team subscription required)
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
@@ -78,7 +85,25 @@ export function useStudio(initialFiles?: File[]) {
   useEffect(() => {
     const auth = getAuthFromStorage();
     setIsLoggedIn(Boolean(auth?.token));
-    if (!auth?.token) return;
+
+    if (!auth?.token) {
+      // Guest: fetch demo credit balance so the sidebar can show it.
+      (async () => {
+        try {
+          const deviceId = await getOrCreateFingerprint();
+          const res = await initGuestSession(deviceId);
+          const usage = res?.data?.usageCount ?? 0;
+          const limit = res?.data?.limit ?? 10;
+          const remaining =
+            typeof res?.data?.remainingDemoCredits === "number"
+              ? res.data.remainingDemoCredits
+              : Math.max(0, limit - usage);
+          setDemoCreditsLimit(limit);
+          setDemoCreditsRemaining(remaining);
+        } catch {}
+      })();
+      return;
+    }
 
     (async () => {
       try {
@@ -142,6 +167,11 @@ export function useStudio(initialFiles?: File[]) {
     [creditSource, selectedTeam, paymentSummary, teamEligibility]
   );
 
+  const addProject = useCallback((project: StudioProject, select = true) => {
+    setProjects((prev) => (prev.some((p) => p.id === project.id) ? prev : [...prev, project]));
+    if (select) setProjectId(project.id);
+  }, []);
+
   // Keep perImageSettings in sync with the file list — grow when adding
   // photos, shrink when removing them. Uses the current bulk defaults for
   // any newly added row so the modal starts from a sensible state.
@@ -177,14 +207,20 @@ export function useStudio(initialFiles?: File[]) {
   useEffect(() => {
     if (!processing) {
       setElapsedSec(0);
+      setEstimatedRemainingSec(null);
       return;
     }
     const start = Date.now();
     const t = window.setInterval(() => {
-      setElapsedSec(Math.floor((Date.now() - start) / 1000));
+      const now = Date.now();
+      setElapsedSec(Math.floor((now - start) / 1000));
+      setEstimatedRemainingSec((prev) => {
+        if (estimatedEndAt == null) return prev;
+        return Math.max(0, Math.round((estimatedEndAt - now) / 1000));
+      });
     }, 1000);
     return () => window.clearInterval(t);
-  }, [processing]);
+  }, [processing, estimatedEndAt]);
 
   const generate = useCallback(async () => {
     if (!canGenerate) return;
@@ -193,6 +229,11 @@ export function useStudio(initialFiles?: File[]) {
     setProgressMessage("Preparing…");
     setProgressPercent(2);
     setResults([]);
+    setVariantsReceived(0);
+    setTotalVariantsTarget(files.length * 3);
+    setEstimatedEndAt(null);
+    setEstimatedRemainingSec(null);
+    const generationStart = Date.now();
 
     const perFileResults: StudioResult[] = files.map((f, i) => {
       const s = useCustomStyling && perImageSettings[i] ? perImageSettings[i] : null;
@@ -209,8 +250,8 @@ export function useStudio(initialFiles?: File[]) {
     setResults(perFileResults);
 
     let completedFiles = 0;
-    const totalVariantsTarget = files.length * 3;
-    let variantsReceived = 0;
+    const totalTarget = files.length * 3;
+    let received = 0;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -237,8 +278,17 @@ export function useStudio(initialFiles?: File[]) {
           onImage: (data) => {
             const url = normalizeImageUrl(data?.imageUrl || data?.url || data?.stagedImageUrl || "");
             if (!url) return;
-            variantsReceived += 1;
-            setProgressPercent(Math.min(98, Math.round((variantsReceived / totalVariantsTarget) * 100)));
+            received += 1;
+            setVariantsReceived(received);
+            setProgressPercent(Math.min(98, Math.round((received / totalTarget) * 100)));
+            const now = Date.now();
+            const avgMs = (now - generationStart) / received;
+            const remainingMs = avgMs * (totalTarget - received);
+            const newEnd = now + remainingMs;
+            setEstimatedEndAt((prev) =>
+              prev == null ? newEnd : Math.min(prev, newEnd)
+            );
+            setEstimatedRemainingSec(Math.max(0, Math.round(remainingMs / 1000)));
             setResults((prev) => {
               const next = prev.slice();
               const entry = next[i];
@@ -293,16 +343,23 @@ export function useStudio(initialFiles?: File[]) {
     projects,
     projectId,
     setProjectId,
+    addProject,
+    paymentSummary,
     teams,
     teamId,
     setTeamId,
     teamCredits,
     personalBalance,
     isLoggedIn,
+    demoCreditsRemaining,
+    demoCreditsLimit,
     processing,
     progressMessage,
     progressPercent,
     elapsedSec,
+    variantsReceived,
+    totalVariantsTarget,
+    estimatedRemainingSec,
     creditsNeeded,
     canGenerate,
     generate,

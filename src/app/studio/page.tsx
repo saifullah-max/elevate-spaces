@@ -138,6 +138,40 @@ export default function StudioPage() {
               })}
             </nav>
 
+            {!studio.isLoggedIn && (
+              <div className="mt-4 pt-4 border-t border-cream-200 space-y-3">
+                <p className="text-[10px] font-semibold text-cream-800/50 uppercase tracking-wider">
+                  Demo credits
+                </p>
+                <div className="bg-brand-50 border border-brand-100 rounded-lg px-3 py-3">
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="text-brand-900 font-medium">Free trial</span>
+                    <span className="font-semibold text-brand-900">
+                      {studio.demoCreditsRemaining} / {studio.demoCreditsLimit}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-brand-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-brand-500 rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.round(
+                            (studio.demoCreditsRemaining /
+                              Math.max(1, studio.demoCreditsLimit)) *
+                              100
+                          )
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-brand-900/60 mt-2">
+                    Sign up to keep your credits &amp; save projects.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {studio.isLoggedIn && (
               <div className="mt-4 pt-4 border-t border-cream-200 space-y-3">
                 <p className="text-[10px] font-semibold text-cream-800/50 uppercase tracking-wider">
