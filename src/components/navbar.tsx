@@ -360,6 +360,12 @@ export default function Navbar() {
         onSuccess={() => {
           setAuthModalOpen(false);
           setAuthModalError(null);
+          // Reload the current page so guarded routes (projects, teams, etc.)
+          // re-read auth state and load their data instead of showing the
+          // LoginPrompt beneath the closed modal.
+          if (typeof window !== "undefined") {
+            window.location.reload();
+          }
         }}
         initialView={authModalView}
         initialError={authModalError}

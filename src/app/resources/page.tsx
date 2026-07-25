@@ -7,29 +7,6 @@ import { getResources, getResourceAssetUrl, type ResourceItem } from "@/services
 
 const Footer = dynamic(() => import("@/components/footer"), { ssr: false });
 
-const STAGING_TIPS = [
-  {
-    title: "Shoot with the widest lens you have",
-    body:
-      "Wide, well-lit photos give the AI more room to place furniture convincingly — avoid heavy fisheye distortion at the edges.",
-  },
-  {
-    title: "Empty rooms stage best",
-    body:
-      "Vacant rooms give the cleanest results. Lightly furnished rooms work too, but heavy clutter can confuse the placement.",
-  },
-  {
-    title: "Match style to the listing's price point",
-    body:
-      "Luxury and Mid-Century read well for higher-end listings; Farmhouse and Coastal tend to perform well for family homes.",
-  },
-  {
-    title: "Generate 2–3 styles before you pick",
-    body:
-      "Use the live preview to sanity-check a style before spending a credit, then compare a couple of finished variants side by side.",
-  },
-];
-
 function youtubeEmbed(url: string | null | undefined): string | null {
   if (!url) return null;
   try {
@@ -78,6 +55,15 @@ export default function ResourcesPage() {
     [resources]
   );
   const deckResource = useMemo(() => resources.find((r) => r.pdf_filename), [resources]);
+  const contentResources = useMemo(
+    () => resources.filter((r) => (r.content_html || "").trim().length > 0),
+    [resources]
+  );
+  const stagingTips = useMemo(
+    () =>
+      resources.flatMap((r) => r.tips || []).filter((t) => (t.heading || "").trim() || (t.body || "").trim()),
+    [resources]
+  );
 
   return (
     <div className="bg-cream-50 min-h-screen text-brand-900 antialiased">
@@ -95,20 +81,18 @@ export default function ResourcesPage() {
           </div>
         ) : (
           <>
-            {/* Video walkthroughs */}
-            <div className="mb-14">
-              <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
-                <Youtube className="w-4 h-4" /> Video walkthroughs
-              </h2>
-              {error ? (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-5 text-xs text-red-700">
-                  {error}
-                </div>
-              ) : videoResources.length === 0 ? (
-                <div className="bg-white border border-cream-200 rounded-2xl p-6 text-center text-sm text-cream-800/60">
-                  No video walkthroughs available yet.
-                </div>
-              ) : (
+            {error && (
+              <div className="mb-14 bg-red-50 border border-red-200 rounded-2xl p-5 text-xs text-red-700">
+                {error}
+              </div>
+            )}
+
+            {/* Video walkthroughs — hidden until admin uploads a video or adds a YouTube link */}
+            {!error && videoResources.length > 0 && (
+              <div className="mb-14">
+                <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
+                  <Youtube className="w-4 h-4" /> Video walkthroughs
+                </h2>
                 <div className="grid sm:grid-cols-2 gap-5">
                   {videoResources.map((r) => {
                     const embed = youtubeEmbed(r.youtube_url);
@@ -152,8 +136,8 @@ export default function ResourcesPage() {
                     );
                   })}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Onboarding deck */}
             {deckResource && (
@@ -185,23 +169,48 @@ export default function ResourcesPage() {
               </div>
             )}
 
-            {/* Staging tips */}
-            <div>
-              <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4" /> Staging tips
-              </h2>
-              <div className="grid sm:grid-cols-2 gap-5">
-                {STAGING_TIPS.map((tip) => (
-                  <div
-                    key={tip.title}
-                    className="bg-white border border-cream-200 rounded-2xl p-5"
-                  >
-                    <h3 className="text-sm font-semibold text-brand-900 mb-1.5">{tip.title}</h3>
-                    <p className="text-xs text-cream-800/60 leading-relaxed">{tip.body}</p>
-                  </div>
+            {/* Article / long-form content — admin-managed rich text per resource */}
+            {contentResources.length > 0 && (
+              <div className="mb-14 space-y-8">
+                {contentResources.map((r) => (
+                  <article key={r.id} className="bg-white border border-cream-200 rounded-2xl p-6 md:p-8">
+                    <h2 className="font-display text-lg md:text-xl font-bold text-brand-900 mb-4">
+                      {r.title}
+                    </h2>
+                    <div
+                      className="text-sm text-cream-800/70 leading-relaxed space-y-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-brand-900 [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-brand-900 [&_h3]:mt-3 [&_h4]:text-sm [&_h4]:font-semibold [&_h4]:text-brand-900 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:text-brand-500 [&_a]:underline [&_strong]:font-semibold [&_strong]:text-brand-900"
+                      dangerouslySetInnerHTML={{ __html: r.content_html || "" }}
+                    />
+                  </article>
                 ))}
               </div>
-            </div>
+            )}
+
+            {/* Staging tips — admin-managed */}
+            {stagingTips.length > 0 && (
+              <div>
+                <h2 className="font-bold text-sm uppercase tracking-wider text-brand-500 mb-4 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4" /> Staging tips
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {stagingTips.map((tip, idx) => (
+                    <div
+                      key={tip.id || `${tip.heading}-${idx}`}
+                      className="bg-white border border-cream-200 rounded-2xl p-5"
+                    >
+                      {tip.heading && (
+                        <h3 className="text-sm font-semibold text-brand-900 mb-1.5">{tip.heading}</h3>
+                      )}
+                      {tip.body && (
+                        <p className="text-xs text-cream-800/60 leading-relaxed whitespace-pre-wrap">
+                          {tip.body}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </section>

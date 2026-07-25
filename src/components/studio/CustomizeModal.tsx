@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MoveHorizontal, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Lock, MoveHorizontal, Trash2, X } from "lucide-react";
 import type { StudioController, PerImageSetting } from "./useStudio";
 import type { RoomType, StagingStyle } from "@/lib/errors";
 import { getDemoComparisonImageUrl } from "@/components/data/demoImagePaths";
@@ -39,6 +39,10 @@ const STYLES: { value: StagingStyle; label: string }[] = [
 
 export default function CustomizeModal({ studio }: Props) {
   const open = studio.customizeModalOpen;
+  const stylingLocked = !studio.canCustomizePerImage;
+  const lockedTitle = studio.isLoggedIn
+    ? "Upgrade to Pro or Team to change staging style and prompt per photo."
+    : "Sign in and upgrade to Pro or Team to change staging style and prompt per photo.";
 
   // Snapshot the settings into a draft on open — this modal is a form, not
   // live-editing; users cancel or save.
@@ -68,23 +72,22 @@ export default function CustomizeModal({ studio }: Props) {
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [enabled, setEnabled] = useState<boolean>(true);
 
-  // Object URLs for the uploaded photos, cleaned up on close / file change.
-  const objectUrlsRef = useRef<string[]>([]);
-  const objectUrls = useMemo(() => {
-    // Revoke any previous URLs before making new ones
-    objectUrlsRef.current.forEach((u) => URL.revokeObjectURL(u));
-    const urls = studio.files.map((f) => URL.createObjectURL(f));
-    objectUrlsRef.current = urls;
-    return urls;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studio.files]);
-
+  // Object URLs for the uploaded photos. Created in an effect (not useMemo)
+  // because React can drop memoized values at any time — if that happened
+  // while we were also revoking in the memo, we'd render <img src=""> pointing
+  // at revoked blob URLs. Effect + state gives us a stable value with a
+  // deterministic cleanup, so URLs live exactly as long as the render that
+  // uses them.
+  const [objectUrls, setObjectUrls] = useState<string[]>([]);
   useEffect(() => {
+    const urls = studio.files.map((f) =>
+      f instanceof Blob ? URL.createObjectURL(f) : ""
+    );
+    setObjectUrls(urls);
     return () => {
-      objectUrlsRef.current.forEach((u) => URL.revokeObjectURL(u));
-      objectUrlsRef.current = [];
+      urls.forEach((u) => u && URL.revokeObjectURL(u));
     };
-  }, []);
+  }, [studio.files]);
 
   useEffect(() => {
     if (open) {
@@ -190,15 +193,32 @@ export default function CustomizeModal({ studio }: Props) {
             </button>
           </div>
 
+          {stylingLocked && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-2.5">
+              <Lock className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="text-[11px] text-amber-800">
+                <p className="font-semibold mb-0.5">Staging style &amp; prompt are locked</p>
+                <p>
+                  {studio.isLoggedIn
+                    ? "Upgrade to a Pro or Team plan to change staging style and add a custom prompt per photo. Room type and interior/exterior stay editable."
+                    : "Sign in and upgrade to a Pro or Team plan to change staging style and add a custom prompt per photo. Room type and interior/exterior stay editable."}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Bulk style */}
           <div>
-            <p className="text-xs font-semibold text-cream-800/70 mb-1.5">
+            <p className="text-xs font-semibold text-cream-800/70 mb-1.5 flex items-center gap-1.5">
               Staging Style (for all images)
+              {stylingLocked && <Lock className="w-3 h-3 text-cream-800/40" />}
             </p>
             <select
               onChange={(e) => applyBulkStyle(e.target.value as StagingStyle)}
               value={activeRow?.stagingStyle || "modern"}
-              className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs text-cream-800/80 bg-cream-50"
+              disabled={stylingLocked}
+              title={stylingLocked ? lockedTitle : undefined}
+              className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs text-cream-800/80 bg-cream-50 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {STYLES.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -353,13 +373,18 @@ export default function CustomizeModal({ studio }: Props) {
                   </select>
 
                   {/* Staging style */}
-                  <p className="text-[11px] font-medium text-cream-800/60 mb-1">Staging Style</p>
+                  <p className="text-[11px] font-medium text-cream-800/60 mb-1 flex items-center gap-1.5">
+                    Staging Style
+                    {stylingLocked && <Lock className="w-3 h-3 text-cream-800/40" />}
+                  </p>
                   <select
                     value={activeRow.stagingStyle}
                     onChange={(e) =>
                       update(activeIdx, { stagingStyle: e.target.value as StagingStyle })
                     }
-                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 mb-3"
+                    disabled={stylingLocked}
+                    title={stylingLocked ? lockedTitle : undefined}
+                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 mb-3 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {STYLES.map((s) => (
                       <option key={s.value} value={s.value}>
@@ -369,14 +394,23 @@ export default function CustomizeModal({ studio }: Props) {
                   </select>
 
                   {/* Custom prompt */}
-                  <p className="text-[11px] font-medium text-cream-800/60 mb-1">Custom Prompt</p>
+                  <p className="text-[11px] font-medium text-cream-800/60 mb-1 flex items-center gap-1.5">
+                    Custom Prompt
+                    {stylingLocked && <Lock className="w-3 h-3 text-cream-800/40" />}
+                  </p>
                   <input
                     type="text"
                     maxLength={100}
                     value={activeRow.prompt}
                     onChange={(e) => update(activeIdx, { prompt: e.target.value })}
-                    placeholder="e.g. add a reading nook by the window"
-                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50"
+                    disabled={stylingLocked}
+                    title={stylingLocked ? lockedTitle : undefined}
+                    placeholder={
+                      stylingLocked
+                        ? "Available on Pro or Team plans"
+                        : "e.g. add a reading nook by the window"
+                    }
+                    className="w-full border border-cream-200 rounded-lg px-3 py-2 text-xs bg-cream-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                   <p className="text-[10px] text-cream-800/30 mt-1 text-right">
                     {activeRow.prompt.length} / 100

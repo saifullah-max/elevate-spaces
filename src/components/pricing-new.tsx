@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Bolt, Camera, Check } from "lucide-react";
-import { createCheckoutSession } from "@/services/payment.service";
+import { createCheckoutSession, getPaymentSummary, type PaymentSummary } from "@/services/payment.service";
 import { getTeams } from "@/services/teams.service";
+import { userHasActivePersonalSubscription } from "@/helpers/subscription.helpers";
+import { SupportRequestDialog } from "@/components/SupportRequestDialog";
+import ContactSalesForm from "@/components/support/ContactSalesForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import AuthGateModal from "@/components/AuthGateModal";
 import type { Team } from "@/types/teams.types";
 import { trackStartTrial } from "@/lib/analytics";
 import { showInfo } from "./toastUtils";
@@ -121,6 +126,51 @@ export default function Pricing() {
   const [ownedTeams, setOwnedTeams] = useState<Team[]>([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [contactSalesOpen, setContactSalesOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  // Plan the guest clicked before signing in — resumed on auth success.
+  const [pendingCheckout, setPendingCheckout] = useState<
+    | { kind: "plan"; plan: PlanConfig; audience: Audience; billing: Billing }
+    | { kind: "extra"; audience: Audience; quantity: number }
+    | { kind: "ppi"; audience: Audience; quantity: number }
+    | null
+  >(null);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    (async () => {
+      try {
+        const s = await getPaymentSummary();
+        setPaymentSummary(s);
+      } catch {}
+    })();
+  }, [isLoggedIn]);
+
+  const hasActiveSubscription = useMemo(
+    () => userHasActivePersonalSubscription(paymentSummary),
+    [paymentSummary]
+  );
+
+  const activeSubscriptionPerCreditUsd = useMemo(() => {
+    if (!hasActiveSubscription) return null;
+    const sub = paymentSummary?.activeSubscriptions?.find((s: any) => {
+      const pkg = String(s.package || "").toLowerCase();
+      return pkg.includes("plan_") || pkg.includes("pro") || pkg.includes("team") || pkg.includes("starter") || pkg === "enterprise";
+    });
+    const pkg = String(sub?.package || "").toLowerCase();
+    // Match to a known plan to derive per-credit rate. Falls back to plan bullets.
+    const rates: Record<string, number> = {
+      plan_starter: 29 / 60,
+      plan_pro: 69 / 160,
+      plan_team: 139 / 360,
+      plan_starter_annual: 300 / 720,
+      plan_pro_annual: 744 / 1920,
+      plan_team_annual: 1500 / 4320,
+    };
+    return rates[pkg] ?? null;
+  }, [hasActiveSubscription, paymentSummary]);
 
   useEffect(() => {
     if (audience !== "team" || !isLoggedIn || !currentUserId) return;
@@ -157,7 +207,7 @@ export default function Pricing() {
       return null;
     }
     if (ownedTeams.length === 0) {
-      showInfo("You don't own any teams. Create a team first to buy for a team.");
+      showInfo("Create a team first — any teams you own will appear in the selector above.");
       return null;
     }
     if (!selectedTeamId) {
@@ -170,7 +220,8 @@ export default function Pricing() {
   const startCheckout = async (p: PlanConfig) => {
     if (!p.productKey) return;
     if (!isLoggedIn) {
-      router.push("/sign-in?next=/pricing");
+      setPendingCheckout({ kind: "plan", plan: p, audience, billing });
+      setAuthOpen(true);
       return;
     }
     let teamId: string | undefined;
@@ -199,7 +250,8 @@ export default function Pricing() {
 
   const buyExtra = async () => {
     if (!isLoggedIn) {
-      router.push("/sign-in?next=/pricing");
+      setPendingCheckout({ kind: "extra", audience, quantity: extraCreditQty });
+      setAuthOpen(true);
       return;
     }
     let teamId: string | undefined;
@@ -208,10 +260,14 @@ export default function Pricing() {
       if (!id) return;
       teamId = id;
     }
+    // With an active subscription, extra credits are billed at the plan's
+    // per-credit rate via subscription_topup. Without one, the copy promises
+    // the $1.50 / image pay-per-image rate, so route through pay_per_image.
+    const productKey = hasActiveSubscription ? "subscription_topup" : "pay_per_image";
     try {
       setLoadingKey("extra");
       const res = await createCheckoutSession({
-        productKey: "extra_credits",
+        productKey,
         purchaseFor: audience,
         quantity: extraCreditQty,
         teamId,
@@ -226,7 +282,8 @@ export default function Pricing() {
 
   const payPerImage = async () => {
     if (!isLoggedIn) {
-      router.push("/sign-in?next=/pricing");
+      setPendingCheckout({ kind: "ppi", audience, quantity: payPerImageQty });
+      setAuthOpen(true);
       return;
     }
     let teamId: string | undefined;
@@ -294,8 +351,8 @@ export default function Pricing() {
               {teamsLoading ? (
                 <span className="text-xs text-cream-800/60 px-3 py-2">Loading your teams…</span>
               ) : ownedTeams.length === 0 ? (
-                <span className="text-xs text-red-600 px-3 py-2">
-                  You don't own any teams. Create one first.
+                <span className="text-xs text-cream-800/60 px-3 py-2 text-center">
+                  Any teams you own will show up here. Create a team to unlock team plans.
                 </span>
               ) : (
                 <select
@@ -342,8 +399,13 @@ export default function Pricing() {
         </p>
 
         {/* Plan grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {PLANS.map((p) => {
+        <div
+          className={
+            "grid sm:grid-cols-2 gap-5 " +
+            (audience === "team" ? "lg:grid-cols-3" : "lg:grid-cols-4")
+          }
+        >
+          {PLANS.filter((p) => !(audience === "team" && p.id === "starter")).map((p) => {
             const price = priceOf(p);
             const isDark = Boolean(p.dark);
             const isHighlighted = Boolean(p.highlighted);
@@ -395,9 +457,7 @@ export default function Pricing() {
                 </p>
                 <button
                   onClick={() =>
-                    p.contactSales
-                      ? (window.location.href = "mailto:hello@elevatespacesai.com?subject=Enterprise%20plan")
-                      : startCheckout(p)
+                    p.contactSales ? setContactSalesOpen(true) : startCheckout(p)
                   }
                   disabled={isBusy}
                   className={btnCls + " disabled:opacity-60 disabled:cursor-not-allowed"}
@@ -426,7 +486,11 @@ export default function Pricing() {
             <div className="flex-1">
               <h3 className="font-bold text-sm mb-1 text-brand-900">Buy Extra Credits</h3>
               <p className="text-xs text-cream-800/60 mb-3">
-                If you do not have an active subscription, extra credits are billed at the same $1.50 / image pay-per-image rate.
+                {hasActiveSubscription && activeSubscriptionPerCreditUsd
+                  ? `Billed at your plan's rate: $${activeSubscriptionPerCreditUsd.toFixed(2)} / credit (${extraCreditQty} credits ≈ $${(activeSubscriptionPerCreditUsd * extraCreditQty).toFixed(2)}).`
+                  : hasActiveSubscription
+                  ? "Billed at your plan's per-credit rate."
+                  : "Without an active subscription, extra credits are billed at the $1.50 / image pay-per-image rate."}
               </p>
               <div className="flex gap-2">
                 <input
@@ -499,15 +563,93 @@ export default function Pricing() {
         </div>
         <p className="text-center text-[11px] text-cream-800/40 mt-4">
           Prices are in USD. Standard taxes apply. Need help?{" "}
-          <a
-            href="mailto:hello@elevatespacesai.com"
+          <button
+            type="button"
+            onClick={() => setSupportOpen(true)}
             className="underline hover:text-brand-500"
           >
             Contact Support
-          </a>{" "}
+          </button>{" "}
           — typical response time within 24 hours.
         </p>
       </div>
+
+      <AuthGateModal
+        open={authOpen}
+        onClose={() => {
+          setAuthOpen(false);
+          setPendingCheckout(null);
+        }}
+        onSuccess={async () => {
+          setAuthOpen(false);
+          const pending = pendingCheckout;
+          setPendingCheckout(null);
+          if (!pending) return;
+
+          // Team purchases still need a team the new user owns; without one,
+          // route them home to create one instead of a dead-end error toast.
+          if (pending.audience === "team") {
+            showInfo("Create a team first, then continue your Team plan purchase.");
+            router.push("/teams");
+            return;
+          }
+
+          try {
+            if (pending.kind === "plan") {
+              const productKey =
+                pending.billing === "annual"
+                  ? pending.plan.productKey!.annual
+                  : pending.plan.productKey!.monthly;
+              const price =
+                pending.billing === "annual" ? pending.plan.annual : pending.plan.monthly;
+              setLoadingKey(pending.plan.id);
+              const res = await createCheckoutSession({
+                productKey,
+                uiUnitAmountUsd: Number(price) || undefined,
+                purchaseFor: pending.audience,
+              });
+              if (res?.url) window.location.href = res.url;
+            } else if (pending.kind === "extra") {
+              setLoadingKey("extra");
+              const key = hasActiveSubscription ? "subscription_topup" : "pay_per_image";
+              const res = await createCheckoutSession({
+                productKey: key,
+                purchaseFor: pending.audience,
+                quantity: pending.quantity,
+              });
+              if (res?.url) window.location.href = res.url;
+            } else if (pending.kind === "ppi") {
+              setLoadingKey("ppi");
+              const res = await createCheckoutSession({
+                productKey: "pay_per_image",
+                purchaseFor: pending.audience,
+                quantity: pending.quantity,
+              });
+              if (res?.url) window.location.href = res.url;
+            }
+          } catch (err: any) {
+            showInfo(err?.message || "Failed to start checkout");
+          } finally {
+            setLoadingKey(null);
+          }
+        }}
+      />
+
+      <SupportRequestDialog
+        open={supportOpen}
+        onOpenChange={setSupportOpen}
+        defaultFullName={auth?.user?.name || ""}
+        defaultEmail={auth?.user?.email || ""}
+      />
+
+      <Dialog open={contactSalesOpen} onOpenChange={setContactSalesOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Contact Sales — Enterprise plan</DialogTitle>
+          </DialogHeader>
+          <ContactSalesForm onClose={() => setContactSalesOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

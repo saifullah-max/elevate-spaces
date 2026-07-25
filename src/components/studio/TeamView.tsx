@@ -126,7 +126,7 @@ export default function TeamView() {
         <div className="bg-brand-50 border border-brand-100 rounded-2xl p-5 flex items-start gap-3">
           <Info className="w-4 h-4 text-brand-500 mt-0.5" />
           <p className="text-xs text-brand-900">
-            <Link href="/sign-in" className="font-semibold underline">
+            <Link href="/sign-in?next=/studio" className="font-semibold underline">
               Sign in
             </Link>{" "}
             to see your teams.

@@ -13,7 +13,12 @@ function SignInRedirect() {
     const errKey = params.get("error");
     const message = errKey ? OAUTH_ERROR_MAP[errKey] || "Authentication failed. Please try again." : null;
     openAuthModal("login", message);
-    router.replace("/");
+    // Honor ?next= so the user lands back where they came from once the auth
+    // modal completes. Only same-origin, root-relative paths are allowed.
+    const rawNext = params.get("next");
+    const safeNext =
+      rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
+    router.replace(safeNext);
   }, [router, params]);
 
   return (

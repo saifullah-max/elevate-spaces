@@ -3,11 +3,19 @@ import { getAuthHeaders } from "@/helpers/auth.helpers";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:5000/api";
 
+export interface ResourceTip {
+  id?: string;
+  heading: string;
+  body: string;
+  position?: number;
+}
+
 export interface ResourceItem {
   id: string;
   slug: string;
   title: string;
   content_html: string | null;
+  tips: ResourceTip[];
   youtube_url: string | null;
   pdf_filename: string | null;
   pdf_mime: string | null;
@@ -58,12 +66,18 @@ export async function getResource(slug: string): Promise<ResourceItem> {
 
 export async function saveResource(
   slug: string,
-  payload: { title: string; contentHtml: string; youtubeUrl?: string; pdf?: File | null; removePdf?: boolean },
+  payload: { title: string; contentHtml: string; tips?: ResourceTip[]; youtubeUrl?: string; pdf?: File | null; removePdf?: boolean },
   options?: SaveResourceOptions
 ): Promise<ResourceItem> {
   const formData = new FormData();
   formData.append("title", payload.title);
   formData.append("contentHtml", payload.contentHtml);
+  if (payload.tips) {
+    formData.append(
+      "tips",
+      JSON.stringify(payload.tips.map((t) => ({ heading: t.heading, body: t.body })))
+    );
+  }
   formData.append("youtubeUrl", payload.youtubeUrl?.trim() || "");
   formData.append("removePdf", payload.removePdf ? "true" : "false");
 

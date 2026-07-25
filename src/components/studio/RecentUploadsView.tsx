@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Check, Clock, Download } from "lucide-react";
+import { AlertTriangle, Check, Clock, Download, Info } from "lucide-react";
 import {
   getRecentUploads,
   normalizeImageUrl,
   type PairedUpload,
 } from "@/services/image.service";
 import { getAuthFromStorage } from "@/lib/auth.storage";
+import RecentUploadViewModal from "./RecentUploadViewModal";
 
 interface Props {
   onGoToProjects: () => void;
@@ -19,6 +20,7 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
   const [loading, setLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUpload, setSelectedUpload] = useState<PairedUpload | null>(null);
 
   useEffect(() => {
     const auth = getAuthFromStorage();
@@ -64,13 +66,13 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
       </div>
 
       {!loggedIn ? (
-        <div className="bg-white border border-cream-200 rounded-2xl p-8 text-center">
-          <Clock className="w-6 h-6 text-cream-800/40 mx-auto mb-2" />
-          <p className="text-sm font-semibold text-brand-900">Sign in to see recent uploads</p>
-          <p className="text-xs text-cream-800/50 mt-1">
-            <Link href="/sign-in" className="text-brand-500 font-semibold underline">
+        <div className="bg-brand-50 border border-brand-100 rounded-2xl p-5 flex items-start gap-3">
+          <Info className="w-4 h-4 text-brand-500 mt-0.5" />
+          <p className="text-xs text-brand-900">
+            <Link href="/sign-in?next=/studio" className="font-semibold underline">
               Sign in
-            </Link>
+            </Link>{" "}
+            to see your recent uploads.
           </p>
         </div>
       ) : error ? (
@@ -109,7 +111,11 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
             return (
               <div
                 key={u.groupId || u.original?.id || i}
-                className="bg-white border border-cream-200 rounded-xl overflow-hidden"
+                onClick={() => setSelectedUpload(u)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSelectedUpload(u)}
+                className="bg-white border border-cream-200 rounded-xl overflow-hidden cursor-pointer hover:border-brand-500/40 hover:shadow-sm transition"
               >
                 <div className="relative aspect-[4/3] bg-cream-100">
                   {displayUrl ? (
@@ -149,7 +155,7 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
                       Not saved to a project
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
                       onClick={onGoToProjects}
@@ -176,6 +182,12 @@ export default function RecentUploadsView({ onGoToProjects }: Props) {
           })}
         </div>
       )}
+
+      <RecentUploadViewModal
+        open={Boolean(selectedUpload)}
+        upload={selectedUpload}
+        onClose={() => setSelectedUpload(null)}
+      />
     </div>
   );
 }

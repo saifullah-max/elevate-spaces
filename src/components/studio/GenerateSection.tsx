@@ -60,7 +60,9 @@ export default function GenerateSection({ studio }: Props) {
           <div className="flex items-center gap-2 mb-2">
             <Loader2 className="w-4 h-4 text-brand-500 animate-spin" />
             <p className="text-sm font-semibold text-brand-900">
-              {studio.progressMessage || "Processing images"}
+              Processing {studio.files.length} image
+              {studio.files.length === 1 ? "" : "s"} ({studio.variantsReceived}/
+              {studio.totalVariantsTarget || studio.files.length * 3} variants)
             </p>
           </div>
           <div className="w-full h-1.5 bg-brand-100 rounded-full overflow-hidden mb-2">
@@ -70,10 +72,15 @@ export default function GenerateSection({ studio }: Props) {
             />
           </div>
           <p className="text-xs text-brand-900/70">
-            Elapsed {studio.elapsedSec}s
+            {studio.estimatedRemainingSec != null &&
+            studio.variantsReceived > 0 &&
+            studio.variantsReceived < (studio.totalVariantsTarget || studio.files.length * 3)
+              ? `Estimated remaining time: ${studio.estimatedRemainingSec}s (elapsed ${studio.elapsedSec}s)`
+              : `Elapsed ${studio.elapsedSec}s`}
           </p>
           <p className="text-[11px] text-brand-900/50 mt-2">
-            Please keep this page open while staging runs.
+            Please keep this page open while staging runs. Closing the page may impact overall
+            processing performance.
           </p>
         </div>
       )}
